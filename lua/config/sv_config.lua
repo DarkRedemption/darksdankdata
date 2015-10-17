@@ -1,0 +1,1 @@
+DDD.Logging.LogLevel = DDD.Logging.LogLevels.Warning
