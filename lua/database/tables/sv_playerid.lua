@@ -16,12 +16,13 @@ function playerIdTable:addPlayerId(ply)
 end
 
 function playerIdTable:getPlayerIdFromSteamId(steamId)
-  local result = sql.Query("SELECT id FROM " .. self.tableName .. " WHERE steam_id = '" .. steamId .. "'")
-  return tonumber(result[1]['id'])
+  local query = "SELECT id FROM " .. self.tableName .. " WHERE steam_id = '" .. steamId .. "'"
+  local result = self:query("getPlayerIdFromSteamId", query, 1, "id")
+  return result
 end
 
 function playerIdTable:getPlayerId(ply)
-  return playerIdTable:getPlayerIdFromSteamId(ply:SteamID())
+  return self:getPlayerIdFromSteamId(ply:SteamID())
 end
 
 function DDD.addPlayerIdHook()

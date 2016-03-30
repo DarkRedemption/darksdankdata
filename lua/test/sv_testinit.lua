@@ -1,9 +1,11 @@
 DDDTest = {}
 DDDTest.Helpers = {}
 
+include("testhelpers/sv_testsqltable.lua")
+include("testhelpers/sv_tablesetup.lua")
+  
 local function loadTests()
-  include("testhelpers/sv_testsqltable.lua")
-  include("testhelpers/sv_tablesetup.lua")
+  --TODO: See if the includes can be made to work here.
   GUnit.load()
 end
 

@@ -111,6 +111,10 @@ local function generateInsertQuery(sqlTable, luaTable)
   return baseQuery .. values
 end
 
+--[[
+Inserts a row into the SqlTable using a lua table.
+PARAM luaTable:Table - A table where the keys are the column names, and the values are what to insert into those columns.
+]]
 function SqlTable:insertTable(luaTable)
   local query = generateInsertQuery(self, luaTable)
   log.logInfo("Now running the following insert query on table " .. self.tableName .. ": " .. query)
@@ -125,26 +129,38 @@ function SqlTable:insertTable(luaTable)
   end
 end
 
---For custom queries.
+local function queryError(tableName, funcName, query)
+  DDD.Logging.LogError("SqlTable:query via " .. funcName ..": Query on " .. tableName .. " failed. Query was: " .. query .. "\nError was: " ..sql.LastError())
+end
+
+--[[
+For custom queries. Makes the return value safe (not nil).
+PARAM funcName:String - The name of the function that is calling the query for logging purposes.
+PARAM query:String - The SQL query.
+PARAM resultRow - The result row to select. If nil, all rows are returned.
+PARAM resultColumn - The result row to select. If nil, all columns are returned. If resultRow is nil, this is ignored.
+]]
 function SqlTable:query(funcName, query, resultRow, resultColumn)
   local result = sql.Query(query)
   if (result == nil) then
     return 0
   elseif (result == false) then
-    DDD.Logging.LogError("SqlTable:query via " .. funcName ..": Query on " .. self.tableName .. " failed. Query was: " .. query .. "\nError was: " ..sql.LastError())
+    queryError(self.tableName, funcName, query)
     return -1
   elseif (resultRow == nil && resultColumn == nil) then
     return result
   elseif (resultRow != nil && resultColumn == nil) then
     if (result[resultRow] != "NULL") then
       return result[resultRow]
-    else 
+    else
+      queryError(self.tableName, funcName, query)
       return 0
     end
   elseif (resultRow != nil && resultColumn != nil) then
     if (result[resultRow][resultColumn] != "NULL") then
       return result[resultRow][resultColumn]
-    else 
+    else
+      queryError(self.tableName, funcName, query)
       return 0
     end
   else

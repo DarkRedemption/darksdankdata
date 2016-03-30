@@ -1,9 +1,9 @@
 function DDDTest.Helpers.makeTables()
   local tables = {}
   local playerIdTable = DDDTest.TestSqlTable:convertTable(DDD.Database.Tables.PlayerId)
-  local worldKillTable = DDDTest.TestSqlTable:convertTable(DDD.Database.Tables.WorldKill)
+  --local worldKillTable = DDDTest.TestSqlTable:convertTable(DDD.Database.Tables.WorldKill)
   tables.PlayerId = playerIdTable
-  tables.WorldKill = worldKillTable
+  --tables.WorldKill = worldKillTable
   
   for key, sqlTable in pairs(tables) do
     sqlTable:create()

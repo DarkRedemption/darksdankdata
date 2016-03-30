@@ -33,14 +33,15 @@ function TestSqlTable:convertTable(dddTable)
   local testTable = {}
   testTable = table.Copy(dddTable)
   
+  testTable.tableName = "test_" .. GUnit.timestamp .. "_" .. dddTable.tableName
+  
   setmetatable(newMetaTable, {__index = function (t, k)
-    return search(k, {dddTable, self})
+    return search(k, {self, testTable})
   end})
   newMetaTable.__index = newMetaTable
   setmetatable(testTable, newMetaTable)
   
-  testTable.tableName = "test_" .. GUnit.timestamp .. "_" .. dddTable.tableName
-  testTable.columns = dddTable.columns
+  
   --testTable.foreignKeys = convertForeignKeyConstraints(dddTable, timestamp)
   return testTable
 end
