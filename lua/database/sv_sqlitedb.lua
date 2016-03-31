@@ -2,8 +2,8 @@
 include("sv_table.lua")
 include("sv_sqltable.lua")
 include("tables/sv_playerid.lua")
-include("tables/sv_maps.lua")
-include("tables/sv_rounds.lua")
+include("tables/sv_mapid.lua")
+include("tables/sv_roundid.lua")
 include("tables/sv_weapon.lua")
 include("tables/sv_playerkill.lua")
 include("tables/sv_healing.lua")
@@ -18,7 +18,3 @@ include("queries/sv_queries.lua")
 include("queries/sv_playerstats.lua")
 include("tables/sv_worldkill.lua")
 include("sv_hooks.lua")
-
-if SERVER then  
-  DDD.addPlayerIdHook()
-end

@@ -33,13 +33,21 @@ end
 
 function SqlTable:generateForeignKeyQuery()
   local query = ""
+  local keysConverted = 0
+  local numOfForeignKeys = 0
+  
+  for key, value in pairs(self.foreignKeys) do
+    numOfForeignKeys = numOfForeignKeys + 1
+  end
+  
   for columnName, tableName in pairs(self.foreignKeys) do
     query = query .. " FOREIGN KEY (" .. columnName .. ") REFERENCES " .. tableName .. " (id)"
     keysConverted = keysConverted + 1
-    if keysConverted != #self.foreignKeys then
-      query = query .. ","
+    if keysConverted != numOfForeignKeys then
+      query = query .. ", "
     end
   end
+  
   return query
 end
 
@@ -122,7 +130,7 @@ function SqlTable:insertTable(luaTable)
   if (result == nil) then --A successful INSERT returns nil.
     log.logDebug("Insert into table " .. self.tableName .. " was successful.")
     local lastId = self:query("SqlTable:insertTable", "SELECT last_insert_rowid() AS id", 1, "id")
-    return lastId
+    return tonumber(lastId)
   else
     log.logError("Could not insert into table " .. self.tableName .. "!")
     return false

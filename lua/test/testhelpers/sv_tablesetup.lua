@@ -1,15 +1,26 @@
+--[[
+Converts all sql tables into test tables with unique names.
+These tables are meant to be populated with random data and deleted after the test has completed.
+]]
 function DDDTest.Helpers.makeTables()
-  local tables = {}
-  local playerIdTable = DDDTest.TestSqlTable:convertTable(DDD.Database.Tables.PlayerId)
-  --local worldKillTable = DDDTest.TestSqlTable:convertTable(DDD.Database.Tables.WorldKill)
-  tables.PlayerId = playerIdTable
-  --tables.WorldKill = worldKillTable
+  local tables = DDD.Database.Tables
+  local tablesToConvert = {
+    PlayerId = tables.PlayerId,
+    MapId = tables.MapId,
+    RoundId = tables.RoundId
+    }
+  local convertedTables = {}
   
-  for key, sqlTable in pairs(tables) do
+  for tableName, sqlTable in pairs(tablesToConvert) do
+    local convertedTable = DDDTest.TestSqlTable:convertTable(sqlTable)
+    convertedTables[tableName] = convertedTable
+  end
+  
+  for key, sqlTable in pairs(convertedTables) do
     sqlTable:create()
   end
   
-  return tables
+  return convertedTables
 end
 
 function DDDTest.Helpers.dropAll(tables)

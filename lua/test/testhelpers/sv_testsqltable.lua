@@ -17,8 +17,8 @@ TestSqlTable.__index = TestSqlTable
 local function convertForeignKeyConstraints(foreignKeyTable)
   local convertedTable = {}
   if (foreignKeyTable != nil) then
-    for keyName, tableName in foreignKeyTable do
-      convertedTable[keyname] = "test_" .. GUnit.timestamp .. "_" .. tableName
+    for keyName, tableName in pairs(foreignKeyTable) do
+      convertedTable[keyName] = "test_" .. GUnit.timestamp .. "_" .. tableName
     end
   end
   return convertedTable
@@ -34,15 +34,13 @@ function TestSqlTable:convertTable(dddTable)
   testTable = table.Copy(dddTable)
   
   testTable.tableName = "test_" .. GUnit.timestamp .. "_" .. dddTable.tableName
-  
+ 
   setmetatable(newMetaTable, {__index = function (t, k)
     return search(k, {self, testTable})
   end})
   newMetaTable.__index = newMetaTable
   setmetatable(testTable, newMetaTable)
   
-  
-  --testTable.foreignKeys = convertForeignKeyConstraints(dddTable, timestamp)
   return testTable
 end
 

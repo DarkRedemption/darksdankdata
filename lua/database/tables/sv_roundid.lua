@@ -1,7 +1,16 @@
 local mapIdTable = DDD.Database.Tables.MapId
 
-local columns = "(id INTEGER PRIMARY KEY, map_id INTEGER, start_timestamp INTEGER, FOREIGN KEY (map_id) REFERENCES " .. mapIdTable.tableName .. " (id))"
-local roundIdTable = DDD.Table:new("ddd_round_id", columns)
+local columns = {
+  id = "INTEGER PRIMARY KEY",
+  map_id = "INTEGER",
+  start_timestamp = "INTEGER"
+}
+
+local foreignKeys = {
+  map_id = mapIdTable.tableName
+}
+
+local roundIdTable = DDD.SqlTable:new("ddd_round_id", columns, foreignKeys)
 
 function roundIdTable:addRound()
   local timestamp = os.time()

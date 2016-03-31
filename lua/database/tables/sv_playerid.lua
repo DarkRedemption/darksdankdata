@@ -8,11 +8,11 @@ local columns = {
 local playerIdTable = DDD.SqlTable:new("ddd_player_id", columns)
 
 function playerIdTable:addPlayerId(ply)
-  local query = {
+  local row = {
     steam_id = ply:SteamID(),
     first_seen = os.time()
   }
-  return self:insertTable(query)
+  return self:insertTable(row)
 end
 
 function playerIdTable:getPlayerIdFromSteamId(steamId)
@@ -23,13 +23,6 @@ end
 
 function playerIdTable:getPlayerId(ply)
   return self:getPlayerIdFromSteamId(ply:SteamID())
-end
-
-function DDD.addPlayerIdHook()
-  hook.Add("PlayerInitialSpawn", "Add player if they do not exist in the table.", function(ply)
-      playerIdTable:addPlayerId(ply)
-    end
-  )
 end
 
 DDD.Database.Tables.PlayerId = playerIdTable

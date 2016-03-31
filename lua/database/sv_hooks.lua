@@ -2,10 +2,15 @@
 DDD.Hooks = {}
 
 local tables = DDD.Database.Tables
+
+hook.Add("PlayerInitialSpawn", "Add player if they do not exist in the table.", function(ply)
+  tables.PlayerId:addPlayerId(ply)
+end)
+
 --
 -- Purchase Tracking Hooks
 --
-
+  
 hook.Add("TTTOrderedEquipment", "DDDTrackPurchases", function(ply, equipment, is_item)
   tables.ShopItemId:addItem(equipment)
   local itemId = tables.ShopItemId:getItemId(equipment)
