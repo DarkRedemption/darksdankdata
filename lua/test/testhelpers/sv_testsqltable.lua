@@ -20,9 +20,14 @@ local function convertForeignKeyConstraints(foreignKeyTable)
     for columnName, foreignKeyRef in pairs(foreignKeyTable.foreignKeys) do
       local testTable = TestSqlTable:convertTable(foreignKeyRef.sqlTable)
       convertedTable:addConstraint(columnName, testTable, foreignKeyRef.foreignColumn)
+      testTable:create()
     end
   end
   return convertedTable
+end
+
+function TestSqlTable:getForeignTableByColumn(columnName)
+  return self.foreignKeyTable.foreignKeys[columnName].sqlTable
 end
 
 --[[
@@ -35,10 +40,12 @@ function TestSqlTable:convertTable(dddTable)
   testTable = table.Copy(dddTable)
   
   testTable.tableName = "test_" .. GUnit.timestamp .. "_" .. dddTable.tableName
-  testTable.foreignKeyTable = convertForeignKeyConstraints(testTable.foreignKeyTable)
+  if (testTable.foreignKeyTable) then
+    testTable.foreignKeyTable = convertForeignKeyConstraints(testTable.foreignKeyTable)
+  end
   
   setmetatable(newMetaTable, {__index = function (t, k)
-    return search(k, {self, testTable})
+    return search(k, {testTable, self})
   end})
   newMetaTable.__index = newMetaTable
   setmetatable(testTable, newMetaTable)
@@ -58,19 +65,5 @@ end
 function TestSqlTable:drop()
   self:delete()
 end
-
---[[
-Creates a brand-new table for testing reasons.
-]]
---[[
-function TestSqlTable:new(tableName, columns, foreignKeyTable)
-  local testTable = {}
-  setmetatable(testTable, self)
-  testTable.tableName = "test_" .. GUnit.timestamp .. "_" .. tableName
-  testTable.columns = columns
-  testTable.foreignKeyTable = foreignKeyTable
-  return testTable
-end
-]]
 
 DDDTest.TestSqlTable = TestSqlTable

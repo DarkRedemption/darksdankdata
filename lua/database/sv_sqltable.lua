@@ -3,6 +3,7 @@ local log = DDD.Logging
 local SqlTable = {}
 SqlTable.tableName = ""
 SqlTable.columns = {}
+SqlTable.foreignKeyTable = nil
 SqlTable.__index = SqlTable
 
 function SqlTable:getNumberOfColumns()
@@ -25,17 +26,17 @@ function SqlTable:generateColumnQuery()
       query = query .. ","
     end
   end
-  
-  query = query .. ")"
+
   return query
 end
 
 function SqlTable:createTable()
   local query
-  if (self.foreignKeyTable == nil) then
-    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery()
+  if (self.foreignKeyTable) then
+    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. ")"
   else
-    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. self.foreignKeyTable:generateConstraintQuery()
+    print(self.foreignKeyTable)
+    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. "," .. self.foreignKeyTable:generateConstraintQuery() .. ")"
   end
   log.logDebug("Creating table with command: " .. query)
   
@@ -46,15 +47,6 @@ function SqlTable:createTable()
   else
     return true
   end
-end
-
---[[
-Drops the table.
-THIS SHOULD NEVER BE DONE UNLESS THE TABLE WAS MADE WRONG OR YOU ARE SURE YOU DON'T NEED THE DATA IN IT ANYMORE!
-]]
-function SqlTable:drop()
-  local query = "DROP TABLE IF EXISTS " .. self.tableName
-  return sql.Query(query)
 end
 
 function SqlTable:create()
@@ -167,7 +159,7 @@ end
 Instantiates a new SqlTable class.
 PARAM tablename:String - The name of the table.
 PARAM columns:Table - A lua table of column name (string keys) and column settings (string values)
-PARAM foreignKeyTable:ForeignKeyTable - A ForeignKeyTable filled with ForeignKeyRefs to the necessary constraints.
+PARAM foreignKeyTable:[Nil, ForeignKeyTable] - A ForeignKeyTable filled with ForeignKeyRefs to the necessary constraints. Can be nil if unnecessary.
 ]]
 function SqlTable:new(tableName, columns, foreignKeyTable)
   local newTable = {}

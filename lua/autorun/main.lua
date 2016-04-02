@@ -18,7 +18,7 @@ if SERVER then
   AddCSLuaFile("gui/cl_overview.lua")
   AddCSLuaFile("gui/cl_traitor.lua")
   AddCSLuaFile("gui/cl_innocent.lua")
-  AddCSLuaFile("gui/cl_detective.lua") 
+  AddCSLuaFile("gui/cl_detective.lua")
   AddCSLuaFile("main/cl_command.lua")
   resource.AddFile("materials/ddd/icons/t.png")
   resource.AddFile("materials/ddd/icons/d.png")

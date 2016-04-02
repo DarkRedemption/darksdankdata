@@ -12,7 +12,7 @@ end
 
 local function addRoundSpec()
   for i = 1, 100 do
-    local mapId = tables.MapId:addMap()
+    local mapId = tables.RoundId:getForeignTableByColumn("map_id")
     local id = tables.RoundId:addRound()
     assert(id == 1, "id was " .. tostring(id) .. ", expected 1")
   end
