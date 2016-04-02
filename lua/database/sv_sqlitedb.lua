@@ -1,5 +1,7 @@
 --Load order is important. Be careful changing these!
 include("sv_table.lua")
+include("sv_foreignkeyref.lua")
+include("sv_foreignkeytable.lua")
 include("sv_sqltable.lua")
 include("tables/sv_playerid.lua")
 include("tables/sv_mapid.lua")

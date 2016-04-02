@@ -3,7 +3,6 @@ local log = DDD.Logging
 local SqlTable = {}
 SqlTable.tableName = ""
 SqlTable.columns = {}
-SqlTable.foreignKeys = {}
 SqlTable.__index = SqlTable
 
 function SqlTable:getNumberOfColumns()
@@ -31,29 +30,15 @@ function SqlTable:generateColumnQuery()
   return query
 end
 
-function SqlTable:generateForeignKeyQuery()
-  local query = ""
-  local keysConverted = 0
-  local numOfForeignKeys = 0
-  
-  for key, value in pairs(self.foreignKeys) do
-    numOfForeignKeys = numOfForeignKeys + 1
-  end
-  
-  for columnName, tableName in pairs(self.foreignKeys) do
-    query = query .. " FOREIGN KEY (" .. columnName .. ") REFERENCES " .. tableName .. " (id)"
-    keysConverted = keysConverted + 1
-    if keysConverted != numOfForeignKeys then
-      query = query .. ", "
-    end
-  end
-  
-  return query
-end
-
 function SqlTable:createTable()
-  local query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. self:generateForeignKeyQuery()
+  local query
+  if (self.foreignKeyTable == nil) then
+    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery()
+  else
+    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. self.foreignKeyTable:generateConstraintQuery()
+  end
   log.logDebug("Creating table with command: " .. query)
+  
   local result = sql.Query(query)
   if (result == false) then
     log.logError("Table " .. self.tableName .. " could not be created! Error was: " .. sql.LastError())
@@ -125,7 +110,7 @@ PARAM luaTable:Table - A table where the keys are the column names, and the valu
 ]]
 function SqlTable:insertTable(luaTable)
   local query = generateInsertQuery(self, luaTable)
-  log.logInfo("Now running the following insert query on table " .. self.tableName .. ": " .. query)
+  log.logDebug("Now running the following insert query on table " .. self.tableName .. ": " .. query)
   local result = sql.Query(query)
   if (result == nil) then --A successful INSERT returns nil.
     log.logDebug("Insert into table " .. self.tableName .. " was successful.")
@@ -150,21 +135,22 @@ PARAM resultColumn - The result row to select. If nil, all columns are returned.
 ]]
 function SqlTable:query(funcName, query, resultRow, resultColumn)
   local result = sql.Query(query)
-  if (result == nil) then
+  if (result == nil) then --Nothing to select
     return 0
-  elseif (result == false) then
+  elseif (result == false) then --Bad query
     queryError(self.tableName, funcName, query)
     return -1
-  elseif (resultRow == nil && resultColumn == nil) then
+  --Everything after this point (other than the LogError) is for the user to select results safely. 
+  elseif (resultRow == nil && resultColumn == nil) then --User wants everything
     return result
-  elseif (resultRow != nil && resultColumn == nil) then
+  elseif (resultRow != nil && resultColumn == nil) then --User wants one row
     if (result[resultRow] != "NULL") then
       return result[resultRow]
     else
       queryError(self.tableName, funcName, query)
       return 0
     end
-  elseif (resultRow != nil && resultColumn != nil) then
+  elseif (resultRow != nil && resultColumn != nil) then --User wants specific result
     if (result[resultRow][resultColumn] != "NULL") then
       return result[resultRow][resultColumn]
     else
@@ -181,16 +167,16 @@ end
 Instantiates a new SqlTable class.
 PARAM tablename:String - The name of the table.
 PARAM columns:Table - A lua table of column name (string keys) and column settings (string values)
-PARAM foreignKeys:Table - A lua table of id column names (string keys, and only ids at the moment) 
-                          and tableNames (string values)
+PARAM foreignKeyTable:ForeignKeyTable - A ForeignKeyTable filled with ForeignKeyRefs to the necessary constraints.
 ]]
-function SqlTable:new(tableName, columns, foreignKeys)
-  foreignKeys = foreignKeys or {}
+function SqlTable:new(tableName, columns, foreignKeyTable)
   local newTable = {}
   setmetatable(newTable, self)
   newTable.tableName = tableName
   newTable.columns = columns
-  newTable.foreignKeys = foreignKeys
+  if (foreignKeyTable) then
+    newTable.foreignKeyTable = foreignKeyTable
+  end
   return newTable
 end
 

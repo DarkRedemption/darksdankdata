@@ -1,7 +1,7 @@
 --A test version of SqlTable that renames the table and its foreign key constraints to have "test_" prepended to them.
 --Inherits from SqlTable.
 
-local TestSqlTable = DDD.SqlTable:new("", {}, {})
+local TestSqlTable = DDD.SqlTable:new("", {})
 TestSqlTable.__index = TestSqlTable
 
  local function search (k, plist)
@@ -15,10 +15,11 @@ TestSqlTable.__index = TestSqlTable
 --but now "test_" has been prepended to them. This is to ensure only test tables are ever used
 --so your production code is not messed with.
 local function convertForeignKeyConstraints(foreignKeyTable)
-  local convertedTable = {}
+  local convertedTable = DDD.Database.ForeignKeyTable:new()
   if (foreignKeyTable != nil) then
-    for keyName, tableName in pairs(foreignKeyTable) do
-      convertedTable[keyName] = "test_" .. GUnit.timestamp .. "_" .. tableName
+    for columnName, foreignKeyRef in pairs(foreignKeyTable.foreignKeys) do
+      local testTable = TestSqlTable:convertTable(foreignKeyRef.sqlTable)
+      convertedTable:addConstraint(columnName, testTable, foreignKeyRef.foreignColumn)
     end
   end
   return convertedTable
@@ -34,7 +35,8 @@ function TestSqlTable:convertTable(dddTable)
   testTable = table.Copy(dddTable)
   
   testTable.tableName = "test_" .. GUnit.timestamp .. "_" .. dddTable.tableName
- 
+  testTable.foreignKeyTable = convertForeignKeyConstraints(testTable.foreignKeyTable)
+  
   setmetatable(newMetaTable, {__index = function (t, k)
     return search(k, {self, testTable})
   end})
@@ -60,13 +62,15 @@ end
 --[[
 Creates a brand-new table for testing reasons.
 ]]
-function TestSqlTable:new(tableName, columns, foreignKeys)
+--[[
+function TestSqlTable:new(tableName, columns, foreignKeyTable)
   local testTable = {}
   setmetatable(testTable, self)
   testTable.tableName = "test_" .. GUnit.timestamp .. "_" .. tableName
   testTable.columns = columns
-  testTable.foreignKeys = convertForeignKeyConstraints(foreignKeys)
+  testTable.foreignKeyTable = foreignKeyTable
   return testTable
 end
+]]
 
 DDDTest.TestSqlTable = TestSqlTable

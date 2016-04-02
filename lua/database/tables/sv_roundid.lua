@@ -6,9 +6,8 @@ local columns = {
   start_timestamp = "INTEGER"
 }
 
-local foreignKeys = {
-  map_id = mapIdTable.tableName
-}
+local foreignKeys = DDD.Database.ForeignKeyTable:new()
+foreignKeys:addConstraint("map_id", mapIdTable, "id")
 
 local roundIdTable = DDD.SqlTable:new("ddd_round_id", columns, foreignKeys)
 
