@@ -33,10 +33,9 @@ end
 function SqlTable:createTable()
   local query
   if (self.foreignKeyTable) then
-    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. ")"
-  else
-    print(self.foreignKeyTable)
     query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. "," .. self.foreignKeyTable:generateConstraintQuery() .. ")"
+  else
+    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. ")"
   end
   log.logDebug("Creating table with command: " .. query)
   
@@ -115,7 +114,7 @@ function SqlTable:insertTable(luaTable)
 end
 
 local function queryError(tableName, funcName, query)
-  DDD.Logging.LogError("SqlTable:query via " .. funcName ..": Query on " .. tableName .. " failed. Query was: " .. query .. "\nError was: " ..sql.LastError())
+  log.logError("SqlTable:query via " .. funcName ..": Query on " .. tableName .. " failed. Query was: " .. query .. "\nError was: " ..sql.LastError())
 end
 
 --[[
@@ -155,6 +154,28 @@ function SqlTable:query(funcName, query, resultRow, resultColumn)
   end
 end
 
+--[[
+Deletes the test table.
+Should always be run after a test, and probably never run anywhere else.
+]]
+function SqlTable:delete()
+  local query = "DROP TABLE " .. self.tableName
+  sql.Query(query)
+end
+
+function SqlTable:drop()
+  self:delete()
+end
+
+--[[
+Gets a foreign table in the foreign key constraints.
+Used instead of calling the other databases directly because doing so would cause testing problems,
+since you'd always be calling the original table instead of a table created just for the tests.
+]]
+function SqlTable:getForeignTableByColumn(columnName)
+  return self.foreignKeyTable.foreignKeys[columnName].sqlTable
+end
+  
 --[[
 Instantiates a new SqlTable class.
 PARAM tablename:String - The name of the table.

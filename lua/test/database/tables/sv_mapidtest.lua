@@ -11,7 +11,6 @@ end
 local function addMapSpec()
   local mapIdTable = mapIdTest.tables.MapId
   local id = mapIdTable:addMap()
-  assert(id == 1, "id was " .. tostring(id) .. ", expected 1")
   local currentMapId = mapIdTable:getCurrentMapId()
   assert(currentMapId == 1, "Could not select the current map!")
 end

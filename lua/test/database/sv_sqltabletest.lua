@@ -6,38 +6,43 @@ local columns = {
       name = "STRING"
     }
 
+local function beforeEach()
+  local sqlTable = DDD.SqlTable:new(tableName, columns)
+  local testSqlTable = DDDTest.TestSqlTable:convertTable(sqlTable)
+  testSqlTable:create()
+  sqlTableTest.table = testSqlTable
+end
+
+local function afterEach()
+  sqlTableTest.table:drop()
+  sqlTableTest.table = nil
+end
+
+local function tableNameModifySpec()
+  assert(sqlTableTest.table.tableName != tableName, "The table name didn't change. It is " .. sqlTableTest.table.tableName)
+end
+
 local function basicSpec()
-    local sqlTable = DDDTest.TestSqlTable:new(tableName, columns)
-    sqlTable:create()
-    
     local rowToInsert = {
       name = "testname"
     }
-    
-    local insertResult = sqlTable:insertTable(rowToInsert)
-
+    local insertResult = sqlTableTest.table:insertTable(rowToInsert)
     assert(tonumber(insertResult) == 1)
-    sqlTable:drop()
-    return true
   end
   
 local function selectSpec()
-  local sqlTable = DDDTest.TestSqlTable:new(tableName, columns)
-  sqlTable:create()
-    
   local rowToInsert = {
      name = "testname"
   }
-    
-  sqlTable:insertTable(rowToInsert)
+  sqlTableTest.table:insertTable(rowToInsert)
   
-  local selectedValue = sqlTable:selectById("1")
+  local selectedValue = sqlTableTest.table:selectById("1")
   assert(selectedValue["name"] == rowToInsert["name"])
-  
-  sqlTable:drop()
-  return true
 end
-  
---sqlTableTest:addSpec("create a table successfully", tableAddSpec)
-sqlTableTest:addSpec("create a table and add a row successfully", basicSpec)
+
+sqlTableTest:beforeEach(beforeEach)
+sqlTableTest:afterEach(afterEach)
+
+sqlTableTest:addSpec("modify the tablename ", tableNameModifySpec)
+sqlTableTest:addSpec("create a table and add a row", basicSpec)
 sqlTableTest:addSpec("select a known column", selectSpec)

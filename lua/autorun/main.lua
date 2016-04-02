@@ -6,13 +6,14 @@ DDD.Gui = {}
 DDD.Misc = {}
 
 if SERVER then
-  local roles = {
+  local roles = { 
     Traitor = 0,
     Innocent = 1,
     Detective = 2
   }
   DDD.Database.Roles = roles
   
+  AddCSLuaFile("misc/sh_inheritsfrom.lua")
   AddCSLuaFile("gui/cl_shared.lua")
   AddCSLuaFile("gui/cl_mainpanel.lua")
   AddCSLuaFile("gui/cl_overview.lua")
@@ -23,6 +24,7 @@ if SERVER then
   resource.AddFile("materials/ddd/icons/t.png")
   resource.AddFile("materials/ddd/icons/d.png")
   resource.AddFile("materials/ddd/icons/i.png")
+  include("misc/sh_inheritsfrom.lua")
   include("misc/sv_enums.lua")
   include("misc/sv_tuple2.lua")
   include("misc/sv_logging.lua")
@@ -32,6 +34,10 @@ if SERVER then
   include("main/sv_currentround.lua")
   
   include("test/sv_testinit.lua")
+end
+
+if CLIENT then
+  include("misc/sh_inheritsfrom.lua")
 end
 
 include("gui/cl_shared.lua")
