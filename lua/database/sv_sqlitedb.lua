@@ -1,3 +1,6 @@
+--Enable foreign key constraints before doing anything.
+sql.Query("PRAGMA foreign_keys = ON;")
+
 --Load order is important. Be careful changing these!
 include("sv_table.lua")
 include("sv_foreignkeyref.lua")
