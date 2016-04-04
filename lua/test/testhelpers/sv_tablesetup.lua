@@ -7,7 +7,8 @@ function DDDTest.Helpers.makeTables()
   local tablesToConvert = {
     PlayerId = tables.PlayerId,
     MapId = tables.MapId,
-    RoundId = tables.RoundId
+    RoundId = tables.RoundId,
+    WeaponId = tables.WeaponId
     }
   local convertedTables = {}
   

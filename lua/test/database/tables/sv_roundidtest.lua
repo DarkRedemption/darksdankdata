@@ -13,7 +13,7 @@ end
 local function keyConstraintSpec()
   local mapId = tables.RoundId:getForeignTableByColumn("map_id")
   assert(mapId:getCurrentMapId() == 0)
-  GUnit.Asserts.shouldFail(tables.RoundId:addRound())
+  GUnit.assert(tables.RoundId.addRound, tables.RoundId):shouldFail(true)
 end
 
 local function addRoundSpec()

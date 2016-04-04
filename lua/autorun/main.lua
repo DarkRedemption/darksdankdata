@@ -22,7 +22,7 @@ if SERVER then
   AddCSLuaFile("gui/cl_detective.lua")
   AddCSLuaFile("main/cl_command.lua")
   resource.AddFile("materials/ddd/icons/t.png")
-  resource.AddFile("materials/ddd/icons/d.png")
+  resource.AddFile("materials/ddd/icons/d.png") 
   resource.AddFile("materials/ddd/icons/i.png")
   include("misc/sh_inheritsfrom.lua")
   include("misc/sv_enums.lua")

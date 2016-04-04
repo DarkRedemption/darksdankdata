@@ -1,21 +1,21 @@
-local columns = "(id INTEGER PRIMARY KEY, weapon_class STRING UNIQUE NOT NULL)"
-local weaponIdTable = DDD.Table:new("ddd_weapon_id", columns)
+local columns = {
+  id = "INTEGER PRIMARY KEY",
+  weapon_class = "STRING UNIQUE NOT NULL"
+}
+
+local weaponIdTable = DDD.SqlTable:new("ddd_weapon_id", columns)
 
 function weaponIdTable:addWeapon(weaponClass)
-  local query = "INSERT INTO " .. self.tableName .. " (weapon_class) VALUES ('" .. weaponClass .."')"
-  return self:insert(query)
+  local query = {
+    weapon_class = weaponClass
+    }
+  return self:insertTable(query)
 end
 
 function weaponIdTable:getWeaponId(weaponClass)
-  local result = sql.Query("SELECT id FROM " .. self.tableName .. " WHERE weapon_class == '" .. weaponClass .. "'")
-  if (result == nil) then
-    return -1
-  elseif (result == false) then
-    DDD.Logging.logError("WeaponId.getWeaponId: An SQL error occurred. Error was: " .. sql.LastError())
-    return -1
-  else
-    return result[1]['id']
-  end
+  local query = "SELECT id FROM " .. self.tableName .. " WHERE weapon_class == '" .. weaponClass .. "'"
+  local result = self:query("getWeaponId", query, 1, "id")
+  return tonumber(result)
 end
 
 function weaponIdTable:getWeaponIdAndAddIfNotExists(weaponClass)
@@ -30,7 +30,6 @@ end
 
 local function determineWeaponFromDamageInfo(damageInfo)
   local inflictor = damageInfo:GetInflictor()
-  print("Inflictor was: " .. inflictor:GetClass())
   if inflictor:IsWeapon() or inflictor.Projectile or (inflictor:GetClass() == "ttt_c4") then
 		return inflictor:GetClass()
   elseif damageInfo:IsDamageType(DMG_BLAST) then
