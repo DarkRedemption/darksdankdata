@@ -6,28 +6,31 @@ local damageTypeTable = DDD.Database.Tables.DamageType
 
 local roles = DDD.Database.Roles
 
-local columns = [[ ( id INTEGER PRIMARY KEY,
-                        round_id INTEGER NOT NULL,
-                        victim_id INTEGER NOT NULL, 
-                        attacker_id INTEGER NOT NULL,
-                        weapon_id INTEGER NOT NULL,
-                        round_time REAL NOT NULL,
-                        FOREIGN KEY(round_id) REFERENCES ]] .. roundIdTable.tableName .. [[(id),
-                        FOREIGN KEY(victim_id) REFERENCES ]] .. playerIdTable.tableName .. [[(id),
-                        FOREIGN KEY(attacker_id) REFERENCES ]] .. playerIdTable.tableName .. [[(id),
-                        FOREIGN KEY(weapon_id) REFERENCES ]] .. weaponIdTable.tableName .. [[(id))]]
-                        
-local playerKillTable = DDD.Table:new("ddd_player_kill", columns)
+local columns = {id = "INTEGER PRIMARY KEY",
+                 round_id = "INTEGER NOT NULL",
+                 round_time = "REAL NOT NULL",
+                 victim_id = "INTEGER NOT NULL", 
+                 attacker_id = "INTEGER NOT NULL",
+                 weapon_id = "INTEGER NOT NULL"
+               }
+      
+local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
+foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
+foreignKeyTable:addConstraint("victim_id", playerIdTable, "id")
+foreignKeyTable:addConstraint("attacker_id", playerIdTable, "id")
+foreignKeyTable:addConstraint("weapon_id", weaponIdTable, "id")
+  
+local playerKillTable = DDD.SqlTable:new("ddd_player_kill", columns, foreignKeyTable)
 
-function playerKillTable:addPlayerKill(victimId, attackerId, weaponId, damageTypeId)
+function playerKillTable:addKill(victimId, attackerId, weaponId)
   local queryTable = {
-    round_id = DDD.CurrentRound.roundId,
+    round_id = self:getForeignTableByColumn("round_id"):getCurrentRoundId(),
     victim_id = victimId,
     attacker_id = attackerId,
     weapon_id = weaponId,
     round_time = DDD.CurrentRound:getCurrentRoundTime()  
   }
-  return killTable:insertTable(queryTable)
+  return self:insertTable(queryTable)
 end
 
 function playerKillTable:getKillsAsRole(playerId, roleId)
@@ -285,5 +288,5 @@ function playerKillTable:getDetectiveSuicides(playerId)
   return playerKillTable:getRoleSuicides(playerId, roles["Detective"])
 end
 
-DDD.Database.Tables.KillInfo = playerKillTable
+DDD.Database.Tables.PlayerKill = playerKillTable
 playerKillTable:create()

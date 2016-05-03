@@ -2,19 +2,21 @@
 
 local tables = DDD.Database.Tables
 
-local columns = [[ (id INTEGER PRIMARY KEY,
-                    round_id INTEGER NOT NULL,
-                    victim_id INTEGER NOT NULL, 
-                    attacker_id INTEGER NOT NULL,
-                    weapon_id INTEGER NOT NULL,
-                    round_time REAL NOT NULL,
-                    damage_dealt INTEGER NOT NULL,
-                    FOREIGN KEY(round_id) REFERENCES ]] .. roundIdTable.tableName .. [[(id),
-                    FOREIGN KEY(victim_id) REFERENCES ]] .. playerIdTable.tableName .. [[(id),
-                    FOREIGN KEY(attacker_id) REFERENCES ]] .. playerIdTable.tableName .. [[(id),
-                    FOREIGN KEY(weapon_id) REFERENCES ]] .. weaponIdTable.tableName .. [[(id))]]
-                        
-local combatDamageTable = DDD.Table:new("ddd_combat_damage", columns)
+local columns = { id = "INTEGER PRIMARY KEY",
+                  round_id = "INTEGER NOT NULL",
+                  victim_id = "INTEGER NOT NULL", 
+                  attacker_id = "INTEGER NOT NULL",
+                  weapon_id = "INTEGER NOT NULL",
+                  round_time = "REAL NOT NULL",
+                  damage_dealt = "INTEGER NOT NULL"}
+                  
+local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
+foreignKeyTable:addConstraint("round_id", tables.RoundId, "id")
+foreignKeyTable:addConstraint("victim_id", tables.PlayerId, "id")
+foreignKeyTable:addConstraint("attacker_id", tables.PlayerId, "id")
+foreignKeyTable:addConstraint("weapon_id", tables.WeaponId, "id")
+
+local combatDamageTable = DDD.SqlTable:new("ddd_combat_damage", columns, foreignKeyTable)
 
 --[[
 Adds a row tracking the damage dealt to a person by another player.
@@ -25,16 +27,20 @@ weaponId:Integer -  The attacker's weapon's id from the WeaponID table.
 dmgInfo:CTakeDamageInfo - The damage info from the attack.
 ]]
 function combatDamageTable:addDamage(victimId, attackerId, weaponId, dmgInfo)
+  local roundIdTable = self:getForeignTableByColumn("round_id")
+  local roundId = roundIdTable:getCurrentRoundId()
+  local roundTime = DDD.CurrentRound:getCurrentRoundTime()
+  
   local queryTable = {
-    round_id = DDD.CurrentRound.roundId
-    victim_id = victimId
-    attacker_id = attackerId
-    weapon_id = weaponId
-    round_time = DDD.CurrentRound.getCurrentRoundTime()
-    damage_dealt = dmgInfo.getDamage()
+    round_id = roundId,
+    victim_id = victimId,
+    attacker_id = attackerId,
+    weapon_id = weaponId,
+    round_time = roundTime,
+    damage_dealt = dmgInfo:GetDamage()
   }
-  self:insertTable(queryTable)
+  return self:insertTable(queryTable)
 end
 
-combatDamageTable:create()
 DDD.Database.Tables.CombatDamage = combatDamageTable
+combatDamageTable:create()

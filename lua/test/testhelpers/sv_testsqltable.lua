@@ -4,9 +4,11 @@
 local TestSqlTable = table.Copy(DDD.SqlTable)
 TestSqlTable.__index = TestSqlTable
     
---Converts foreign key constraint names to a test version where they have the same table name,
---but now "test_" has been prepended to them. This is to ensure only test tables are ever used
---so your production code is not messed with.
+--[[
+Converts foreign key constraint names to a test version where they have the same table name,
+but now "test_" has been prepended to them. This is to ensure only test tables are ever used
+so your production code is not messed with.
+]]--
 local function convertForeignKeyConstraints(foreignKeyTable)
   local convertedTable = DDD.Database.ForeignKeyTable:new()
   if (foreignKeyTable != nil) then

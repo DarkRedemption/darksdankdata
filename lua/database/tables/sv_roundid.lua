@@ -23,7 +23,7 @@ end
 
 function roundIdTable:getCurrentRoundRow()
   local query = "SELECT * FROM " .. self.tableName .. " ORDER BY id DESC LIMIT 1"
-  local result = self:query("getCurrentRoundRow", query)
+  local result = self:query("getCurrentRoundRow", query, 1)
   return result
 end
 

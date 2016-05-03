@@ -7,7 +7,7 @@ local columns = {
   }
 local playerIdTable = DDD.SqlTable:new("ddd_player_id", columns)
 
-function playerIdTable:addPlayerId(ply)
+function playerIdTable:addPlayer(ply)
   local row = {
     steam_id = ply:SteamID(),
     first_seen = os.time()

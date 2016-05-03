@@ -4,14 +4,23 @@ local SqlTable = {}
 SqlTable.tableName = ""
 SqlTable.columns = {}
 SqlTable.foreignKeyTable = nil
+SqlTable.uniqueGroups = nil
 SqlTable.__index = SqlTable
 
+local function getTableSize(tableToCheck)
+  local numKeys = 0
+    for keyName, keyValue in pairs(tableToCheck) do
+      numKeys = numKeys + 1
+    end
+    return numKeys
+end
+
 function SqlTable:getNumberOfColumns()
-  local numColumns = 0
-  for columnName, columnSettings in pairs(self.columns) do
-    numColumns = numColumns + 1
-  end
-  return numColumns
+  return getTableSize(self.columns)
+end
+
+function SqlTable:getNumberOfUniqueGroups()
+  return table.getn(self.uniqueGroups)
 end
 
 function SqlTable:generateColumnQuery()
@@ -22,7 +31,7 @@ function SqlTable:generateColumnQuery()
   for columnName, columnSettings in pairs(self.columns) do
     query = query .. " " .. columnName .. " " .. columnSettings
     columnsConverted = columnsConverted + 1
-    if columnsConverted != numColumns then
+    if columnsConverted < numColumns then
       query = query .. ","
     end
   end
@@ -30,16 +39,56 @@ function SqlTable:generateColumnQuery()
   return query
 end
 
-function SqlTable:createTable()
-  local query
-  if (self.foreignKeyTable) then
-    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. "," .. self.foreignKeyTable:generateConstraintQuery() .. ")"
-  else
-    query = "CREATE TABLE " .. self.tableName .. self:generateColumnQuery() .. ")"
+local function processUniqueColumnGroup(columnsToConstrain)
+  local columnsProcessed = 0
+  local query = "UNIQUE("
+  for columnNumber, columnName in pairs(columnsToConstrain) do
+    query = query .. columnName
+    columnsProcessed = columnsProcessed + 1
+    if columnsProcessed < table.getn(columnsToConstrain) then
+      query = query .. ", "
+    else
+      query = query .. ")"
+    end
   end
-  log.logDebug("Creating table with command: " .. query)
   
+  return query
+end
+
+function SqlTable:generateUniqueConstraintsQuery()
+  local query = ""
+  local groupsConverted = 0
+  local numGroups = self:getNumberOfUniqueGroups()
+  
+  for groupNumber, columnsToConstrain in pairs(self.uniqueGroups) do
+    query = query .. processUniqueColumnGroup(columnsToConstrain)
+    groupsConverted = groupsConverted + 1
+    if groupsConverted < numGroups then
+      query = query .. ", "
+    end
+  end
+  
+  return query
+end
+
+function SqlTable:createTable()
+  local query = "CREATE TABLE " .. 
+            self.tableName .. 
+            self:generateColumnQuery()
+            
+  if (self.foreignKeyTable) then
+     query = query .. ", " .. self.foreignKeyTable:generateConstraintQuery()
+  end
+  
+  if (self.uniqueGroups) then
+    query = query .. ", " .. self:generateUniqueConstraintsQuery()
+  end
+  
+  query = query .. ")"
+  
+  log.logDebug("Creating table with command: " .. query)
   local result = sql.Query(query)
+  
   if (result == false) then
     log.logError("Table " .. self.tableName .. " could not be created! Error was: " .. sql.LastError())
     return false
@@ -180,15 +229,19 @@ end
 Instantiates a new SqlTable class.
 PARAM tablename:String - The name of the table.
 PARAM columns:Table - A lua table of column name (string keys) and column settings (string values)
-PARAM foreignKeyTable:[Nil, ForeignKeyTable] - A ForeignKeyTable filled with ForeignKeyRefs to the necessary constraints. Can be nil if unnecessary.
+PARAM foreignKeyTable:Nil Or ForeignKeyTable - A ForeignKeyTable filled with ForeignKeyRefs to the necessary constraints. Can be nil if unnecessary.
+PARAM uniqueGroups:Nil or Array[ Array[String] ] - An array of string arrays, detailing unique combinations.
 ]]
-function SqlTable:new(tableName, columns, foreignKeyTable)
+function SqlTable:new(tableName, columns, foreignKeyTable, uniqueGroups)
   local newTable = {}
   setmetatable(newTable, self)
   newTable.tableName = tableName
   newTable.columns = columns
   if (foreignKeyTable) then
     newTable.foreignKeyTable = foreignKeyTable
+  end
+  if (uniqueGroups) then
+    newTable.uniqueGroups = uniqueGroups
   end
   return newTable
 end

@@ -1,6 +1,8 @@
 --[[
 Converts all sql tables into test tables with unique names.
 These tables are meant to be populated with random data and deleted after the test has completed.
+The tables are manually inserted into the tablesToConvert list for easy removal if one of them is breaking
+and you are trying to test something else, since just one of them failing will melt the whole function.
 ]]
 function DDDTest.Helpers.makeTables()
   local tables = DDD.Database.Tables
@@ -8,7 +10,12 @@ function DDDTest.Helpers.makeTables()
     PlayerId = tables.PlayerId,
     MapId = tables.MapId,
     RoundId = tables.RoundId,
-    WeaponId = tables.WeaponId
+    WeaponId = tables.WeaponId,
+    WorldKill = tables.WorldKill,
+    CombatDamage = tables.CombatDamage,
+    Healing = tables.Healing,
+    RoundRoles = tables.RoundRoles,
+    PlayerKill = tables.PlayerKill
     }
   local convertedTables = {}
   
