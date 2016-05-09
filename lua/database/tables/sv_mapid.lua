@@ -19,4 +19,4 @@ end
 
 DDD.Database.Tables.MapId = mapIdTable
 mapIdTable:create()
-mapIdTable:addMap()
+--mapIdTable:addMap()

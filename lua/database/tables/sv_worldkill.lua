@@ -1,25 +1,30 @@
 local tables = DDD.Database.Tables
 
-local columns = [[ ( id INTEGER PRIMARY KEY,
-                        round_id INTEGER NOT NULL,
-                        victim_id INTEGER NOT NULL,
-                        round_time REAL NOT NULL,
-                        FOREIGN KEY(round_id) REFERENCES ]] .. tables.RoundId.tableName .. [[(id),
-                        FOREIGN KEY(victim_id) REFERENCES ]] .. tables.PlayerId.tableName .. [[(id))]]
+local columns = { id = "INTEGER PRIMARY KEY",
+                  round_id = "INTEGER NOT NULL",
+                  victim_id = "INTEGER NOT NULL",
+                  round_time = "REAL NOT NULL"
+                }
+                
+local foreignKeys = DDD.Database.ForeignKeyTable:new()
+foreignKeys:addConstraint("round_id", tables.RoundId, "id")
+foreignKeys:addConstraint("victim_id", tables.PlayerId, "id")
                         
-local worldKillTable = DDD.Table:new("ddd_world_kill", columns)
+local worldKillTable = DDD.SqlTable:new("ddd_world_kill", columns, foreignKeys)
 
 --[[
 Adds a row tracking a person's death due to the world (props, falling accidentally, and T-traps).
 Parameters:
 victimId:Integer - The victim's id from the PlayerID table.
-dmgInfo:CTakeDamageInfo - The damage info from the fall/T-trap.
 ]]
-function worldKillTable:addPlayerKill(victimId, attackerId)
+function worldKillTable:addPlayerKill(victimId)
+  local roundIdTable = self:getForeignTableByColumn("round_id")
+  local roundId = roundIdTable:getCurrentRoundId()
+  local roundTime = DDD.CurrentRound:getCurrentRoundTime()
   local queryTable = {
-    round_id = DDD.CurrentRound.RoundId,
+    round_id = roundId,
     victim_id = victimId,
-    round_time = DDD.CurrentRound:getCurrentRoundTime()  
+    round_time = roundTime
   }
   return self:insertTable(queryTable)
 end

@@ -3,30 +3,33 @@ local worldKillTableTest = GUnit.Test:new("WorldKillTable")
 local playerGen = GUnit.Generators.FakePlayer
 
 local function beforeEach()
-  worldKillTableTest.tables = DDDTest.TestHelpers.makeTables()
+  worldKillTableTest.tables = DDDTest.Helpers.makeTables()
 end
 
 local function addRowSpec()
-  local tables = DDDTest.Helpers.makeTables()
+  local tables = worldKillTableTest.tables
+  tables.MapId:addMap()
   
   for i = 1, 100 do
     local fakeVictim = playerGen:new()
-    local fakeAttacker = playerGen:new()
-    local fakeVictimId = tables.PlayerId:addPlayerId(fakeVictim)
-    local fakeAttackerId = tables.PlayerId:addPlayerId(fakeAttacker)
-    print(tostring(fakeVictimId))
-    print(tostring(fakeAttackerId))
-    assert(fakeVictimId == ((i * 2) - 1) && fakeAttackerId == (i * 2), "Fake players were not inserted properly.")
-    local worldKillId = tables.WorldKill:addPlayerKill(fakeVictimId, fakeAttackerId)
+    local fakeRoundId = i
+    
+    local fakeVictimId = tables.PlayerId:addPlayer(fakeVictim)
+    assert(fakeVictimId == i, "Fake players were not inserted properly.")
+    
+    local roundId = tables.RoundId:addRound()
+    assert(roundId == i, "RoundId was not added properly. Got " .. tostring(roundId) .. " instead of " .. tostring(i))
+    
+    local worldKillId = tables.WorldKill:addPlayerKill(fakeVictimId)
     assert(worldKillId == i)
   end
 end
 
 local function afterEach()
-  worldKillTableTest.tables.dropAll()
+  DDDTest.Helpers.dropAll(worldKillTableTest.tables)
   worldKillTableTest.tables = nil
 end
 
 worldKillTableTest:beforeEach(beforeEach)
 worldKillTableTest:afterEach(afterEach)
---worldKillTableTest:addSpec("add rows properly", addRowSpec)
+worldKillTableTest:addSpec("add rows properly", addRowSpec)

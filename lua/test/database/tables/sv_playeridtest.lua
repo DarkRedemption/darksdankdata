@@ -15,7 +15,7 @@ local function addPlayerSpec()
   
   for i = 1, 100 do
     local ply = players[i]
-    local id = playerIdTable:addPlayerId(ply)
+    local id = playerIdTable:addPlayer(ply)
     assert(tonumber(id) == i, "id was " .. tostring(id) .. ", expected " .. i)
   end
   

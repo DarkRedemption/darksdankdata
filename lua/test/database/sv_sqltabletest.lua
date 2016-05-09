@@ -23,6 +23,9 @@ local function tableNameModifySpec()
 end
 
 local function basicSpec()
+    GUnit.assert(sqlTableTest.table.foreignKeyTable):isNil()
+    GUnit.assert(sqlTableTest.table.uniqueGroups):isNil()
+    
     local rowToInsert = {
       name = "testname"
     }
@@ -40,9 +43,27 @@ local function selectSpec()
   assert(selectedValue["name"] == rowToInsert["name"])
 end
 
+local function uniqueConstraintQuerySpec()
+  local uniqueGroups = {}
+  local constraints = {"col1", "col2"}
+  local constraints2 = {"col3", "col4", "col5"}
+  local constraints3 = {"col6", "col12", "col11"}
+  
+  table.insert(uniqueGroups, constraints)
+  table.insert(uniqueGroups, constraints2)
+  table.insert(uniqueGroups, constraints3)
+  
+  sqlTableTest.table.uniqueGroups = uniqueGroups
+  local query = sqlTableTest.table:generateUniqueConstraintsQuery()
+  local expectedResult = "UNIQUE(col1, col2), UNIQUE(col3, col4, col5), UNIQUE(col6, col12, col11)"
+  
+  GUnit.assert(query):shouldEqual(expectedResult)
+end
+
 sqlTableTest:beforeEach(beforeEach)
 sqlTableTest:afterEach(afterEach)
 
-sqlTableTest:addSpec("modify the tablename ", tableNameModifySpec)
+sqlTableTest:addSpec("modify the tablename", tableNameModifySpec)
 sqlTableTest:addSpec("create a table and add a row", basicSpec)
 sqlTableTest:addSpec("select a known column", selectSpec)
+sqlTableTest:addSpec("generate unique constraint queries correctly", uniqueConstraintQuerySpec)

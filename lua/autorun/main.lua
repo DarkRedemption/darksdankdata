@@ -6,7 +6,7 @@ DDD.Gui = {}
 DDD.Misc = {}
 
 if SERVER then
-  local roles = { 
+  local roles = {
     Traitor = 0,
     Innocent = 1,
     Detective = 2
