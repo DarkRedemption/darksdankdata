@@ -6,24 +6,27 @@ local entityIdTable = DDD.Database.Tables.EntityId
 
 local roles = DDD.Database.Roles
 
-local columns = [[ ( id INTEGER PRIMARY KEY,
-                        round_id INTEGER NOT NULL,
-                        player_id INTEGER NOT NULL, 
-                        dna_owner_player_id INTEGER NOT NULL,
-                        entity_found_on INTEGER NOT NULL,
-                        round_time REAL NOT NULL,
-                        FOREIGN KEY(round_id) REFERENCES ]] .. roundIdTable.tableName .. [[(id),
-                        FOREIGN KEY(player_id) REFERENCES ]] .. playerIdTable.tableName .. [[(id),
-                        FOREIGN KEY(dna_owner_player_id) REFERENCES ]] .. playerIdTable.tableName .. [[(id),
-                        FOREIGN KEY(entity_found_on) REFERENCES ]] .. entityIdTable.tableName .. [[(id))]]
-                        
-local dnaTable = DDD.Table:new("ddd_dna", columns)
+local columns = { id = "INTEGER PRIMARY KEY",
+                  round_id = "INTEGER NOT NULL",
+                  finder_id = "INTEGER NOT NULL",
+                  dna_owner_id = "INTEGER NOT NULL",
+                  entity_found_on = "INTEGER NOT NULL",
+                  round_time = "REAL NOT NULL"
+                }
+                
+local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
+foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
+foreignKeyTable:addConstraint("finder_id", playerIdTable, "id")
+foreignKeyTable:addConstraint("dna_owner_id", playerIdTable, "id")
+foreignKeyTable:addConstraint("entity_found_on", entityIdTable, "id")
+              
+local dnaTable = DDD.SqlTable:new("ddd_dna", columns, foreignKeyTable)
 
-function dnaTable:addDnaFound(playerId, dnaOwnerPlayerId, entityFoundOnId)
+function dnaTable:addDnaFound(finderId, dnaOwnerId, entityFoundOnId)
   local insertTable = {
-    round_id = DDD.CurrentRound.roundId,
-    player_id = playerId,
-    dna_owner_player_id = dnaOwnerPlayerId,
+    round_id = self:getForeignTableByColumn("round_id"):getCurrentRoundId(),
+    finder_id = finderId,
+    dna_owner_id = dnaOwnerId,
     entity_found_on = entityFoundOnId,
     round_time = DDD.CurrentRound:getCurrentRoundTime()
   }

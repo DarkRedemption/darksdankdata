@@ -1,11 +1,15 @@
-local playerIdTest = GUnit.Test:new("Player ID Table")
+local playerIdTest = GUnit.Test:new("PlayerIdTable")
+local tables = {}
 
 local function beforeEach()
-  playerIdTest.tables = DDDTest.Helpers.makeTables()
+  tables = DDDTest.Helpers.makeTables()
+end
+
+local function afterEach()
+  DDDTest.Helpers.dropAll(tables)
 end
 
 local function addPlayerSpec()
-  local playerIdTable = playerIdTest.tables.PlayerId
   local players = {}
   
   for i = 1, 100 do
@@ -15,20 +19,15 @@ local function addPlayerSpec()
   
   for i = 1, 100 do
     local ply = players[i]
-    local id = playerIdTable:addPlayer(ply)
-    assert(tonumber(id) == i, "id was " .. tostring(id) .. ", expected " .. i)
+    local id = tables.PlayerId:addPlayer(ply)
+    GUnit.assert(id):shouldEqual(i)
   end
   
   for i = 1, 100 do
     local ply = players[i]
-    local selectedPlyId = playerIdTable:getPlayerId(ply)
-    assert(tonumber(selectedPlyId) == i, "Could not select player. id was " .. selectedPlyId .. ", expected " .. tostring(i))
+    local selectedPlyId = tables.PlayerId:getPlayerId(ply)
+    GUnit.assert(selectedPlyId):shouldEqual(i)
   end
-end
-
-local function afterEach()
-  DDDTest.Helpers.dropAll(playerIdTest.tables)
-  playerIdTest.tables = nil
 end
 
 playerIdTest:beforeEach(beforeEach)

@@ -15,7 +15,12 @@ function DDDTest.Helpers.makeTables()
     CombatDamage = tables.CombatDamage,
     Healing = tables.Healing,
     RoundRoles = tables.RoundRoles,
-    PlayerKill = tables.PlayerKill
+    PlayerKill = tables.PlayerKill,
+    ShopItem = tables.ShopItem,
+    Purchases = tables.Purchases,
+    RoundResult = tables.RoundResult,
+    EntityId = tables.EntityId,
+    Dna = tables.Dna
     }
   local convertedTables = {}
   

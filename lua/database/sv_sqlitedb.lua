@@ -2,7 +2,6 @@
 sql.Query("PRAGMA foreign_keys = ON;")
 
 --Load order is important. Be careful changing these!
-include("sv_table.lua")
 include("sv_foreignkeyref.lua")
 include("sv_foreignkeytable.lua")
 include("sv_sqltable.lua")
@@ -18,7 +17,7 @@ include("tables/sv_purchase.lua")
 include("tables/sv_entity.lua")
 include("tables/sv_dna.lua")
 include("tables/sv_roundresult.lua")
-include("tables/sv_damagetype.lua")
+--include("tables/sv_damagetype.lua")
 include("queries/sv_queries.lua")
 include("queries/sv_playerstats.lua")
 include("tables/sv_worldkill.lua")
