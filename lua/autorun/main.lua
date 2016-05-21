@@ -26,7 +26,6 @@ if SERVER then
   resource.AddFile("materials/ddd/icons/i.png")
   include("misc/sh_inheritsfrom.lua")
   include("misc/sv_enums.lua")
-  include("misc/sv_tuple2.lua")
   include("misc/sv_logging.lua")
   include("database/sv_sqlitedb.lua")
   include("config/sv_config.lua")

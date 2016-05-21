@@ -101,7 +101,7 @@ function SqlTable:create()
    if (!sql.TableExists(self.tableName)) then
       log.logDebug("Table " .. self.tableName .. " does not exist. Now creating.")
     if (!self:createTable()) then
-      log.logError("Failed to create table." .. self.tableName)
+      log.logError("Failed to create table " .. self.tableName)
     end
    else
     log.logDebug("Table " .. self.tableName .. " already exists.")
@@ -157,13 +157,13 @@ function SqlTable:insertTable(luaTable)
     local lastId = self:query("SqlTable:insertTable", "SELECT last_insert_rowid() AS id", 1, "id")
     return tonumber(lastId)
   else
-    log.logError("Could not insert into table " .. self.tableName .. "!")
+    log.logError("Could not insert into table " .. self.tableName .. "!\n\tError was:" .. sql.LastError())
     return false
   end
 end
 
 local function queryError(tableName, funcName, query)
-  log.logError("SqlTable:query via " .. funcName ..": Query on " .. tableName .. " failed. Query was: " .. query .. "\nError was: " ..sql.LastError())
+  log.logError("SqlTable:query via " .. funcName ..": Query on " .. tableName .. " failed. Query was: " .. query .. "\nError was: " .. sql.LastError())
 end
 
 --[[

@@ -18,7 +18,7 @@ end
 function playerIdTable:getPlayerIdFromSteamId(steamId)
   local query = "SELECT id FROM " .. self.tableName .. " WHERE steam_id = '" .. steamId .. "'"
   local result = self:query("getPlayerIdFromSteamId", query, 1, "id")
-  return result
+  return tonumber(result)
 end
 
 function playerIdTable:getPlayerId(ply)

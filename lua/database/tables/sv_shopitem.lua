@@ -1,11 +1,17 @@
-local columns = [[ (id INTEGER PRIMARY KEY,
-                        name STRING UNIQUE NOT NULL)]]
+local columns = {id = "INTEGER PRIMARY KEY",
+                 name = "STRING UNIQUE NOT NULL"
+                 }
                         
-local shopItemIdTable = DDD.Table:new("ddd_shop_item", columns)
+local shopItemTable = DDD.SqlTable:new("ddd_shop_item", columns)
 
-function shopItemIdTable:addItem(equipment, is_item)
+--[[
+Adds an item to the item ID table.
+PARAM equipment:String or Entity - The name of the equipment, or the entity if it's an item.
+PARAM isItem:Boolean - Whether or not this is a droppable in-game item.
+]]
+function shopItemTable:addItem(equipment, isItem)
   local itemName = ""
-  if (is_item) then
+  if (isItem) then
     itemName = equipment:GetName()
   else
     itemName = equipment
@@ -17,12 +23,10 @@ function shopItemIdTable:addItem(equipment, is_item)
   return self:insertTable(queryTable)
 end
 
-function shopItemIdTable:getItemId(equipment)
+function shopItemTable:getItemId(equipment)
   local query = "SELECT id FROM " .. self.tableName .. " WHERE name == \"" .. equipment .. "\""
-  return tonumber(self:query("shopItemIdTable:getItemId", query, 1, "id"))
+  return tonumber(self:query("shopItemTable:getItemId", query, 1, "id"))
 end
 
-shopItemIdTable:create()
-DDD.Database.Tables.ShopItemId = shopItemIdTable
-
-
+shopItemTable:create()
+DDD.Database.Tables.ShopItem = shopItemTable
