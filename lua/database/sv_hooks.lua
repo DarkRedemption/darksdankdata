@@ -4,30 +4,39 @@ DDD.Hooks = {}
 local tables = DDD.Database.Tables
 
 hook.Add("PlayerInitialSpawn", "Add player if they do not exist in the table.", function(ply)
-  tables.PlayerId:addPlayerId(ply)
+  tables.PlayerId:addPlayer(ply)
 end)
 
 --
 -- Purchase Tracking Hooks
 --
   
-hook.Add("TTTOrderedEquipment", "DDDTrackPurchases", function(ply, equipment, is_item)
-  tables.ShopItemId:addItem(equipment)
-  local itemId = tables.ShopItemId:getItemId(equipment)
+function DDD.Hooks.trackPurchases(tables, ply, equipment, isItem)
+  tables.ShopItem:addItem(equipment, isItem)
+  local itemId = tables.ShopItem:getItemId(equipment)
   local playerId = tables.PlayerId:getPlayerId(ply)
-  purchasesTable:addPurchase(tonumber(playerId), tonumber(itemId))
+  --Return the id for testing purposes.
+  return tables.Purchases:addPurchase(tonumber(playerId), tonumber(itemId))
+end
+
+hook.Add("TTTOrderedEquipment", "DDDTrackPurchases", function(ply, equipment, is_item)
+  DDD.Hooks.trackPurchases(tables, ply, equipment, is_item)
 end)
 
 --
 -- Corpse-related hooks
 --
 
-hook.Add("TTTFoundDNA", "DDDTrackDnaFound", function(ply, dna_owner, ent)
-  local playerId = tables.PlayerId:getPlayerId(ply)
-  local dnaFoundOwnerId = tables.PlayerId:getPlayerId(dna_owner)
-  tables.EntityId:addEntity(ent)
-  local entityFoundOnId = tables.EntityId:getEntityId(ent)
-  tables.Dna:addDnaFound(playerId, dnaFoundOwnerId, entityFoundOnId)
+function DDD.Hooks.trackDnaDiscovery(tables, finder, dnaOwner, entityFoundOn)
+  local playerId = tables.PlayerId:getPlayerId(finder)
+  local dnaFoundOwnerId = tables.PlayerId:getPlayerId(dnaOwner)
+  tables.EntityId:addEntity(entityFoundOn)
+  local entityFoundOnId = tables.EntityId:getEntityId(entityFoundOn)
+  return tables.Dna:addDnaFound(playerId, dnaFoundOwnerId, entityFoundOnId)
+end
+
+hook.Add("TTTFoundDNA", "DDDTrackDnaFound", function(finder, dnaOwner, entityFoundOn)
+  DDD.Hooks.trackDnaDiscovery(tables, finder, dnaOwner, ent)
 end)
 
 --
@@ -37,15 +46,25 @@ end)
 hook.Add("TTTEndRound", "DDDTrackRoundResult", function(result)
     tables.RoundResult:addResult(result)
   end)
-  
-local function handleNilAttackerKill(tableList, victim, dmgInfo)
-  local victimId = tableList.PlayerId:getPlayerId(victim)
-  if (victim.was_pushed && dmgInfo.IsDamageType(DMG_FALL)) then
-    local attackerId = tableList.PlayerId:getPlayerId(victim.was_pushed.att)
-    local weaponId = tableList.WeaponId:getWeaponIdAndAddIfNotExists(victim.was_pushed.wep .. "_push")
-    tableList.KillInfo:addPlayerKill(victimId, attackerId, weaponId, dmgInfo)
+ 
+local function handlePushKill(tables, victim, damageInfo)
+  local victimId = tables.PlayerId:getPlayerId(victim)
+  local attackerId = tables.PlayerId:getPlayerId(victim.was_pushed.att)
+  local weaponId = tables.WeaponId:getOrAddWeaponId(victim.was_pushed.wep)
+  return tables.PlayerPushKill:addKill(victimId, attackerId, weaponId, damageInfo)
+end
+
+--[[
+Handles all kills from attackers that the game claims do not exist.
+This means kills from the world, as well as pushing weapons
+(which do have an attacker we can derive)
+]]
+local function handleNilAttackerKill(tables, victim, damageInfo)
+  if (victim.was_pushed && damageInfo:IsDamageType(DMG_FALL)) then
+    return handlePushKill(tables, victim, damageInfo)
   else
-    tableList.WorldKill:addPlayerKill(victim, dmgInfo)
+    local victimId = tables.PlayerId:getPlayerId(victim)
+    return tables.WorldKill:addPlayerKill(victimId, damageInfo)
   end
 end
 
@@ -53,15 +72,15 @@ end
 -- Hooks for damage and kills
 --
 
-function DDD.Hooks.trackPlayerDeath(tableList, victim, attacker, damageInfo)
+function DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
   if (attacker == nil) then
-      handleNilAttackerKill(victim, dmgInfo)
+      return handleNilAttackerKill(tables, victim, damageInfo)
     else
-      local victimId = tableList.PlayerId:getPlayerId(victim)
-      local attackerId = tableList.PlayerId:getPlayerId(attacker)
+      local victimId = tables.PlayerId:getPlayerId(victim)
+      local attackerId = tables.PlayerId:getPlayerId(attacker)
       local weaponClass = DDD.determineWeapon(damageInfo)
-      local weaponId = tableList.WeaponId:getWeaponIdAndAddIfNotExists(weaponClass)
-      tables.KillInfo:addPlayerKill(victimId, attackerId, weaponId)
+      local weaponId = tables.WeaponId:getOrAddWeaponId(weaponClass)
+      return tables.PlayerKill:addKill(victimId, attackerId, weaponId)
     end
 end
 
@@ -71,29 +90,32 @@ hook.Add("DoPlayerDeath", "DDDTrackPlayerDeath", function(victim, attacker, dama
   end
 )
 
-local function handleNilAttackerDamage(victim, dmgInfo)
+local function handleNilAttackerDamage(tables, victim, damageInfo)
   local victimId = tables.PlayerId:getPlayerId(victim)
   if (victim.was_pushed) then
     local attackerId = tables.PlayerId:getPlayerId(victim.was_pushed.att)
-    local weaponId = tables.WeaponId:getWeaponIdAndAddIfNotExists(victim.was_pushed.wep .. "_push")
-    tables.CombatDamage:addPushDamage(victimId, attackerId, weaponId, dmgInfo)
+    local weaponId = tables.WeaponId:getOrAddWeaponId(victim.was_pushed.wep .. "_push")
+    return tables.CombatDamage:addPushDamage(victimId, attackerId, weaponId, damageInfo)
   else
-    tables.WorldDamage:addDamage(victimId, dmgInfo)
+    return tables.WorldDamage:addDamage(victimId, damageInfo)
   end
 end
 
-local function trackDamage(victim, dmgInfo)
+function DDD.Hooks.trackDamage(tables, victim, damageInfo)
+  local attacker = damageInfo:GetAttacker()
   if (attacker == nil) then
-    handleNilAttackerDamage(victimId, victim, dmgInfo)
+    return handleNilAttackerDamage(tables, victim, damageInfo)
   else
+    local weaponClass = damageInfo:GetInflictor():GetClass()
     local victimId = tables.PlayerId:getPlayerId(victim)
     local attackerId = tables.PlayerId:getPlayerId(attacker)
-    tables.CombatDamage:addDamage(victimId, attacker, dmgInfo)
+    local weaponId = tables.WeaponId:getOrAddWeaponId(weaponClass)
+    return tables.CombatDamage:addDamage(victimId, attackerId, weaponId, damageInfo)
   end
 end
 
-hook.Add("EntityTakeDamage", "DDDTrackDamage", function(victim, dmgInfo)
+hook.Add("EntityTakeDamage", "DDDTrackDamage", function(victim, damageInfo)
   if (victim:GetClass() == "player" && DDD.CurrentRound.isActive) then
-    trackDamage(victim, dmgInfo)
+    DDD.Hooks.trackDamage(tables, victim, damageInfo)
   end
 end)

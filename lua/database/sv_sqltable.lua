@@ -204,16 +204,16 @@ function SqlTable:query(funcName, query, resultRow, resultColumn)
 end
 
 --[[
-Deletes the test table.
-Should always be run after a test, and probably never run anywhere else.
+Deletes the table.
+Should generally not be run unless you made a test table or don't have any real/relevant data in your table.
 ]]
 function SqlTable:delete()
   local query = "DROP TABLE " .. self.tableName
-  sql.Query(query)
+  return self:query("SqlTable:delete", query)
 end
 
 function SqlTable:drop()
-  self:delete()
+  return self:delete()
 end
 
 --[[

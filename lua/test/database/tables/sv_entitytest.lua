@@ -14,6 +14,7 @@ local function addEntityTest()
     local entity = GUnit.Generators.FakeEntity:new()
     local id = tables.EntityId:addEntity(entity)
     GUnit.assert(id):shouldEqual(i)
+    
     local entityIdByName = tables.EntityId:getEntityId(entity)
     GUnit.assert(id):shouldEqual(entityIdByName)
   end
@@ -23,3 +24,4 @@ entityTest:beforeEach(beforeEach)
 entityTest:afterEach(afterEach)
 
 entityTest:addSpec("add new entities correctly", addEntityTest)
+entityTest:addSpec("get the entity id if it already exists", GUnit.pending)

@@ -1,5 +1,4 @@
-local weaponIdTest = GUnit.Test:new("Weapon ID Table")
-
+local weaponIdTest = GUnit.Test:new("WeaponIdTable")
 local tables = {}
 
 local function beforeEach()
@@ -16,9 +15,9 @@ local function addWeaponIdSpec()
   for i = 1, 100 do
     local randomWeaponName = GUnit.Generators.StringGen.generateAlphaNum()
     local id = tables.WeaponId:addWeapon(randomWeaponName)
-    assert(id == i)
+    GUnit.assert(id):shouldEqual(i)
     local selectedWeaponId = tables.WeaponId:getWeaponId(randomWeaponName)
-    assert(selectedWeaponId == i, "Expected " .. selectedWeaponId .. ", got " .. i)
+    GUnit.assert(selectedWeaponId):shouldEqual(i)
   end
 end
 
@@ -26,9 +25,9 @@ local function uniqueWeaponIdSpec()
   for i = 1, 100 do
     local randomWeaponName = GUnit.Generators.StringGen.generateAlphaNum()
     local id = tables.WeaponId:addWeapon(randomWeaponName)
-    assert(id == i)
-    local readdId = tables.WeaponId:addWeapon(randomWeaponName)
-    assert(readdId == false, "Expected 0, got " .. tostring(readdId))
+    GUnit.assert(id):shouldEqual(i)
+    local addAgainId = tables.WeaponId:addWeapon(randomWeaponName)
+    GUnit.assert(addAgainId):shouldEqual(false)
   end
 end
 

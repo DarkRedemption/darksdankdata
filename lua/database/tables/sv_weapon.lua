@@ -18,11 +18,10 @@ function weaponIdTable:getWeaponId(weaponClass)
   return tonumber(result)
 end
 
-function weaponIdTable:getWeaponIdAndAddIfNotExists(weaponClass)
+function weaponIdTable:getOrAddWeaponId(weaponClass)
   local id = self:getWeaponId(weaponClass)
-  if (id == -1) then
-    weaponIdTable:addWeapon(weaponClass)
-    return weaponIdTable:getWeaponId(weaponClass)
+  if (id < 1) then
+    return self:addWeapon(weaponClass)
   else
     return id
   end
