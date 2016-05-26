@@ -2,7 +2,6 @@ local playerIdTable = DDD.Database.Tables.PlayerId
 local weaponIdTable = DDD.Database.Tables.WeaponId
 local mapIdTable = DDD.Database.Tables.MapId
 local roundIdTable = DDD.Database.Tables.RoundId
-local damageTypeTable = DDD.Database.Tables.DamageType
 
 local roles = DDD.Database.Roles
 

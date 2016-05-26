@@ -2,15 +2,18 @@
 
 local tables = DDD.Database.Tables
 
-local columns = [[ (id INTEGER PRIMARY KEY,
-                    round_id INTEGER NOT NULL,
-                    victim_id INTEGER NOT NULL, 
-                    round_time REAL NOT NULL,
-                    damage_dealt INTEGER NOT NULL,
-                    FOREIGN KEY(round_id) REFERENCES ]] .. roundIdTable.tableName .. [[(id),
-                    FOREIGN KEY(victim_id) REFERENCES ]] .. playerIdTable.tableName .. [[(id))]]
+local columns = {id = "INTEGER PRIMARY KEY",
+                round_id = "INTEGER NOT NULL",
+                victim_id = "INTEGER NOT NULL", 
+                round_time = "REAL NOT NULL",
+                damage_dealt = "INTEGER NOT NULL"
+              }
+              
+local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
+foreignKeyTable:addConstraint("round_id", tables.RoundId, "id")
+foreignKeyTable:addConstraint("victim_id", tables.PlayerId, "id")
                         
-local worldDamageTable = DDD.Table:new("ddd_world_damage", columns)
+local worldDamageTable = DDD.SqlTable:new("ddd_world_damage", columns, foreignKeyTable)
 
 --[[
 Adds a row tracking the damage dealt to a person by the world.
@@ -20,12 +23,12 @@ dmgInfo:CTakeDamageInfo - The damage info from the fall/T-trap.
 ]]
 function worldDamageTable:addDamage(victimId, dmgInfo)
   local queryTable = {
-    round_id = DDD.CurrentRound.roundId
-    victim_id = victimId
-    round_time = DDD.CurrentRound.getCurrentRoundTime()
-    damage_dealt = dmgInfo.getDamage()
+    round_id = self:getForeignTableByColumn("round_id"):getCurrentRoundId(),
+    victim_id = victimId,
+    round_time = DDD.CurrentRound:getCurrentRoundTime(),
+    damage_dealt = dmgInfo:GetDamage()
   }
-  self:insertTable(queryTable)
+  return self:insertTable(queryTable)
 end
 
 worldDamageTable:create()

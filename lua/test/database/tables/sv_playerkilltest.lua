@@ -26,9 +26,9 @@ local function addPlayerKillSpec()
   end
 end
 
---Need to make the RoundRoles table test before uncommenting this.
---[[
+
 local function getKillsAsRoleSpec()
+  GUnit.pending()
   local roles = DDD.Database.Roles
   
   local attacker = GUnit.Generators.FakePlayer:new()
@@ -42,9 +42,9 @@ local function getKillsAsRoleSpec()
     local killId = tables.PlayerKill:addKill(victimId, attackerId, weaponId)
   end
 end
-]]
 
 playerKillTest:beforeEach(beforeEach)
 playerKillTest:afterEach(afterEach)
 
 playerKillTest:addSpec("add a new player kill", addPlayerKillSpec)
+playerKillTest:addSpec("get kills as a specific role", getKillsAsRoleSpec)

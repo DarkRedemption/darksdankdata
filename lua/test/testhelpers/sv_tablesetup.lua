@@ -20,7 +20,9 @@ function DDDTest.Helpers.makeTables()
     Purchases = tables.Purchases,
     RoundResult = tables.RoundResult,
     EntityId = tables.EntityId,
-    Dna = tables.Dna
+    Dna = tables.Dna,
+    WorldDamage = tables.WorldDamage,
+    PlayerPushKill = tables.PlayerPushKill
     }
   local convertedTables = {}
   
@@ -37,7 +39,10 @@ function DDDTest.Helpers.makeTables()
 end
 
 function DDDTest.Helpers.dropAll(tables)
-  for key, sqlTable in pairs(tables) do
-    sqlTable:drop()
+  --Needed until I add sorted tables.
+  local dropOrder = {"PlayerPushKill", "WorldDamage", "Dna", "EntityId", "RoundResult", "Purchases", "ShopItem", "PlayerKill", "RoundRoles", "Healing", "CombatDamage", "WorldKill", "WeaponId", "RoundId", "MapId", "PlayerId"}
+  local arraySize = table.getn(dropOrder)
+  for i=1, arraySize do
+    tables[dropOrder[i]]:drop()
   end
 end

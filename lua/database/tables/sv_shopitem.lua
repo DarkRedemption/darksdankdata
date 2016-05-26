@@ -20,11 +20,12 @@ function shopItemTable:addItem(equipment, isItem)
   local queryTable = {
     name = itemName
   }
+  
   return self:insertTable(queryTable)
 end
 
 function shopItemTable:getItemId(equipment)
-  local query = "SELECT id FROM " .. self.tableName .. " WHERE name == \"" .. equipment .. "\""
+  local query = "SELECT id FROM " .. self.tableName .. " WHERE name == \"" .. equipment:GetName() .. "\""
   return tonumber(self:query("shopItemTable:getItemId", query, 1, "id"))
 end
 
