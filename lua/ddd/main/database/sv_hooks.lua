@@ -39,7 +39,7 @@ function DDD.Hooks.trackDnaDiscovery(tables, finder, dnaOwner, entityFoundOn)
 end
 
 hook.Add("TTTFoundDNA", "DDDTrackDnaFound", function(finder, dnaOwner, entityFoundOn)
-  DDD.Hooks.trackDnaDiscovery(tables, finder, dnaOwner, ent)
+  DDD.Hooks.trackDnaDiscovery(tables, finder, dnaOwner, entityFoundOn)
 end)
 
 --
@@ -210,7 +210,7 @@ end)
 function DDD.Hooks.TrackRadioCallouts(tables, ply, commandName, commandTarget)
   local commandId = tables.RadioCommand:getOrAddCommand(commandName)
   local commandUsedId = tables.RadioCommandUsed:addCommandUsed(ply, commandName, commandTarget)
-  if (commandTarget != "quick_nobody" and commandTarget != "quick_corpse") then
+  if (commandTarget != "quick_nobody" and commandTarget != "quick_corpse" and commandTarget != "quick_disg") then
     tables.RadioCommandTarget:addCommandTarget(commandTarget, commandUsedId)
   end
 end

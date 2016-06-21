@@ -7,7 +7,7 @@ DDD.Gui.Achievements = {}
 DDD.Gui.Rank = {}
 DDD.Gui.Stats = {}
 DDD.Misc = {}
-DDD.version = "v0.1.0-RC1"
+DDD.version = "v0.1.0-RC2"
 
 if SERVER then
   local roles = {
@@ -50,7 +50,6 @@ if CLIENT then
     local red = Color(255, 0, 0, 255)
     local yellow = Color(255, 255, 0, 255)
     chat.AddText(red, "This server is running Dark's Dank Data " .. DDD.version .. ".")
-    chat.AddText(red, "DDD is currently in beta. Stats will be cleared when a stable version is released.")
     chat.AddText(red, "Type ", yellow, "!dank", red, " to see your stats.")
   end)
 end
