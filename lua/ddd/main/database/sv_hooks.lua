@@ -9,17 +9,22 @@ end)
 
 hook.Add("PlayerInitialSpawn", "DDDAddNewPlayer", function(ply)
   tables.PlayerId:addPlayer(ply)
+  tables.AggregateStats:addPlayer(tables.PlayerId:getPlayerId(ply))
 end)
 
 --
 -- Purchase Tracking Hooks
 --
-  
+
 function DDD.Hooks.trackPurchases(tables, ply, equipment, isItem)
   local itemId = tables.ShopItem:getOrAddItemId(equipment, isItem)
   local playerId = tables.PlayerId:getPlayerId(ply)
   --Return the id for testing purposes.
-  return tables.Purchases:addPurchase(tonumber(playerId), tonumber(itemId))
+  local purchaseResult = tables.Purchases:addPurchase(tonumber(playerId), tonumber(itemId))
+  if (purchaseResult != nil and purchaseResult != false) then
+    tables.AggregateStats:incrementItemPurchases(playerId, ply:GetRole(), equipment)
+  end
+  return purchaseResult
 end
 
 hook.Add("TTTOrderedEquipment", "DDDTrackPurchases", function(ply, equipment, is_item)
@@ -82,7 +87,11 @@ local function handleNilAttackerKill(tables, victim, damageInfo)
     return handlePushKill(tables, victim, damageInfo)
   else
     local victimId = tables.PlayerId:getPlayerId(victim)
-    return tables.WorldKill:addPlayerKill(victimId, damageInfo)
+    local addKillResult = tables.WorldKill:addPlayerKill(victimId, damageInfo)
+    if (addKillResult != nil and addKillResult != false) then
+      tables.AggregateStats:incrementWorldDeaths(victimId, victim:GetRole())
+    end
+    return addKillResult
   end
 end
 
@@ -98,7 +107,12 @@ function DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
       local attackerId = tables.PlayerId:getPlayerId(attacker)
       local weaponClass = DDD.determineWeapon(damageInfo)
       local weaponId = tables.WeaponId:getOrAddWeaponId(weaponClass)
-      return tables.PlayerKill:addKill(victimId, attackerId, weaponId)
+      local addKillResult = tables.PlayerKill:addKill(victimId, attackerId, weaponId)
+      if (addKillResult != nil and addKillResult != false) then
+        tables.AggregateStats:incrementKills(attackerId, attacker:GetRole(), victim:GetRole())
+        tables.AggregateStats:incrementDeaths(victimId, victim:GetRole(), attacker:GetRole())
+      end
+      return addKillResult
     end
 end
 

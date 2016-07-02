@@ -21,6 +21,8 @@ foreignKeyTable:addConstraint("dna_owner_id", playerIdTable, "id")
 foreignKeyTable:addConstraint("entity_found_on", entityIdTable, "id")
               
 local dnaTable = DDD.SqlTable:new("ddd_dna", columns, foreignKeyTable)
+dnaTable:addIndex("finderIndex", {"finder_id"})
+dnaTable:addIndex("ownerIndex", {"dna_owner_id"})
 
 function dnaTable:addDnaFound(finderId, dnaOwnerId, entityFoundOnId)
   local insertTable = {

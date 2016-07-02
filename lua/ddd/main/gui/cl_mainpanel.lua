@@ -24,14 +24,13 @@ local function addStatsPropertySheet(mainPropertySheet)
 end
 
 local function addRankPropertySheet(mainPropertySheet)
-      local rankPropertySheet = vgui.Create( "DPropertySheet", mainPropertySheet )
-      DDD.Gui.Rank.createEnemyKdTab(rankPropertySheet)
-      DDD.Gui.Rank.createEnemyKillTab(rankPropertySheet)
-      rankPropertySheet:Dock(FILL)
-      DDD.Gui.setSizeToParent(rankPropertySheet)
-      mainPropertySheet:AddSheet("Rank", rankPropertySheet, "icon16/chart_bar.png")
+    local rankPropertySheet = vgui.Create( "DPropertySheet", mainPropertySheet )
+    DDD.Gui.Rank.createEnemyKdTab(rankPropertySheet)
+    DDD.Gui.Rank.createEnemyKillTab(rankPropertySheet)
+    rankPropertySheet:Dock(FILL)
+    DDD.Gui.setSizeToParent(rankPropertySheet)
+    mainPropertySheet:AddSheet("Rank", rankPropertySheet, "icon16/chart_bar.png")
 end
-
 
 function DDD.createMainFrame()
   local mainFrame = vgui.Create( "DFrame" )

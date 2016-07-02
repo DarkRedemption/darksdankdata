@@ -1,10 +1,11 @@
 local function calculateInnocentAllKD(table)
-  return (table["InnocentTraitorK"] + table["InnocentInnocentK"] + table["InnocentDetectiveK"]) / 
-         (table["InnocentTraitorD"] + table["InnocentDetectiveD"] + table["InnocentInnocentD"])
+  return (table["innocent_traitor_kills"] + table["innocent_innocent_kills"] + table["innocent_detective_kills"]) / 
+         (table["innocent_traitor_deaths"] + table["innocent_detective_deaths"] + table["innocent_innocent_deaths"] + table["innocent_world_deaths"])
 end
 
 local function calculateInnocentNonAllyKD(table)
-  return table["InnocentTraitorK"] / (table["InnocentTraitorD"] + table["InnocentDetectiveD"] + table["InnocentInnocentD"])
+  return table["innocent_traitor_kills"] / 
+        (table["innocent_traitor_deaths"] + table["innocent_detective_deaths"] + table["innocent_innocent_deaths"] + table["innocent_world_deaths"])
 end
 
 local function createInnocentText(overviewPanel)
@@ -38,14 +39,15 @@ local function populateListView(list, table)
   list:AddLine("Enemy K/D", calculateInnocentNonAllyKD(table))
   --list:AddLine("Peak Enemy K/D", "0")
   list:AddLine("Total K/D (includes ally kills)", calculateInnocentAllKD(table))
-  list:AddLine("Traitors Killed", table["InnocentTraitorK"])
-  list:AddLine("Innocents Killed", table["InnocentInnocentK"])
-  list:AddLine("Detectives Killed", table["InnocentDetectiveK"])
-  list:AddLine("Total Allies Killed", table["InnocentInnocentK"] + table["InnocentDetectiveK"])
-  list:AddLine("Times Killed by Traitors", table["InnocentTraitorD"])
-  list:AddLine("Times Killed by Innocents", table["InnocentInnocentD"] - table["InnocentSuicides"])
-  list:AddLine("Times Killed by Detectives", table["InnocentDetectiveD"])
-   list:AddLine("Total Times Killed by Allies", table["InnocentInnocentD"] + table["InnocentDetectiveD"] - table["InnocentSuicides"])
+  list:AddLine("Traitors Killed", table["innocent_traitor_kills"])
+  list:AddLine("Innocents Killed", table["innocent_innocent_kills"])
+  list:AddLine("Detectives Killed", table["innocent_detective_kills"])
+  list:AddLine("Total Allies Killed", table["innocent_innocent_kills"] + table["innocent_detective_kills"])
+  list:AddLine("Times Killed by Traitors", table["innocent_traitor_deaths"])
+  list:AddLine("Times Killed by Innocents", table["innocent_innocent_deaths"] - table["InnocentSuicides"])
+  list:AddLine("Times Killed by Detectives", table["innocent_detective_deaths"])
+  list:AddLine("Times Killed by the World", table["innocent_world_deaths"])
+   list:AddLine("Total Times Killed by Allies", table["innocent_innocent_deaths"] + table["innocent_detective_deaths"] - table["InnocentSuicides"])
    list:AddLine("Suicides", table["InnocentSuicides"])
   --list:AddLine("Detectives Saved", "0") --Kill a traitor actively attacking a detective
   --list:AddLine("Traitor Killstreaks Stopped", "0")

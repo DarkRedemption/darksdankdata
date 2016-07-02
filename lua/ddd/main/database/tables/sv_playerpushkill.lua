@@ -20,6 +20,12 @@ foreignKeyTable:addConstraint("attacker_id", playerIdTable, "id")
 foreignKeyTable:addConstraint("weapon_id", weaponIdTable, "id")
   
 local playerPushKillTable = DDD.SqlTable:new("ddd_player_push_kill", columns, foreignKeyTable)
+playerIdTable:addIndex("roundIdIndex", {"round_id"})
+playerIdTable:addIndex("victimIndex", {"victim_id"})
+playerIdTable:addIndex("attackerIndex", {"attacker_id"})
+playerIdTable:addIndex("attackerVsVictimIndex", {"attacker_id, victim_id"})
+playerIdTable:addIndex("killsWithWeaponIndex", {"attacker_id, weapon_id"})
+playerIdTable:addIndex("deathsFromWeaponIndex", {"victim_id, weapon_id"})
 
 function playerPushKillTable:addKill(victimId, attackerId, weaponId)
   local queryTable = {

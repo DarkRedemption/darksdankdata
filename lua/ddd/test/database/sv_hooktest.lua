@@ -2,6 +2,26 @@ local hookTest = GUnit.Test:new("DatabaseHooks")
 local shopItemGen = DDDTest.Helpers.Generators.ShopItemGen
 local tables = {}
 
+local traitorValidPurchases = { "1",
+                                "2",
+                                "weapon_ttt_flaregun",
+                                "weapon_ttt_knife",
+                                "weapon_ttt_teleport",
+                                "weapon_ttt_radio",
+                                "weapon_ttt_push",
+                                "weapon_ttt_sipistol",
+                                "weapon_ttt_decoy",
+                                "weapon_ttt_phammer",
+                                "weapon_ttt_c4"}
+                              
+  local detectiveValidPurchases = { "2", --Forget the body armor since you start with it
+                                "weapon_ttt_beacon",
+                                "weapon_ttt_defuser",
+                                "weapon_ttt_teleport",
+                                "weapon_ttt_binoculars",
+                                "weapon_ttt_stungun",
+                                "weapon_ttt_health_station"}
+                              
 local function beforeEach()
   tables = DDDTest.Helpers.makeTables()
   tables.MapId:addMap()
@@ -16,10 +36,19 @@ local function trackPurchasesSpec()
     tables.RoundId:addRound()
     local player = GUnit.Generators.FakePlayer:new()
     tables.PlayerId:addPlayer(player)
-    local equipment = shopItemGen:new():GetName()
     local isItem = math.random(0, 1)
-      
-    local purchaseId = DDD.Hooks.trackPurchases(tables, player, equipment, isItem)
+    
+    local purchaserRole = math.random(1, 2)
+    player:SetRole(purchaserRole)
+    
+    local thisRoundsPurchase
+    if purchaserRole == 1 then
+      thisRoundsPurchase = traitorValidPurchases[math.random(1, #traitorValidPurchases)]
+    else
+      thisRoundsPurchase = detectiveValidPurchases[math.random(1, #detectiveValidPurchases)]
+    end
+    
+    local purchaseId = DDD.Hooks.trackPurchases(tables, player, thisRoundsPurchase, isItem)
     
     GUnit.assert(purchaseId):shouldEqual(i)
   end

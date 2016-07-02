@@ -18,6 +18,7 @@ foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
 foreignKeyTable:addConstraint("weapon_id", tables.WeaponId, "id")
                         
 local shotsFiredTable = DDD.SqlTable:new("ddd_shots_fired", columns, foreignKeyTable)
+shotsFiredTable:addIndex("playerAndWeaponIndex", {"player_id", "weapon_id"})
 
 function shotsFiredTable:addShot(player, attackType)
   local roundIdTable = self:getForeignTableByColumn("round_id")

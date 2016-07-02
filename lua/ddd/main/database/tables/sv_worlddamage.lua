@@ -15,6 +15,7 @@ foreignKeyTable:addConstraint("round_id", tables.RoundId, "id")
 foreignKeyTable:addConstraint("victim_id", tables.PlayerId, "id")
                         
 local worldDamageTable = DDD.SqlTable:new("ddd_world_damage", columns, foreignKeyTable)
+worldDamageTable:addIndex("victimIndex", "victim_id")
 
 --[[
 Adds a row tracking the damage dealt to a person by the world.

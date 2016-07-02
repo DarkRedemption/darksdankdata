@@ -129,5 +129,4 @@ playerStatsTest:beforeEach(beforeEach)
 playerStatsTest:afterEach(afterEach)
 
 playerStatsTest:addSpec("get the right number of rounds played in a role", roundsPlayedSpec)
-
 playerStatsTest:addSpec("get the right number of assists in a role", getRoleAssistsSpec)

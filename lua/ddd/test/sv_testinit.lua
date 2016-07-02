@@ -2,6 +2,8 @@ DDDTest = {}
 DDDTest.Helpers = {}
 DDDTest.Helpers.Generators = {}
 
+DDDTest.tableBackup = DDD.Database.Tables
+
 include("testhelpers/sv_testsqltable.lua")
 include("testhelpers/sv_tablesetup.lua")
 include("testhelpers/generators/sv_shopitemgen.lua")

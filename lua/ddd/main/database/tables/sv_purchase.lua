@@ -14,6 +14,7 @@ foreignKeyTable:addConstraint("player_id", playerIdTable, "id")
 foreignKeyTable:addConstraint("shop_item_id", shopItemIdTable, "id")
 
 local purchasesTable = DDD.SqlTable:new("ddd_purchases", columns, foreignKeyTable)
+purchasesTable:addIndex("playerAndItemIndex", {"player_id", "shop_item_id"})
 
 function purchasesTable:addPurchase(playerId, itemId)
   local queryTable = {
