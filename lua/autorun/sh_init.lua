@@ -5,7 +5,7 @@ DDD.Database = {}
 DDD.Database.Tables = {}
 DDD.Gui = {}
 DDD.Gui.Achievements = {}
-DDD.Gui.Rank = {}
+DDD.Gui.Rank = {} 
 DDD.Gui.Stats = {}
 DDD.Misc = {}
 DDD.version = "v0.1.1-SNAPSHOT"
@@ -14,7 +14,7 @@ if SERVER then
   local roles = {
     Innocent = 0,
     Traitor = 1,
-    Detective = 2 
+    Detective = 2
   }
   DDD.Database.Roles = roles
   
@@ -36,8 +36,8 @@ if SERVER then
   include("ddd/main/misc/sh_inheritsfrom.lua")
   include("ddd/main/misc/sv_enums.lua")
   include("ddd/main/misc/sv_logging.lua")
-  include("ddd/main/overrides/sv_corpse.lua") 
-  include("ddd/main/overrides/sv_c4.lua")
+  include("ddd/main/overrides/sv_corpse.lua")
+  --include("ddd/main/overrides/sv_c4.lua")
   include("ddd/main/database/sv_sqlitedb.lua")
   include("ddd/main/config/sv_config.lua")
   include("ddd/main/gui/sv_overview.lua")

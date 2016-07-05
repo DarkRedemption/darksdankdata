@@ -15,7 +15,7 @@ local traitorValidPurchases = { "1",
                                 "weapon_ttt_c4"}
                               
   local detectiveValidPurchases = { "2", --Forget the body armor since you start with it
-                                "weapon_ttt_beacon",
+                                "weapon_ttt_cse",
                                 "weapon_ttt_defuser",
                                 "weapon_ttt_teleport",
                                 "weapon_ttt_binoculars",

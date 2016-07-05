@@ -1,11 +1,13 @@
 local function calculateTraitorTotalKD(table)
-  return (table["traitor_innocent_kills"] + table["traitor_detective_kills"] + table["traitor_traitor_kills"]) / 
-         (table["traitor_innocent_deaths"]  + table["traitor_detective_deaths"]  + table["traitor_traitor_deaths"] + table["traitor_world_deaths"]) 
+  local kd = (table["traitor_innocent_kills"] + table["traitor_detective_kills"] + table["traitor_traitor_kills"]) / 
+         (table["traitor_innocent_deaths"]  + table["traitor_detective_deaths"]  + table["traitor_traitor_deaths"] + table["traitor_world_deaths"])
+  return DDD.Gui.formatKD(kd)
 end
 
 local function calculateTraitorEnemyKD(table)
-  return (table["traitor_innocent_kills"] + table["traitor_detective_kills"]) / 
-         (table["traitor_innocent_deaths"]  + table["traitor_detective_deaths"]  + table["traitor_traitor_deaths"] + table["traitor_world_deaths"]) 
+  local kd = (table["traitor_innocent_kills"] + table["traitor_detective_kills"]) / 
+         (table["traitor_innocent_deaths"]  + table["traitor_detective_deaths"]  + table["traitor_traitor_deaths"] + table["traitor_world_deaths"])
+  return DDD.Gui.formatKD(kd)
 end
 
 local function createTraitorText(overviewPanel)
@@ -47,15 +49,17 @@ local function populateListView(list, table)
   list:AddLine("T Buddy Kills", table["traitor_traitor_kills"])
   list:AddLine("Times Killed by Innocents", table["traitor_innocent_deaths"])
   list:AddLine("Times Killed by Detectives", table["traitor_detective_deaths"])
-  list:AddLine("Times Killed by T Buddies", table["traitor_traitor_deaths"] - table["TraitorSuicides"])
+  list:AddLine("Times Killed by T Buddies", table["traitor_traitor_deaths"] - table["traitor_suicides"])
   list:AddLine("Times Killed by the World", table["traitor_world_deaths"])
+  list:AddLine("Suicides", table["traitor_suicides"])
   --list:AddLine("Times DNA Scanning Didn't Help The Innocent Kill You", "Not Yet Implemented")
   --list:AddLine("Rounds DNA Scanner Stolen", "Not Yet Implemented")
   
-  list:AddLine("C4 Kills", table["TraitorInnocentC4K"] + table["TraitorDetectiveC4K"] + table["TraitorTraitorC4K"])
-  list:AddLine("C4 Enemy Kills", table["TraitorInnocentC4K"] + table["TraitorDetectiveC4K"])
-  list:AddLine("C4 Ally Kills", table["TraitorTraitorC4K"])
-  list:AddLine("C4 Deaths", table["TraitorInnocentC4D"] + table["TraitorDetectiveC4D"] + table["TraitorDetectiveC4D"])
+  list:AddLine("C4 Kills", table["traitor_innocent_ttt_c4_kills"] + table["traitor_detective_ttt_c4_kills"] + table["traitor_traitor_ttt_c4_kills"])
+  list:AddLine("C4 Enemy Kills", table["traitor_innocent_ttt_c4_kills"] + table["traitor_detective_ttt_c4_kills"])
+  list:AddLine("C4 Ally Kills", table["traitor_traitor_ttt_c4_kills"])
+  list:AddLine("C4 Deaths", table["traitor_innocent_ttt_c4_deaths"] + table["traitor_detective_ttt_c4_deaths"] + 
+                            table["traitor_traitor_ttt_c4_deaths"])
   --list:AddLine("Enemy Kill Assists", "Not Yet Implemented")
   
   list:AddLine("Times Body Armor Purchased", table["traitor_armor_purchases"])

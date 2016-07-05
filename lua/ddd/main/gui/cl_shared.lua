@@ -15,3 +15,7 @@ function DDD.Gui.determineHorizontalCenter(panel)
   local newWidth = getCenteredDimension(parentWidth, panelWidth)
   return newWidth
 end
+
+function DDD.Gui.formatKD(kd)
+  return string.format("%.3f", kd)
+end

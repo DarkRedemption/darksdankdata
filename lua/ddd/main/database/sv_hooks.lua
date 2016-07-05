@@ -16,19 +16,20 @@ end)
 -- Purchase Tracking Hooks
 --
 
-function DDD.Hooks.trackPurchases(tables, ply, equipment, isItem)
-  local itemId = tables.ShopItem:getOrAddItemId(equipment, isItem)
+function DDD.Hooks.trackPurchases(tables, ply, equipment)
+  local itemId = tables.ShopItem:getOrAddItemId(equipment)
   local playerId = tables.PlayerId:getPlayerId(ply)
-  --Return the id for testing purposes.
-  local purchaseResult = tables.Purchases:addPurchase(tonumber(playerId), tonumber(itemId))
+  local purchaseResult = tables.Purchases:addPurchase(playerId, itemId)
   if (purchaseResult != nil and purchaseResult != false) then
     tables.AggregateStats:incrementItemPurchases(playerId, ply:GetRole(), equipment)
   end
+  
+    --Return the id for testing purposes.
   return purchaseResult
 end
 
 hook.Add("TTTOrderedEquipment", "DDDTrackPurchases", function(ply, equipment, is_item)
-  DDD.Hooks.trackPurchases(tables, ply, equipment, is_item)
+  DDD.Hooks.trackPurchases(tables, ply, equipment)
 end)
 
 --
@@ -70,11 +71,26 @@ hook.Add("TTTEndRound", "DDDTrackRoundResult", function(result)
     DDD.CurrentRound.isActive = false
   end)
  
+local function incrementAggregateKillsAndDeaths(attacker, victim, attackerId, victimId)
+  if (attackerId == victimId) then
+    tables.AggregateStats:incrementSuicides(attackerId, attacker:GetRole())
+  else
+    tables.AggregateStats:incrementKills(attackerId, attacker:GetRole(), victim:GetRole())
+  end
+    tables.AggregateStats:incrementDeaths(victimId, victim:GetRole(), attacker:GetRole())
+end
+
 local function handlePushKill(tables, victim, damageInfo)
+  local attacker = victim.was_pushed.att
   local victimId = tables.PlayerId:getPlayerId(victim)
-  local attackerId = tables.PlayerId:getPlayerId(victim.was_pushed.att)
+  local attackerId = tables.PlayerId:getPlayerId(attacker)
   local weaponId = tables.WeaponId:getOrAddWeaponId(victim.was_pushed.wep)
-  return tables.PlayerPushKill:addKill(victimId, attackerId, weaponId, damageInfo)
+  local addKillResult = tables.PlayerPushKill:addKill(victimId, attackerId, weaponId, damageInfo)
+  if (addKillResult != nil and addKillResult != false) then
+    incrementAggregateKillsAndDeaths(attacker, victim, attackerId, victimId)
+  end
+  
+  return addKillResult
 end
 
 --[[
@@ -109,8 +125,11 @@ function DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
       local weaponId = tables.WeaponId:getOrAddWeaponId(weaponClass)
       local addKillResult = tables.PlayerKill:addKill(victimId, attackerId, weaponId)
       if (addKillResult != nil and addKillResult != false) then
-        tables.AggregateStats:incrementKills(attackerId, attacker:GetRole(), victim:GetRole())
-        tables.AggregateStats:incrementDeaths(victimId, victim:GetRole(), attacker:GetRole())
+        incrementAggregateKillsAndDeaths(attacker, victim, attackerId, victimId)
+        if (weaponClass == "ttt_c4") then
+          tables.AggregateStats:incrementWeaponKills(attackerId, attacker:GetRole(), victim:GetRole(), weaponClass)
+          tables.AggregateStats:incrementWeaponDeaths(victimId, victim:GetRole(), attacker:GetRole(), weaponClass)
+        end
       end
       return addKillResult
     end
@@ -118,13 +137,15 @@ end
 
 --TODO: Ensure this doesn't get called post round, and if it does, simply cancel it.
 hook.Add("DoPlayerDeath", "DDDTrackPlayerDeath", function(victim, attacker, damageInfo)
-    DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
+    if (DDD.CurrentRound.isActive) then
+      DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
+    end 
   end
 )
 
 local function handleNilAttackerDamage(tables, victim, damageInfo)
   local victimId = tables.PlayerId:getPlayerId(victim)
-  if (victim.was_pushed) then
+  if (victim.was_pushed and IsValid(victim.was_pushed.att)) then
     local attackerId = tables.PlayerId:getPlayerId(victim.was_pushed.att)
     local weaponId = tables.WeaponId:getOrAddWeaponId(victim.was_pushed.wep)
     return tables.CombatDamage:addDamage(victimId, attackerId, weaponId, damageInfo)

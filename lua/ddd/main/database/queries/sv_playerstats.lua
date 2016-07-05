@@ -17,17 +17,19 @@ else
   end
 end
 
---TODO: Only get the c4 ID once
-function PlayerStats:getC4KillsAsRole(roleId, victimRoleId)
+function PlayerStats:getC4Id()
   local c4Name = "ttt_c4"
-  local c4Id = self.tables.WeaponId:getWeaponId(c4Name)
+  return self.tables.WeaponId:getWeaponId(c4Name)
+end
+
+function PlayerStats:getC4KillsAsRole(roleId, victimRoleId)
+  local c4Id = self:getC4Id()
   if (c4Id == -1) then return 0 end
   return self.tables.PlayerKill:getRoleKillsWithWeapon(self.playerId, roleId, victimRoleId, c4Id)
 end
 
 function PlayerStats:getC4DeathsAsRole(roleId, attackerRoleId)
-  local c4Name = "ttt_c4"
-  local c4Id = self.tables.WeaponId:getWeaponId(c4Name)
+  local c4Id = self:getC4Id()
   if (c4Id == -1) then return 0 end
   return self.tables.PlayerKill:getRoleDeathsWithWeapon(self.playerId, roleId, attackerRoleId, c4Id)
 end
@@ -52,12 +54,6 @@ function PlayerStats:getDataForAllRoles(suffix, func)
   end
 end
 
-function PlayerStats:updateSuicideData()
-  self.statsTable["TraitorSuicides"] = tables.PlayerKill:getTraitorSuicides(self.playerId)
-  self.statsTable["InnocentSuicides"] = tables.PlayerKill:getInnocentSuicides(self.playerId)
-  self.statsTable["DetectiveSuicides"] = tables.PlayerKill:getDetectiveSuicides(self.playerId)
-end
-
 --[[
 Start off the PlayerStats table with all the aggregate data.
 ]]
@@ -65,19 +61,27 @@ function PlayerStats:getAggregateData()
   self.statsTable = self.tables.AggregateStats:getPlayerStats(self.playerId)
 end
 
+function PlayerStats:getPlayerTime()
+  if sql.TableExists("utime") then
+    local query = "SELECT * FROM utime WHERE player == " .. self.ply:UniqueID()
+    local result = sql.Query(query)
+    if (result != nil && result != false) then
+      local totalSeconds = tonumber(result[1]["totaltime"])
+      local formattedTime = string.format("%.2d:%.2d:%.2d", totalSeconds/(60*60), totalSeconds/60%60, totalSeconds%60)
+      self.statsTable["TotalServerTime"] = formattedTime
+    end
+  end
+end
+
 function PlayerStats:updateStats()
   self:getAggregateData()
+  self:getPlayerTime()
   self:updateRoleData()
-  self:updateSuicideData()
-  self:getDataForAllRoles("C4K", PlayerStats.getC4KillsAsRole)
-  self:getDataForAllRoles("C4D", PlayerStats.getC4DeathsAsRole)
 
   self.statsTable["TotalHPYouHealed"] = tables.Healing:getTotalHPYouHealed(self.playerId)
   self.statsTable["TotalHPOthersHealed"] = tables.Healing:getTotalHPOthersHealed(self.playerId)
 end
 
-function PlayerStats:send()
-end
 
 function PlayerStats:new(ply, databaseTables)
   local newStats = {}

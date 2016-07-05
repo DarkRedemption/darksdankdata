@@ -1,11 +1,20 @@
 local function calculateDetectiveTotalKD(table)
-  return (table["detective_traitor_kills"] + table["detective_innocent_kills"] + table["detective_detective_kills"]) / 
-         (table["detective_traitor_deaths"] + table["detective_detective_deaths"] + table["detective_innocent_deaths"] + table["detective_world_deaths"])
+  local kd = (table["detective_traitor_kills"] + 
+              table["detective_innocent_kills"] + 
+              table["detective_detective_kills"]) / 
+          (table["detective_traitor_deaths"] + 
+          table["detective_detective_deaths"] + 
+          table["detective_innocent_deaths"] + 
+          table["detective_world_deaths"])
+        
+  return DDD.Gui.formatKD(kd)
 end
 
 local function calculateDetectiveEnemyKD(table)
-  return table["detective_traitor_kills"] / 
+  local kd = table["detective_traitor_kills"] / 
          (table["detective_traitor_deaths"] + table["detective_detective_deaths"] + table["detective_innocent_deaths"] + table["detective_world_deaths"])
+  
+  return DDD.Gui.formatKD(kd)
 end
 
 local function createDetectiveText(overviewPanel)
@@ -45,10 +54,10 @@ local function populateListView(list, table)
   list:AddLine("Total Allies Killed", table["detective_innocent_kills"] + table["detective_detective_kills"])
   list:AddLine("Times Killed by Traitors", table["detective_traitor_deaths"])
   list:AddLine("Times Killed by Innocents", table["detective_innocent_deaths"])
-  list:AddLine("Times Killed by Fellow Detectives", table["detective_detective_deaths"] - table["DetectiveSuicides"])
+  list:AddLine("Times Killed by Fellow Detectives", table["detective_detective_deaths"] - table["detective_suicides"])
   list:AddLine("Times Killed by Allies (Innocents + Detectives)", table["detective_innocent_deaths"] + table["detective_detective_deaths"])
   list:AddLine("Times Killed by the World", table["detective_world_deaths"])
-  
+  list:AddLine("Suicides", table["detective_suicides"])
   --list:AddLine("Total HP Others Healed Using Your Health Stations", tonumber(table["TotalHPOthersHealed"]))
     
   list:AddLine("Times Radar Purchased", table["detective_radar_purchases"])

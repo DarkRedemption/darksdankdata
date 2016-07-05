@@ -15,7 +15,7 @@ local traitorValidPurchases = { "1",
                                 "weapon_ttt_c4"}
                               
   local detectiveValidPurchases = { "2", --Forget the body armor since you start with it
-                                "weapon_ttt_beacon",
+                                "weapon_ttt_cse",
                                 "weapon_ttt_defuser",
                                 "weapon_ttt_teleport",
                                 "weapon_ttt_binoculars",
@@ -35,11 +35,12 @@ local function trackPurchasesSpec()
   for i = 1, 100 do
     tables.RoundId:addRound()
     local player = GUnit.Generators.FakePlayer:new()
-    tables.PlayerId:addPlayer(player)
-    local isItem = math.random(0, 1)
+    local playerId = tables.PlayerId:addPlayer(player)
+    tables.AggregateStats:addPlayer(playerId)
     
     local purchaserRole = math.random(1, 2)
     player:SetRole(purchaserRole)
+    tables.RoundRoles:addRole(player)
     
     local thisRoundsPurchase
     if purchaserRole == 1 then
@@ -48,9 +49,16 @@ local function trackPurchasesSpec()
       thisRoundsPurchase = detectiveValidPurchases[math.random(1, #detectiveValidPurchases)]
     end
     
-    local purchaseId = DDD.Hooks.trackPurchases(tables, player, thisRoundsPurchase, isItem)
+    local purchaseId = DDD.Hooks.trackPurchases(tables, player, thisRoundsPurchase)
     
     GUnit.assert(purchaseId):shouldEqual(i)
+    
+    local totalPurchases = tables.AggregateStats:getItemPurchases(playerId, purchaserRole, thisRoundsPurchase)
+    if (totalPurchases != 1) then
+      print(thisRoundsPurchase)
+    end
+    
+    GUnit.assert(totalPurchases):shouldEqual(1)
   end
 end
 

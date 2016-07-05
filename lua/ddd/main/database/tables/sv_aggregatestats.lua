@@ -7,46 +7,30 @@ local tables = DDD.Database.Tables
 
 local itemColumnSuffix = {}
 
- itemColumnSuffix["1"] = "armor_purchases"
-  itemColumnSuffix["2"] = "radar_purchases"
-  itemColumnSuffix["4"] = "disguiser_purchases"
-  itemColumnSuffix["weapon_ttt_flaregun"] = "flaregun_purchases"
-  itemColumnSuffix["weapon_ttt_knife"] = "knife_purchases"
-  itemColumnSuffix["weapon_ttt_teleport"] = "teleporter_purchases"
-  itemColumnSuffix["weapon_ttt_radio"] = "radio_purchases"
-  itemColumnSuffix["weapon_ttt_push"] = "newtonlauncher_purchases"
-  itemColumnSuffix["weapon_ttt_sipistol"] = "silentpistol_purchases"
-  itemColumnSuffix["weapon_ttt_decoy"] = "decoy_purchases"
-  itemColumnSuffix["weapon_ttt_phammer"] = "poltergeist_purchases"
-  itemColumnSuffix["weapon_ttt_c4"] = "c4_purchases"
-  itemColumnSuffix["weapon_ttt_beacon"] = "visualizer_purchases"
-  itemColumnSuffix["weapon_ttt_defuser"] = "defuser_purchases"
-  itemColumnSuffix["weapon_ttt_binoculars"] = "binoculars_purchases"
-  itemColumnSuffix["weapon_ttt_stungun"] = "ump_purchases"
-  itemColumnSuffix["weapon_ttt_health_station"] = "healthstation_purchases"
+itemColumnSuffix["1"] = "armor_purchases"
+itemColumnSuffix["2"] = "radar_purchases"
+itemColumnSuffix["4"] = "disguiser_purchases"
+itemColumnSuffix["weapon_ttt_flaregun"] = "flaregun_purchases"
+itemColumnSuffix["weapon_ttt_knife"] = "knife_purchases"
+itemColumnSuffix["weapon_ttt_teleport"] = "teleporter_purchases"
+itemColumnSuffix["weapon_ttt_radio"] = "radio_purchases"
+itemColumnSuffix["weapon_ttt_push"] = "newtonlauncher_purchases"
+itemColumnSuffix["weapon_ttt_sipistol"] = "silentpistol_purchases"
+itemColumnSuffix["weapon_ttt_decoy"] = "decoy_purchases"
+itemColumnSuffix["weapon_ttt_phammer"] = "poltergeist_purchases"
+itemColumnSuffix["weapon_ttt_c4"] = "c4_purchases"
+itemColumnSuffix["weapon_ttt_cse"] = "visualizer_purchases"
+itemColumnSuffix["weapon_ttt_defuser"] = "defuser_purchases"
+itemColumnSuffix["weapon_ttt_binoculars"] = "binoculars_purchases"
+itemColumnSuffix["weapon_ttt_stungun"] = "ump_purchases"
+itemColumnSuffix["weapon_ttt_health_station"] = "healthstation_purchases"
 
 --All kills/deaths are in the format of <thisplayerrole>_<opponentrole>_<kills/deaths>
 local columns = { player_id = "INTEGER PRIMARY KEY",
-  
-                  innocent_traitor_kills = "INTEGER NOT NULL DEFAULT 0",
-                  innocent_innocent_kills = "INTEGER NOT NULL DEFAULT 0",
-                  innocent_detective_kills = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_traitor_kills = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_innocent_kills = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_detective_kills = "INTEGER NOT NULL DEFAULT 0",
-                  detective_traitor_kills = "INTEGER NOT NULL DEFAULT 0",
-                  detective_innocent_kills = "INTEGER NOT NULL DEFAULT 0",
-                  detective_detective_kills = "INTEGER NOT NULL DEFAULT 0",
                   
-                  innocent_traitor_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  innocent_innocent_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  innocent_detective_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_traitor_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_innocent_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_detective_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  detective_traitor_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  detective_innocent_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  detective_detective_deaths = "INTEGER NOT NULL DEFAULT 0",
+                  innocent_suicides = "INTEGER NOT NULL DEFAULT 0",
+                  traitor_suicides = "INTEGER NOT NULL DEFAULT 0",
+                  detective_suicides = "INTEGER NOT NULL DEFAULT 0",
                   
                   innocent_world_deaths = "INTEGER NOT NULL DEFAULT 0",
                   traitor_world_deaths = "INTEGER NOT NULL DEFAULT 0",
@@ -73,7 +57,21 @@ local columns = { player_id = "INTEGER PRIMARY KEY",
                   detective_ump_purchases = "INTEGER NOT NULL DEFAULT 0",
                   detective_healthstation_purchases = "INTEGER NOT NULL DEFAULT 0"
                 }
-                  
+                
+local function createColumnsForAllRoleCombinations(suffix)
+  for rolename, rolevalue in pairs(DDD.Database.Roles) do
+    for secondrolename, secondrolevalue in pairs(DDD.Database.Roles) do
+      local keyname = string.lower(rolename) .. "_" .. string.lower(secondrolename) .. "_" .. suffix
+      columns[keyname] = "INTEGER NOT NULL DEFAULT 0"
+    end
+  end
+end
+
+createColumnsForAllRoleCombinations("kills")
+createColumnsForAllRoleCombinations("deaths")
+createColumnsForAllRoleCombinations("ttt_c4_kills")
+createColumnsForAllRoleCombinations("ttt_c4_deaths")
+
 local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
 foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
 
@@ -94,8 +92,8 @@ else
   end
 end
 
-function aggregateStatsTable:makeKillCountQuery(whereStatement)
-  return [[SELECT COUNT(*) AS count
+function aggregateStatsTable:runKillCountQuery(whereStatement)
+  local query = [[SELECT COUNT(*) AS count
            FROM ]] .. self.tables.PlayerKill.tableName .. [[ AS kill
            LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles 
            ON kill.round_id == victim_roles.round_id
@@ -103,6 +101,8 @@ function aggregateStatsTable:makeKillCountQuery(whereStatement)
            LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
            ON kill.round_id == attacker_roles.round_id
            AND kill.attacker_id == attacker_roles.player_id ]] .. whereStatement
+  local result = sql.Query(query)
+  return countResult(result)
 end
 
 function aggregateStatsTable:calculateRoleKills(playerId, playerRole, victimRole)
@@ -110,18 +110,38 @@ function aggregateStatsTable:calculateRoleKills(playerId, playerRole, victimRole
                            AND kill.victim_id != ]] .. tostring(playerId) .. [[
                            AND attacker_roles.role_id == ]] .. tostring(playerRole) .. [[
                            AND victim_roles.role_id == ]] .. tostring(victimRole)
-  local query = self:makeKillCountQuery(whereStatement)
-  local result = sql.Query(query)
-  return countResult(result)
+  return self:runKillCountQuery(whereStatement)
 end
 
 function aggregateStatsTable:calculateRoleDeaths(playerId, playerRole, attackerRole)
   local whereStatement = [[WHERE kill.victim_id == ]] .. tostring(playerId) .. [[
                            AND attacker_roles.role_id == ]] .. tostring(attackerRole) .. [[
                            AND victim_roles.role_id == ]] .. tostring(playerRole)
-  local query = self:makeKillCountQuery(whereStatement)
-  local result = sql.Query(query)
-  return countResult(result)
+  return self:runKillCountQuery(whereStatement)
+end
+
+function aggregateStatsTable:calculateRoleSuicides(playerId, playerRole)
+  local whereStatement = [[WHERE kill.victim_id == ]] .. tostring(playerId) .. [[
+                           AND kill.attacker_id == ]] .. tostring(playerId) .. [[
+                           AND attacker_roles.role_id == ]] .. tostring(playerRole)
+  return self:runKillCountQuery(whereStatement)
+end
+
+function aggregateStatsTable:calculateRoleWeaponKills(playerId, playerRole, victimRole, weaponId)
+  local whereStatement = [[WHERE kill.attacker_id == ]] .. tostring(playerId) .. [[
+                  AND kill.victim_id != ]] .. tostring(playerId) .. [[
+                  AND attacker_roles.role_id == ]] .. tostring(playerRole) .. [[
+                  AND victim_roles.role_id == ]] .. tostring(victimRole) .. [[
+                  AND kill.weapon_id == ]] .. tostring(weaponId)
+  return self:runKillCountQuery(whereStatement)
+end
+
+function aggregateStatsTable:calculateRoleWeaponDeaths(playerId, playerRole, attackerRole, weaponId)
+  local whereStatement = [[WHERE kill.victim_id == ]] .. tostring(playerId) .. [[
+                  AND attacker_roles.role_id == ]] .. tostring(attackerRole) .. [[
+                  AND victim_roles.role_id == ]] .. tostring(playerRole) .. [[
+                  AND kill.weapon_id == ]] .. tostring(weaponId)
+  return self:runKillCountQuery(whereStatement)
 end
 
 function aggregateStatsTable:makeWorldDeathCountQuery(playerId, playerRole)
@@ -155,6 +175,31 @@ function aggregateStatsTable:getAllCombatKillsAndDeaths(playerStatsLuaTable)
   return self
 end
 
+function aggregateStatsTable:getWeaponKillsAsRole(playerStatsLuaTable, roleId, victimRoleId, weaponName)
+  local weaponId = self.tables.WeaponId:getWeaponId(weaponName)
+  if (weaponId == -1) then return 0 end
+  return self:calculateRoleWeaponKills(playerStatsLuaTable.player_id, roleId, victimRoleId, weaponId)
+end
+
+function aggregateStatsTable:getWeaponDeathsAsRole(playerStatsLuaTable, roleId, attackerRoleId, weaponName)
+  local weaponId = self.tables.WeaponId:getWeaponId(weaponName)
+  if (weaponId == -1) then return 0 end
+  return self:calculateRoleWeaponDeaths(playerStatsLuaTable.player_id, roleId, attackerRoleId, weaponId)
+end
+
+function aggregateStatsTable:getDataForAllRoles(playerStatsLuaTable, suffix, func, args)
+  for rolename, rolevalue in pairs(DDD.Database.Roles) do
+    for secondrolename, secondrolevalue in pairs(DDD.Database.Roles) do
+      local keyname = string.lower(rolename) .. "_" .. string.lower(secondrolename) .. "_" .. suffix
+      if args and #args > 0 then
+        playerStatsLuaTable[keyname] = func(self, playerStatsLuaTable, string.lower(rolevalue), string.lower(secondrolevalue), unpack(args))
+      else
+        playerStatsLuaTable[keyname] = func(self, playerStatsLuaTable, string.lower(rolevalue), string.lower(secondrolevalue))
+      end
+    end
+  end
+end
+
 function aggregateStatsTable:getAllWorldDeaths(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
   
@@ -180,6 +225,13 @@ function aggregateStatsTable:getPurchasesAsRole(playerId, itemName, roleId)
   end
 end
 
+function aggregateStatsTable:getSuicideData(playerStatsLuaTable)
+  local playerId = playerStatsLuaTable.player_id
+  playerStatsLuaTable["innocent_suicides"] = self:calculateRoleSuicides(playerId, 0)
+  playerStatsLuaTable["traitor_suicides"] = self:calculateRoleSuicides(playerId, 1)
+  playerStatsLuaTable["detective_suicides"] = self:calculateRoleSuicides(playerId, 2)
+end
+
 function aggregateStatsTable:getPurchases(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
   
@@ -197,7 +249,7 @@ function aggregateStatsTable:getPurchases(playerStatsLuaTable)
   playerStatsLuaTable["traitor_c4_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_c4",  DDD.Database.Roles["Traitor"])
   
   playerStatsLuaTable["detective_radar_purchases"] = self:getPurchasesAsRole(playerId, "2",  DDD.Database.Roles["Detective"])
-  playerStatsLuaTable["detective_visualizer_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_beacon",  DDD.Database.Roles["Detective"])
+  playerStatsLuaTable["detective_visualizer_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_cse",  DDD.Database.Roles["Detective"])
   playerStatsLuaTable["detective_defuser_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_defuser",  DDD.Database.Roles["Detective"])
   playerStatsLuaTable["detective_teleporter_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_teleport",  DDD.Database.Roles["Detective"])
   playerStatsLuaTable["detective_binoculars_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_binoculars",  DDD.Database.Roles["Detective"])
@@ -214,6 +266,9 @@ function aggregateStatsTable:recalculateSinglePlayer(playerId)
   self:getAllCombatKillsAndDeaths(playerStatsLuaTable)
   self:getAllWorldDeaths(playerStatsLuaTable)
   self:getPurchases(playerStatsLuaTable)
+  self:getSuicideData(playerStatsLuaTable)
+  self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_kills", self.getWeaponKillsAsRole, {"ttt_c4"})
+  self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_deaths", self.getWeaponDeathsAsRole, {"ttt_c4"})
   return playerStatsLuaTable
 end
 
@@ -253,6 +308,27 @@ function aggregateStatsTable:getDeaths(playerId, playerRole, attackerRole)
   return tonumber(currentDeaths)
 end
 
+function aggregateStatsTable:getWeaponKills(playerId, playerRole, victimRole, weaponName)
+  local columnName = roles[playerRole] .. "_" .. roles[victimRole] .. "_" .. weaponName .. "_kills"
+  local selectKillsQuery = "SELECT " .. columnName .. " FROM " .. self.tableName .. " WHERE player_id == " .. playerId
+  local currentKills = self:query("aggregateCombatStatsTable:getWeaponKills", selectKillsQuery, 1, columnName)
+  return tonumber(currentKills)
+end
+
+function aggregateStatsTable:getWeaponDeaths(playerId, playerRole, attackerRole, weaponName)
+  local columnName = roles[playerRole] .. "_" .. roles[attackerRole] .. "_" .. weaponName .. "_deaths"
+  local selectDeathsQuery = "SELECT " .. columnName .. " FROM " .. self.tableName .. " WHERE player_id == " .. playerId
+  local currentDeaths = self:query("aggregateCombatStatsTable:getWeaponDeaths", selectDeathsQuery, 1, columnName)
+  return tonumber(currentDeaths)
+end
+
+function aggregateStatsTable:getSuicides(playerId, playerRole)
+  local columnName = roles[playerRole] .. "_suicides"
+  local selectSuicidesQuery = "SELECT " .. columnName .. " FROM " .. self.tableName .. " WHERE player_id == " .. playerId
+  local currentSuicides = self:query("aggregateCombatStatsTable:getSuicides", selectSuicidesQuery, 1, columnName)
+  return tonumber(currentSuicides)
+end
+
 function aggregateStatsTable:getWorldDeaths(playerId, playerRole)
   local columnName = roles[playerRole] .. "_world_deaths"
   local selectDeathsQuery = "SELECT " .. columnName .. " FROM " .. self.tableName .. " WHERE player_id == " .. playerId
@@ -274,11 +350,25 @@ function aggregateStatsTable:incrementDeaths(playerId, playerRole, attackerRole)
   return self:query("aggregateStatsTable:incrementDeaths", query)
 end
 
-function aggregateStatsTable:incrementWorldDeaths(playerId, playerRole)
-  local deaths = self:getWorldDeaths(playerId, playerRole) + 1
-  local columnName = roles[playerRole] .. "_world_deaths"
+function aggregateStatsTable:incrementWeaponKills(playerId, playerRole, victimRole, weaponName)
+  local kills = self:getWeaponKills(playerId, playerRole, victimRole, weaponName) + 1
+  local columnName = roles[playerRole] .. "_" .. roles[victimRole] .. "_" .. weaponName .. "_kills"
+  local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. kills .. " WHERE player_id == " .. playerId
+  return self:query("aggregateStatsTable:incrementWeaponKills", query)
+end
+
+function aggregateStatsTable:incrementWeaponDeaths(playerId, playerRole, victimRole, weaponName)
+  local deaths = self:getWeaponDeaths(playerId, playerRole, victimRole, weaponName) + 1
+  local columnName = roles[playerRole] .. "_" .. roles[victimRole] .. "_" .. weaponName .. "_deaths"
   local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. deaths .. " WHERE player_id == " .. playerId
-  return self:query("aggregateStatsTable:incrementWorldDeaths", query)
+  return self:query("aggregateStatsTable:incrementWeaponDeaths", query)
+end
+
+function aggregateStatsTable:incrementSuicides(playerId, playerRole)
+  local suicides = self:getSuicides(playerId, playerRole) + 1
+  local columnName = roles[playerRole] .. "_suicides"
+  local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. suicides .. " WHERE player_id == " .. playerId
+  return self:query("aggregateStatsTable:incrementSuicides", query)
 end
 
 function aggregateStatsTable:incrementWorldDeaths(playerId, playerRole)
@@ -289,14 +379,14 @@ function aggregateStatsTable:incrementWorldDeaths(playerId, playerRole)
 end
 
 function aggregateStatsTable:getItemPurchases(playerId, playerRole, item)
-  local columnName = roles[playerRole] .. "_" .. itemColumnSuffix[item]
+  local columnName = roles[playerRole] .. "_" .. itemColumnSuffix[tostring(item)]
   local query = "SELECT " .. columnName .. " FROM " .. self.tableName .. " WHERE player_id == " .. playerId
   return tonumber(self:query("aggregateStatsTable:getItemPurchases", query, 1, columnName))
 end
 
 function aggregateStatsTable:incrementItemPurchases(playerId, playerRole, item)
   local purchases = self:getItemPurchases(playerId, playerRole, item) + 1
-  local columnName = roles[playerRole] .. "_" .. itemColumnSuffix[item]
+  local columnName = roles[playerRole] .. "_" .. itemColumnSuffix[tostring(item)]
   local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. purchases .. " WHERE player_id == " .. playerId
   return self:query("aggregateStatsTable:incrementItemPurchases", query)
 end

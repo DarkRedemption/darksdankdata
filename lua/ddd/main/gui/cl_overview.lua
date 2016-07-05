@@ -44,9 +44,9 @@ local function calculateAllyDeaths(table)
          table["detective_innocent_deaths"] +
          table["detective_detective_deaths"] +
          table["traitor_traitor_deaths"] -
-         table["InnocentSuicides"] -
-         table["TraitorSuicides"] -
-         table["DetectiveSuicides"]
+         table["innocent_suicides"] -
+         table["traitor_suicides"] -
+         table["detective_suicides"]
 end
 
 local function calculateEnemyKills(table)
@@ -78,18 +78,23 @@ local function calculateDeaths(table)
 end
 
 local function calculateEnemyKD(table)
-  return calculateEnemyKills(table) / (calculateEnemyDeaths(table) + calculateWorldDeaths(table))
+  local kd = calculateEnemyKills(table) / (calculateEnemyDeaths(table) + calculateWorldDeaths(table))
+  return DDD.Gui.formatKD(kd)
 end
 
 local function calculateEnemyKDWithAllDeaths(table)
-  return calculateEnemyKills(table) / calculateDeaths(table)
+  local kd = calculateEnemyKills(table) / calculateDeaths(table)
+  return DDD.Gui.formatKD(kd)
 end
 
 local function populateListView(list, table)
+  if (table["TotalServerTime"]) then
+    list:AddLine("Total Server Time", table["TotalServerTime"])
+  end
   list:AddLine("Total Rounds Played", calculateRoundsPlayed(table))
   list:AddLine("Enemy K/D ", calculateEnemyKD(table))
   list:AddLine("Enemy K/D including times killed by allies", calculateEnemyKDWithAllDeaths(table))
-  list:AddLine("Total K/D (includes ally kills and deaths)", calculateKills(table) / calculateDeaths(table))
+  list:AddLine("Total K/D (includes ally kills and deaths)", DDD.Gui.formatKD(calculateKills(table) / calculateDeaths(table)))
   list:AddLine("Total Kills", calculateKills(table))
   list:AddLine("Total Deaths", calculateDeaths(table))
   list:AddLine("Enemy Kills", calculateEnemyKills(table))
@@ -99,7 +104,7 @@ local function populateListView(list, table)
   list:AddLine("Ally K/D", calculateAllyKills(table) / calculateAllyDeaths(table))
   --list:AddLine("Assists", "Not Yet Implemented")
   --list:AddLine("Falls", "Not Yet Implemented")
-  list:AddLine("Suicides", table["TraitorSuicides"] + table["InnocentSuicides"] + table["DetectiveSuicides"])
+  list:AddLine("Suicides", table["traitor_suicides"] + table["innocent_suicides"] + table["detective_suicides"])
   --list:AddLine("Discombobulators Used", "Not Yet Implemented")
   --list:AddLine("Incendiaries Used", "Not Yet Implemented")
   --list:AddLine("Smokes Used", "Not Yet Implemented")
