@@ -29,7 +29,9 @@ function DDD.Hooks.trackPurchases(tables, ply, equipment)
 end
 
 hook.Add("TTTOrderedEquipment", "DDDTrackPurchases", function(ply, equipment, is_item)
-  DDD.Hooks.trackPurchases(tables, ply, equipment)
+  if (DDD:enabled()) then
+    DDD.Hooks.trackPurchases(tables, ply, equipment)
+  end
 end)
 
 --
@@ -45,7 +47,9 @@ function DDD.Hooks.trackDnaDiscovery(tables, finder, dnaOwner, entityFoundOn)
 end
 
 hook.Add("TTTFoundDNA", "DDDTrackDnaFound", function(finder, dnaOwner, entityFoundOn)
-  DDD.Hooks.trackDnaDiscovery(tables, finder, dnaOwner, entityFoundOn)
+  if (DDD:enabled()) then
+    DDD.Hooks.trackDnaDiscovery(tables, finder, dnaOwner, entityFoundOn)
+  end
 end)
 
 --
@@ -54,20 +58,21 @@ end)
 
 function DDD.Hooks.trackPlayerRoles(tables)
   tables.RoundId:addRound()
-  DDD.CurrentRound.roundStartTime = SysTime()
-  DDD.CurrentRound.roundId = tables.RoundId:getCurrentRoundId()
-  DDD.CurrentRound.isActive = true
   for k, ply in pairs(player:GetAll()) do
     tables.RoundRoles:addRole(ply)
   end
 end
 
 hook.Add("TTTBeginRound", "DDDTrackRoundRoles", function()
-    DDD.Hooks.trackPlayerRoles(tables)
+    if (DDD:enabled()) then
+      DDD.Hooks.trackPlayerRoles(tables)
+    end
   end)
 
 hook.Add("TTTEndRound", "DDDTrackRoundResult", function(result)
-    tables.RoundResult:addResult(result)
+    if (DDD:enabled()) then
+      tables.RoundResult:addResult(result)
+    end
     DDD.CurrentRound.isActive = false
   end)
  
@@ -137,7 +142,7 @@ end
 
 --TODO: Ensure this doesn't get called post round, and if it does, simply cancel it.
 hook.Add("DoPlayerDeath", "DDDTrackPlayerDeath", function(victim, attacker, damageInfo)
-    if (DDD.CurrentRound.isActive) then
+    if (DDD:enabled()) then
       DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
     end 
   end
@@ -170,7 +175,7 @@ function DDD.Hooks.trackDamage(tables, victim, damageInfo)
 end
 
 hook.Add("EntityTakeDamage", "DDDTrackDamage", function(victim, damageInfo)
-  if (victim:GetClass() == "player" && DDD.CurrentRound.isActive) then
+  if (DDD:enabled() and victim:GetClass() == "player") then
     DDD.Hooks.trackDamage(tables, victim, damageInfo)
   end
 end)
@@ -231,13 +236,13 @@ end)
  
 hook.Add("TTT_PlayerShotWeapon", "DDDTrackWeaponShot", function(ply, attackType)
 	if !IsValid(ply) then return end
-  if DDD.CurrentRound.isActive then
+  if DDD:enabled() then
     tables.ShotsFired:addShot(ply, attackType)
   end
 end)
 
 hook.Add("TTTBodyFound", "DDDTrackCorpseIdentified", function(ply, deadply, rag)
-	if DDD.CurrentRound.isActive then
+	if DDD:enabled() then
     tables.CorpseIdentified:addCorpseFound(ply, deadply, rag)
   end
 end)
@@ -251,7 +256,7 @@ function DDD.Hooks.TrackRadioCallouts(tables, ply, commandName, commandTarget)
 end
 
 hook.Add("TTTPlayerRadioCommand", "DDDTrackRadioCallouts", function(ply, cmd_name, cmd_target)
-    if DDD.CurrentRound.isActive then
+    if DDD:enabled() then
       DDD.Hooks.TrackRadioCallouts(tables, ply, cmd_name, cmd_target)
     end
   end)

@@ -41,8 +41,8 @@ if SERVER then
   include("ddd/main/database/sv_sqlitedb.lua")
   include("ddd/main/config/sv_config.lua")
   include("ddd/main/gui/sv_overview.lua")
-  include("ddd/main/sv_currentround.lua")
-  include("ddd/test/sv_testinit.lua") 
+  include("ddd/main/sv_active.lua")
+  include("ddd/test/sv_testinit.lua")
 end
 
 if CLIENT then
