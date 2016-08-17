@@ -44,7 +44,7 @@ local function createListView(overviewPanel)
 end
 
 local function populateListView(list, table)
-  list:AddLine("Total D Rounds", table["DetectiveRounds"])
+  list:AddLine("Total D Rounds", table["detective_rounds"])
   list:AddLine("Enemy K/D", calculateDetectiveEnemyKD(table))
   --list:AddLine("Peak Enemy K/D", "Not Yet Implemented")
   list:AddLine("Total K/D (includes ally kills)", calculateDetectiveTotalKD(table))

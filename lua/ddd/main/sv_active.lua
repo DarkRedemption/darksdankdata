@@ -44,7 +44,3 @@ function DDD:updateEnabled(tables)
     end
   end
 end
-
-hook.Add("TTTBeginRound", "DDD_ActiveRoundCheck", function()
-  DDD:updateEnabled()
-end)

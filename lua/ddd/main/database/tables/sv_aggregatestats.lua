@@ -31,6 +31,10 @@ itemColumnSuffix["weapon_ttt_health_station"] = "healthstation_purchases"
 
 --All kills/deaths are in the format of <thisplayerrole>_<opponentrole>_<kills/deaths>
 local columns = { player_id = "INTEGER PRIMARY KEY",
+  
+                  innocent_rounds = "INTEGER NOT NULL DEFAULT 0",
+                  detective_rounds = "INTEGER NOT NULL DEFAULT 0",
+                  traitor_rounds = "INTEGER NOT NULL DEFAULT 0",
                   
                   innocent_suicides = "INTEGER NOT NULL DEFAULT 0",
                   traitor_suicides = "INTEGER NOT NULL DEFAULT 0",
@@ -59,7 +63,10 @@ local columns = { player_id = "INTEGER PRIMARY KEY",
                   detective_teleporter_purchases = "INTEGER NOT NULL DEFAULT 0",
                   detective_binoculars_purchases = "INTEGER NOT NULL DEFAULT 0",
                   detective_ump_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  detective_healthstation_purchases = "INTEGER NOT NULL DEFAULT 0"
+                  detective_healthstation_purchases = "INTEGER NOT NULL DEFAULT 0",
+                  
+                  self_hp_healed = "INTEGER NOT NULL DEFAULT 0",
+                  others_hp_healed = "INTEGER NOT NULL DEFAULT 0"
                 }
                 
 local function createColumnsForAllRoleCombinations(suffix)
@@ -257,6 +264,20 @@ function aggregateStatsTable:getPurchases(playerStatsLuaTable)
   playerStatsLuaTable["detective_healthstation_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_health_station",  roleToRoleId["Detective"])
 end
 
+function aggregateStatsTable:calculateSelfHPHealed(playerStatsLuaTable)
+  local playerId = playerStatsLuaTable.player_id
+  playerStatsLuaTable["self_hp_healed"] = self.tables.Healing:getTotalHPYouHealed(playerId)
+end
+
+function aggregateStatsTable:calculateRoleData(playerStatsLuaTable)
+  local playerId = playerStatsLuaTable.player_id
+  
+  for rolename, rolevalue in pairs(roleToRoleId) do
+    local keyname = rolename .. "_rounds"
+    playerStatsLuaTable[keyname] = self.tables.RoundRoles:getRoundsAsRole(playerId, rolevalue)
+  end
+end
+
 --[[
 Recalculates a single player's stats.
 --]]
@@ -269,6 +290,8 @@ function aggregateStatsTable:recalculateSinglePlayer(playerId)
   self:getSuicideData(playerStatsLuaTable)
   self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_kills", self.calculateRoleWeaponKills, {"ttt_c4"})
   self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_deaths", self.calculateRoleWeaponDeaths, {"ttt_c4"})
+  self:calculateRoleData(playerStatsLuaTable)
+  self:calculateSelfHPHealed(playerStatsLuaTable)
   return playerStatsLuaTable
 end
 
@@ -305,6 +328,11 @@ function aggregateStatsTable:updateColumn(playerId, columnName, newValue)
   return self:query("aggregateStatsTable:updateColumn", query)
 end
 
+function aggregateStatsTable:getRounds(playerId, playerRole)
+  local columnName = roleIdToRole[playerRole] .. "_rounds"
+  return self:selectColumn(playerId, columnName)
+end
+
 function aggregateStatsTable:getKills(playerId, playerRole, victimRole)
   local columnName = roleIdToRole[playerRole] .. "_" .. roleIdToRole[victimRole] .. "_kills"
   return self:selectColumn(playerId, columnName)
@@ -338,6 +366,16 @@ end
 function aggregateStatsTable:getItemPurchases(playerId, playerRole, item)
   local columnName = roleIdToRole[playerRole] .. "_" .. itemColumnSuffix[tostring(item)]
   return self:selectColumn(playerId, columnName)
+end
+
+function aggregateStatsTable:getSelfHPHealed(playerId)
+  return self:selectColumn(playerId, "self_hp_healed")
+end
+
+function aggregateStatsTable:incrementRounds(playerId, playerRole)
+  local rounds = self:getRounds(playerId, playerRole) + 1
+  local columnName = roleIdToRole[playerRole] .. "_rounds"
+  return self:updateColumn(playerId, columnName, rounds)
 end
 
 function aggregateStatsTable:incrementKills(playerId, playerRole, victimRole)
@@ -380,6 +418,12 @@ function aggregateStatsTable:incrementItemPurchases(playerId, playerRole, item)
   local purchases = self:getItemPurchases(playerId, playerRole, item) + 1
   local columnName = roleIdToRole[playerRole] .. "_" .. itemColumnSuffix[tostring(item)]
   return self:updateColumn(playerId, columnName, purchases)
+end
+
+function aggregateStatsTable:incrementSelfHPHealed(playerId)
+  local hpHealed = self:getSelfHPHealed(playerId) + 1
+  local columnName = "self_hp_healed"
+  return self:updateColumn(playerId, columnName, hpHealed)
 end
 
 function aggregateStatsTable:getPlayerStats(playerId)

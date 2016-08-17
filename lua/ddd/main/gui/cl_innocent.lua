@@ -47,7 +47,7 @@ local function createListView(overviewPanel)
 end
 
 local function populateListView(list, table)
-  list:AddLine("Total Inno Rounds", table["InnocentRounds"])
+  list:AddLine("Total Inno Rounds", table["innocent_rounds"])
   list:AddLine("Enemy K/D", calculateInnocentNonAllyKD(table))
   --list:AddLine("Peak Enemy K/D", "0")
   list:AddLine("Total K/D (includes ally kills)", calculateInnocentAllKD(table))

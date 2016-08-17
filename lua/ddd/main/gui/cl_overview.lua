@@ -25,9 +25,9 @@ local function createListView(overviewPanel)
 end
 
 local function calculateRoundsPlayed(table)
-  return table["InnocentRounds"] + 
-         table["DetectiveRounds"] + 
-         table["TraitorRounds"]
+  return table["innocent_rounds"] + 
+         table["detective_rounds"] + 
+         table["traitor_rounds"]
 end
 
 local function calculateAllyKills(table)
@@ -101,7 +101,7 @@ local function populateListView(list, table)
   list:AddLine("Enemy Deaths", calculateEnemyDeaths(table))
   list:AddLine("Ally Kills", calculateAllyKills(table))
   list:AddLine("Ally Deaths", calculateAllyDeaths(table))
-  list:AddLine("Ally K/D", calculateAllyKills(table) / calculateAllyDeaths(table))
+  list:AddLine("Ally K/D", DDD.Gui.formatKD(calculateAllyKills(table) / calculateAllyDeaths(table)))
   --list:AddLine("Assists", "Not Yet Implemented")
   --list:AddLine("Falls", "Not Yet Implemented")
   list:AddLine("Suicides", table["traitor_suicides"] + table["innocent_suicides"] + table["detective_suicides"])
@@ -112,7 +112,7 @@ local function populateListView(list, table)
   --list:AddLine("Total Innocent Deaths", table["InnocentD"])
   --list:AddLine("Times Killed By Another Innocent",
   
-  list:AddLine("Total HP You Healed", tonumber(table["TotalHPYouHealed"]))
+  list:AddLine("Total HP You Healed", tonumber(table["self_hp_healed"]))
   --SetValue example. Parameters: Column Number (Starts at 1), Value
   --kd:SetValue(2, "Infinite")
 end

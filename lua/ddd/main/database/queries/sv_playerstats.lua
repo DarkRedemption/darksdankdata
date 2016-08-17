@@ -76,10 +76,8 @@ end
 function PlayerStats:updateStats()
   self:getAggregateData()
   self:getPlayerTime()
-  self:updateRoleData()
 
-  self.statsTable["TotalHPYouHealed"] = tables.Healing:getTotalHPYouHealed(self.playerId)
-  self.statsTable["TotalHPOthersHealed"] = tables.Healing:getTotalHPOthersHealed(self.playerId)
+  --self.statsTable["TotalHPOthersHealed"] = tables.Healing:getTotalHPOthersHealed(self.playerId)
 end
 
 

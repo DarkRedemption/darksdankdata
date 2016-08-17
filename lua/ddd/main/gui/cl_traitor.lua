@@ -37,7 +37,7 @@ local function createListView(overviewPanel)
 end
 
 local function populateListView(list, table)
-  list:AddLine("Total T Rounds", table["TraitorRounds"])
+  list:AddLine("Total T Rounds", table["traitor_rounds"])
   list:AddLine("Enemy K/D", calculateTraitorEnemyKD(table))
   --list:AddLine("Peak Enemy K/D", "0")
   --list:AddLine("Non-C4 Enemy K/D", "0")
