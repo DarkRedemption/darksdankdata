@@ -14,6 +14,7 @@ foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
 local uniqueConstraints = {{"player_id", "round_id"}}
 
 local roundRolesTable = DDD.SqlTable:new("ddd_round_roles", columns, foreignKeyTable, uniqueConstraints)
+roundRolesTable:addIndex("playerAndRoleIndex", {"player_id", "role_id"})
 
 function roundRolesTable:addRole(ply)
   local roundId = self:getForeignTableByColumn("round_id"):getCurrentRoundId()

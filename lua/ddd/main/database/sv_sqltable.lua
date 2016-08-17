@@ -97,14 +97,43 @@ function SqlTable:createTable()
   end
 end
 
+--[[
+Adds an index to the SqlTable, to be created at the same time the table is created.
+PARAM indexName:String - The name of the index.
+PARAM columns - The columns to index.
+]]
+function SqlTable:addIndex(indexName, columns)
+  self.indices[indexName] = columns
+end
+
+function SqlTable:createIndices()
+  for indexName, columns in pairs(self.indices) do
+    local columnString = ""
+    for i = 1, #columns do
+      columnString = columnString .. columns[i]
+      if (i != #columns) then
+        columnString = columnString .. ", "
+      end
+    end
+  
+    local query = "CREATE INDEX IF NOT EXISTS " .. indexName .. " ON " .. self.tableName .. "(" .. columnString .. ")"
+    self:query("SqlTable:createIndices", query, 1)
+  end
+end
+
 function SqlTable:create()
    if (!sql.TableExists(self.tableName)) then
       log.logDebug("Table " .. self.tableName .. " does not exist. Now creating.")
     if (!self:createTable()) then
       log.logError("Failed to create table " .. self.tableName)
+      return false
+    else
+      self:createIndices()
+      return true
     end
    else
     log.logDebug("Table " .. self.tableName .. " already exists.")
+    self:createIndices() --In case they weren't already there
     return true
   end
 end
@@ -237,12 +266,17 @@ function SqlTable:new(tableName, columns, foreignKeyTable, uniqueGroups)
   setmetatable(newTable, self)
   newTable.tableName = tableName
   newTable.columns = columns
+  
   if (foreignKeyTable) then
     newTable.foreignKeyTable = foreignKeyTable
   end
+  
   if (uniqueGroups) then
     newTable.uniqueGroups = uniqueGroups
   end
+  
+  newTable.indices = {}
+  
   return newTable
 end
 

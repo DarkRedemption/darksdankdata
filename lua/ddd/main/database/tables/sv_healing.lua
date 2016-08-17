@@ -15,6 +15,10 @@ foreignKeyTable:addConstraint("user_id", playerIdTable, "id")
 
 local healingTable = DDD.SqlTable:new("ddd_healing", columns, foreignKeyTable)
 
+healingTable:addIndex("roundIdIndex", {"round_id"})
+healingTable:addIndex("userIndex", {"user_id"})
+healingTable:addIndex("deployerIndex", {"deployer_id"})
+
 function healingTable:addHeal(deployerId, userId, healAmount)
   local roundId = self:getForeignTableByColumn("round_id"):getCurrentRoundId()
   local roundTime = DDD.CurrentRound:getCurrentRoundTime()
@@ -32,23 +36,22 @@ end
 Gets the total HP someone has healed themselves for.
 ]]
 function healingTable:getTotalHPYouHealed(userId)
-  local query = "SELECT SUM(heal_amount) as total_hp_healed FROM " .. self.tableName .. " WHERE user_id == " .. userId
-  return self:query("healingTable:getTotalHPHealed", query, 1, "total_hp_healed")
+  local checkIfPlayerExistsQuery = "SELECT * FROM " .. self.tableName .. " WHERE user_id == " .. userId
+  if self:query("healingTable:getTotalHPHealed", checkIfPlayerExistsQuery) == 0 then
+    return 0
+  else
+    local query = "SELECT SUM(heal_amount) as total_hp_healed FROM " .. self.tableName .. " WHERE user_id == " .. userId
+    return self:query("healingTable:getTotalHPHealed", query, 1, "total_hp_healed")
+  end
 end
 
 --[[
 Gets the total HP someone's health stations have healed others for.
 ]]
 function healingTable:getTotalHPOthersHealed(placerId)
-  local query = "SELECT SUM(heal_amount) as total_hp_healed FROM " .. self.tableName .. " WHERE user_id != " .. placerId .. " AND placer_id == " .. placerId
+  local query = "SELECT SUM(heal_amount) as total_hp_healed FROM " .. self.tableName .. " WHERE user_id != " .. placerId .. " AND deployer_id == " .. placerId
   return self:query("healingTable:getTotalHPHealed", query, 1, "total_hp_healed")
 end
 
 DDD.Database.Tables.Healing = healingTable
 healingTable:create()
-
-hook.Add("TTTPlayerUsedHealthStation", "DDDAddHeals", function(ply, ent_station, healed)
-    local userId = playerIdTable:getPlayerId(ply)
-    local placerId = playerIdTable:getPlayerId(ent_station:GetPlacer())
-    healingTable:addHeal(userId, placerId, healed)
-  end)

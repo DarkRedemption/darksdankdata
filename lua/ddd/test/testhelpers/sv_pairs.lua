@@ -3,6 +3,7 @@ function DDDTest.Helpers.getRandomPair(array)
   if (#array == 2) then return array[1], array[2] end
   
   local arrayId = math.random(1, #array)
+  
   local function getSecondId()
     local secondArrayId = math.random(1, #array)
     if (arrayId == secondArrayId) then

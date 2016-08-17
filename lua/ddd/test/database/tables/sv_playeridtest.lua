@@ -115,6 +115,20 @@ local function updateOnlyOnePlayerSpec()
   GUnit.assert(playersWithNewName):shouldEqual(1)
 end
 
+local function getPlayerIdListSpec()
+  local players = generatePlayerList(100)
+  
+  for i = 1, 100 do
+    local ply = players[i]
+    local id = tables.PlayerId:addPlayer(ply)
+    GUnit.assert(id):shouldEqual(i)
+  end
+  
+  local allPlayerIds = tables.PlayerId:getPlayerIdList()
+  for i = 1, 100 do
+    GUnit.assert(allPlayerIds[i]):isNotNil()
+  end
+end
 
 playerIdTest:beforeEach(beforeEach)
 playerIdTest:afterEach(afterEach)
@@ -124,3 +138,4 @@ playerIdTest:addSpec("not add a player with the same SteamId to the table", noDu
 playerIdTest:addSpec("get a whole row", getRowSpec)
 playerIdTest:addSpec("update usernames", updatePlayerNameSpec)
 playerIdTest:addSpec("only update the specified user's name", updateOnlyOnePlayerSpec)
+playerIdTest:addSpec("get every player ID", getPlayerIdListSpec)

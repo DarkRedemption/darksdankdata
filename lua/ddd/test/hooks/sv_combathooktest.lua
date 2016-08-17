@@ -1,5 +1,4 @@
-local hookTest = GUnit.Test:new("DatabaseHooks")
-local shopItemGen = DDDTest.Helpers.Generators.ShopItemGen
+local hookTest = GUnit.Test:new("CombatHooks")
 local tables = {}
 
 local function beforeEach()
@@ -9,36 +8,6 @@ end
 
 local function afterEach()
   DDDTest.Helpers.dropAll(tables)
-end
-
-local function trackPurchasesSpec()
-  for i = 1, 100 do
-    tables.RoundId:addRound()
-    local player = GUnit.Generators.FakePlayer:new()
-    tables.PlayerId:addPlayer(player)
-    local equipment = shopItemGen:new():GetName()
-    local isItem = math.random(0, 1)
-      
-    local purchaseId = DDD.Hooks.trackPurchases(tables, player, equipment, isItem)
-    
-    GUnit.assert(purchaseId):shouldEqual(i)
-  end
-end
-
-local function trackDnaDiscoverySpec()
-  for i = 1, 100 do
-    tables.RoundId:addRound()
-    
-    local finder = GUnit.Generators.FakePlayer:new()
-    local owner = GUnit.Generators.FakePlayer:new()
-    tables.PlayerId:addPlayer(finder)
-    tables.PlayerId:addPlayer(owner)
-    
-    local entity = GUnit.Generators.FakeEntity:new()
-    
-    local id = DDD.Hooks.trackDnaDiscovery(tables, finder, owner, entity)
-    GUnit.assert(id):shouldEqual(i)
-  end
 end
 
 local function trackPlayerCombatDeathSpec()
@@ -157,8 +126,6 @@ end
 hookTest:beforeEach(beforeEach)
 hookTest:afterEach(afterEach)
 
-hookTest:addSpec("track player purchases", trackPurchasesSpec)
-hookTest:addSpec("track when player DNA is found", trackDnaDiscoverySpec)
 hookTest:addSpec("track when a player dies from an attacker", trackPlayerCombatDeathSpec)
 hookTest:addSpec("track when a player dies from pushing", trackPlayerPushDeathSpec)
 hookTest:addSpec("track when a player dies from the world", trackPlayerWorldDeathSpec)

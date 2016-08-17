@@ -27,7 +27,8 @@ function DDDTest.Helpers.makeTables()
     ShotsFired = tables.ShotsFired,
     CorpseIdentified = tables.CorpseIdentified,
     RadioCommandUsed = tables.RadioCommandUsed,
-    RadioCommandTarget = tables.RadioCommandTarget
+    RadioCommandTarget = tables.RadioCommandTarget,
+    AggregateStats = tables.AggregateStats
     }
   local convertedTables = {}
   
@@ -45,7 +46,7 @@ end
 
 function DDDTest.Helpers.dropAll(tables)
   --Needed until I add sorted tables.
-  local dropOrder = {"RadioCommandTarget", "RadioCommandUsed", "CorpseIdentified", "ShotsFired", "PlayerPushKill", "WorldDamage", "Dna", "EntityId", "RoundResult", "Purchases", "ShopItem", "PlayerKill", "RoundRoles", "Healing", "CombatDamage", "WorldKill", "RadioCommand", "WeaponId", "RoundId", "MapId", "PlayerId"}
+  local dropOrder = {"AggregateStats", "RadioCommandTarget", "RadioCommandUsed", "CorpseIdentified", "ShotsFired", "PlayerPushKill", "WorldDamage", "Dna", "EntityId", "RoundResult", "Purchases", "ShopItem", "PlayerKill", "RoundRoles", "Healing", "CombatDamage", "WorldKill", "RadioCommand", "WeaponId", "RoundId", "MapId", "PlayerId"}
   local arraySize = table.getn(dropOrder)
   for i=1, arraySize do
     tables[dropOrder[i]]:drop()

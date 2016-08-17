@@ -16,7 +16,7 @@ foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
 foreignKeyTable:addConstraint("command_id", tables.RadioCommand, "id")
 
 local radioCommandUsedTable = DDD.SqlTable:new("ddd_radio_command_used", columns, foreignKeyTable)
-
+radioCommandUsedTable:addIndex("playerAndCommand", {"player_id", "command_id"})
 --[[
 Find the target type, then convert it into an integer
 to allow for faster parsing by the database and easier sorting.

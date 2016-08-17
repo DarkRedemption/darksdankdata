@@ -1,11 +1,20 @@
 local function calculateDetectiveTotalKD(table)
-  return (table["DetectiveTraitorK"] + table["DetectiveInnocentK"] + table["DetectiveDetectiveK"]) / 
-         (table["DetectiveTraitorD"] + table["DetectiveDetectiveD"] + table["DetectiveInnocentD"])
+  local kd = (table["detective_traitor_kills"] + 
+              table["detective_innocent_kills"] + 
+              table["detective_detective_kills"]) / 
+          (table["detective_traitor_deaths"] + 
+          table["detective_detective_deaths"] + 
+          table["detective_innocent_deaths"] + 
+          table["detective_world_deaths"])
+        
+  return DDD.Gui.formatKD(kd)
 end
 
 local function calculateDetectiveEnemyKD(table)
-  return table["DetectiveTraitorK"] / 
-         (table["DetectiveTraitorD"] + table["DetectiveDetectiveD"] + table["DetectiveInnocentD"])
+  local kd = table["detective_traitor_kills"] / 
+         (table["detective_traitor_deaths"] + table["detective_detective_deaths"] + table["detective_innocent_deaths"] + table["detective_world_deaths"])
+  
+  return DDD.Gui.formatKD(kd)
 end
 
 local function createDetectiveText(overviewPanel)
@@ -35,27 +44,29 @@ local function createListView(overviewPanel)
 end
 
 local function populateListView(list, table)
-  list:AddLine("Total D Rounds", table["DetectiveRounds"])
+  list:AddLine("Total D Rounds", table["detective_rounds"])
   list:AddLine("Enemy K/D", calculateDetectiveEnemyKD(table))
   --list:AddLine("Peak Enemy K/D", "Not Yet Implemented")
   list:AddLine("Total K/D (includes ally kills)", calculateDetectiveTotalKD(table))
-  list:AddLine("Traitors Killed", table["DetectiveTraitorK"])
-  list:AddLine("Innocents Killed", table["DetectiveInnocentK"])
-  list:AddLine("Detective Partners Killed", table["DetectiveDetectiveK"])
-  list:AddLine("Total Allies Killed", table["DetectiveInnocentK"] + table["DetectiveDetectiveK"])
-  list:AddLine("Times Killed By Traitors", table["DetectiveTraitorD"])
-  list:AddLine("Times Killed By Innocents", table["DetectiveInnocentD"])
-  list:AddLine("Times Killed By Fellow Detectives", table["DetectiveDetectiveD"] - table["DetectiveSuicides"])
-  list:AddLine("Total Times Killed By Allies", table["DetectiveInnocentD"] + table["DetectiveDetectiveD"])
+  list:AddLine("Traitors Killed", table["detective_traitor_kills"])
+  list:AddLine("Innocents Killed", table["detective_innocent_kills"])
+  list:AddLine("Detective Partners Killed", table["detective_detective_kills"])
+  list:AddLine("Total Allies Killed", table["detective_innocent_kills"] + table["detective_detective_kills"])
+  list:AddLine("Times Killed by Traitors", table["detective_traitor_deaths"])
+  list:AddLine("Times Killed by Innocents", table["detective_innocent_deaths"])
+  list:AddLine("Times Killed by Fellow Detectives", table["detective_detective_deaths"] - table["detective_suicides"])
+  list:AddLine("Times Killed by Allies (Innocents + Detectives)", table["detective_innocent_deaths"] + table["detective_detective_deaths"])
+  list:AddLine("Times Killed by the World", table["detective_world_deaths"])
+  list:AddLine("Suicides", table["detective_suicides"])
   --list:AddLine("Total HP Others Healed Using Your Health Stations", tonumber(table["TotalHPOthersHealed"]))
     
-  list:AddLine("Times Radar Purchased", table["DetectiveRadarPurchases"])
-  list:AddLine("Times Visualizer purchased", table["DetectiveVisualizerPurchases"])
-  list:AddLine("Times Defuser purchased", table["DetectiveDefuserPurchases"])
-  list:AddLine("Times Teleporter purchased", table["DetectiveTeleporterPurchases"])
-  list:AddLine("Times Binoculars purchased", table["DetectiveBinocularsPurchases"])
-  list:AddLine("Times UMP purchased", table["DetectiveUmpPurchases"])
-  list:AddLine("Times Health Station purchased", table["DetectiveHealthStationPurchases"])
+  list:AddLine("Times Radar Purchased", table["detective_radar_purchases"])
+  list:AddLine("Times Visualizer purchased", table["detective_visualizer_purchases"])
+  list:AddLine("Times Defuser purchased", table["detective_defuser_purchases"])
+  list:AddLine("Times Teleporter purchased", table["detective_teleporter_purchases"])
+  list:AddLine("Times Binoculars purchased", table["detective_binoculars_purchases"])
+  list:AddLine("Times UMP purchased", table["detective_ump_purchases"])
+  list:AddLine("Times Health Station purchased", table["detective_healthstation_purchases"])
 end
 
 function DDD.Gui.createDetectiveTab(mainPropertySheet, statsTable)

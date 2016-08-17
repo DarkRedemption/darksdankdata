@@ -19,6 +19,13 @@ foreignKeyTable:addConstraint("weapon_id", tables.WeaponId, "id")
 
 local combatDamageTable = DDD.SqlTable:new("ddd_combat_damage", columns, foreignKeyTable)
 
+combatDamageTable:addIndex("roundIdIndex", {"round_id"})
+combatDamageTable:addIndex("victimIndex", {"victim_id"})
+combatDamageTable:addIndex("attackerIndex", {"attacker_id"})
+combatDamageTable:addIndex("attackerVsVictimIndex", {"attacker_id, victim_id"})
+combatDamageTable:addIndex("killsWithWeaponIndex", {"attacker_id, weapon_id"})
+combatDamageTable:addIndex("deathsFromWeaponIndex", {"victim_id, weapon_id"})
+
 --[[
 Adds a row tracking the damage dealt to a person by another player.
 Parameters:

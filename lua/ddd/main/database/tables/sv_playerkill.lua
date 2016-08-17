@@ -21,6 +21,13 @@ foreignKeyTable:addConstraint("weapon_id", weaponIdTable, "id")
   
 local playerKillTable = DDD.SqlTable:new("ddd_player_kill", columns, foreignKeyTable)
 
+playerIdTable:addIndex("roundIdIndex", {"round_id"})
+playerIdTable:addIndex("victimIndex", {"victim_id"})
+playerIdTable:addIndex("attackerIndex", {"attacker_id"})
+playerIdTable:addIndex("attackerVsVictimIndex", {"attacker_id, victim_id"})
+playerIdTable:addIndex("killsWithWeaponIndex", {"attacker_id, weapon_id"})
+playerIdTable:addIndex("deathsFromWeaponIndex", {"victim_id, weapon_id"})
+
 function playerKillTable:addKill(victimId, attackerId, weaponId)
   local queryTable = {
     round_id = self:getForeignTableByColumn("round_id"):getCurrentRoundId(),
@@ -34,7 +41,7 @@ end
 
 function playerKillTable:getKillsAsRole(playerId, roleId)
   local query = [[SELECT kill.*, victim_roles.role_id as victim_role, attacker_roles.role_id as attacker_role
-                  FROM ddd_player_kill AS kill
+                  FROM ]] .. self.tableName .. [[ AS kill
                   LEFT JOIN ddd_round_roles AS victim_roles 
                   ON kill.round_id == victim_roles.round_id
                   AND kill.victim_id == victim_roles.player_id
@@ -58,13 +65,13 @@ local function countResult(funcName, result)
     DDD.Logging.logError("sv_playerkills.lua - " .. funcName .. ": An error occured. Error was: " .. sql.LastError())
     return 0
 else 
-  return result[1]["count"]
+  return tonumber(result[1]["count"])
   end
 end
 
 function playerKillTable:getTotalKills(playerId)
   local query = [[SELECT COUNT(*) AS count
-                  FROM ddd_player_kill AS kill
+                  FROM ]] .. self.tableName .. [[ AS kill
                   LEFT JOIN ddd_round_roles AS victim_roles 
                   ON kill.round_id == victim_roles.round_id
                   AND kill.victim_id == victim_roles.player_id
@@ -79,7 +86,7 @@ end
 
 function playerKillTable:getTotalDeaths(playerId)
   local query = [[SELECT COUNT(*) AS count
-                  FROM ddd_player_kill AS kill
+                  FROM ]] .. self.tableName .. [[ AS kill
                   LEFT JOIN ddd_round_roles AS victim_roles 
                   ON kill.round_id == victim_roles.round_id
                   AND kill.victim_id == victim_roles.player_id
@@ -94,7 +101,7 @@ end
 
 function playerKillTable:getRoleKills(playerId, playerRole, victimRole)
   local query = [[SELECT COUNT(*) AS count
-                  FROM ddd_player_kill AS kill
+                  FROM ]] .. self.tableName .. [[ AS kill
                   LEFT JOIN ddd_round_roles AS victim_roles 
                   ON kill.round_id == victim_roles.round_id
                   AND kill.victim_id == victim_roles.player_id
@@ -112,7 +119,7 @@ end
 
 function playerKillTable:getRoleDeaths(playerId, playerRole, attackerRole)
   local query = [[SELECT COUNT(*) AS count
-                  FROM ddd_player_kill AS kill
+                  FROM ]] .. self.tableName .. [[ AS kill
                   LEFT JOIN ddd_round_roles AS victim_roles 
                   ON kill.round_id == victim_roles.round_id
                   AND kill.victim_id == victim_roles.player_id
@@ -127,26 +134,9 @@ function playerKillTable:getRoleDeaths(playerId, playerRole, attackerRole)
   return countResult("getRoleDeaths", result)
 end
 
-function playerKillTable:getRoleSuicides(playerId, playerRole)
-  local query = [[SELECT COUNT(*) AS count
-                  FROM ddd_player_kill AS kill
-                  LEFT JOIN ddd_round_roles AS victim_roles 
-                  ON kill.round_id == victim_roles.round_id
-                  AND kill.victim_id == victim_roles.player_id
-                  LEFT JOIN ddd_round_roles AS attacker_roles
-                  ON kill.round_id == attacker_roles.round_id
-                  AND kill.attacker_id == attacker_roles.player_id
-                  WHERE kill.victim_id == ]] .. tostring(playerId) .. [[
-                  AND kill.attacker_id == ]] .. tostring(playerId) .. [[
-                  AND attacker_roles.role_id == ]] .. tostring(playerRole)
-                  
-  local result = sql.Query(query)                
-  return countResult("getRoleSuicides", result)
-end
-
 function playerKillTable:getRoleKillsWithWeapon(playerId, playerRole, victimRole, weaponId)
   local query = [[SELECT COUNT(*) AS count
-                  FROM ddd_player_kill AS kill
+                  FROM ]] .. self.tableName .. [[ AS kill
                   LEFT JOIN ddd_round_roles AS victim_roles 
                   ON kill.round_id == victim_roles.round_id
                   AND kill.victim_id == victim_roles.player_id
@@ -165,7 +155,7 @@ end
 
 function playerKillTable:getRoleDeathsWithWeapon(playerId, playerRole, attackerRole, weaponId)
   local query = [[SELECT COUNT(*) AS count
-                  FROM ddd_player_kill AS kill
+                  FROM ]] .. self.tableName .. [[ AS kill
                   LEFT JOIN ddd_round_roles AS victim_roles 
                   ON kill.round_id == victim_roles.round_id
                   AND kill.victim_id == victim_roles.player_id
@@ -269,22 +259,6 @@ end
 
 function playerKillTable:getDetectiveDetectiveDeaths(playerId)
   return playerKillTable:getRoleDeaths(playerId, roles["Detective"], roles["Detective"])
-end
-
---
--- Suicides
---
-
-function playerKillTable:getTraitorSuicides(playerId)
-  return playerKillTable:getRoleSuicides(playerId, roles["Traitor"])
-end
-
-function playerKillTable:getInnocentSuicides(playerId)
-  return playerKillTable:getRoleSuicides(playerId, roles["Innocent"])
-end
-
-function playerKillTable:getDetectiveSuicides(playerId)
-  return playerKillTable:getRoleSuicides(playerId, roles["Detective"])
 end
 
 DDD.Database.Tables.PlayerKill = playerKillTable

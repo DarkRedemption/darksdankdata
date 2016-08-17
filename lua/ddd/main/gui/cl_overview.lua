@@ -25,62 +25,86 @@ local function createListView(overviewPanel)
 end
 
 local function calculateRoundsPlayed(table)
-  return table["InnocentRounds"] + 
-         table["DetectiveRounds"] + 
-         table["TraitorRounds"]
+  return table["innocent_rounds"] + 
+         table["detective_rounds"] + 
+         table["traitor_rounds"]
 end
 
 local function calculateAllyKills(table)
-  return table["InnocentInnocentK"] + 
-         table["InnocentDetectiveK"] + 
-         table["DetectiveInnocentK"] +
-         table["DetectiveDetectiveK"] +
-         table["TraitorTraitorK"]         
+  return table["innocent_innocent_kills"] + 
+         table["innocent_detective_kills"] + 
+         table["detective_innocent_kills"] +
+         table["detective_detective_kills"] +
+         table["traitor_traitor_kills"] 
 end
 
 local function calculateAllyDeaths(table)
-  return table["InnocentInnocentD"] + 
-         table["InnocentDetectiveD"] + 
-         table["DetectiveInnocentD"] +
-         table["DetectiveDetectiveD"] +
-         table["TraitorTraitorD"] -
-         table["InnocentSuicides"] -
-         table["TraitorSuicides"] -
-         table["DetectiveSuicides"]
+  return table["innocent_innocent_deaths"] + 
+         table["innocent_detective_deaths"] + 
+         table["detective_innocent_deaths"] +
+         table["detective_detective_deaths"] +
+         table["traitor_traitor_deaths"] -
+         table["innocent_suicides"] -
+         table["traitor_suicides"] -
+         table["detective_suicides"]
 end
 
 local function calculateEnemyKills(table)
-  return table["InnocentTraitorK"] + 
-         table["DetectiveTraitorK"] + 
-         table["TraitorInnocentK"] +
-         table["TraitorDetectiveK"]
+  return table["innocent_traitor_kills"] + 
+         table["detective_traitor_kills"] + 
+         table["traitor_innocent_kills"] +
+         table["traitor_detective_kills"]
 end
 
 local function calculateEnemyDeaths(table)
-  return table["InnocentTraitorD"] + 
-         table["DetectiveTraitorD"] + 
-         table["TraitorInnocentD"] +
-         table["TraitorDetectiveD"]
+  return table["innocent_traitor_deaths"] + 
+         table["detective_traitor_deaths"] + 
+         table["traitor_innocent_deaths"] +
+         table["traitor_detective_deaths"]
 end
 
-local function calculateNonAllyKD(table)
-  return (table["K"] - calculateAllyKills(table)) / table["D"]
+local function calculateWorldDeaths(table)
+  return table["innocent_world_deaths"] +
+         table["traitor_world_deaths"] +
+         table["detective_world_deaths"]
+end
+
+local function calculateKills(table)
+  return calculateAllyKills(table) + calculateEnemyKills(table)
+end
+
+local function calculateDeaths(table)
+  return calculateAllyDeaths(table) + calculateEnemyDeaths(table) + calculateWorldDeaths(table)
+end
+
+local function calculateEnemyKD(table)
+  local kd = calculateEnemyKills(table) / (calculateEnemyDeaths(table) + calculateWorldDeaths(table))
+  return DDD.Gui.formatKD(kd)
+end
+
+local function calculateEnemyKDWithAllDeaths(table)
+  local kd = calculateEnemyKills(table) / calculateDeaths(table)
+  return DDD.Gui.formatKD(kd)
 end
 
 local function populateListView(list, table)
+  if (table["TotalServerTime"]) then
+    list:AddLine("Total Server Time", table["TotalServerTime"])
+  end
   list:AddLine("Total Rounds Played", calculateRoundsPlayed(table))
-  list:AddLine("Enemy K/D", calculateNonAllyKD(table))
-  list:AddLine("Total K/D (Including Ally Kills)", table["K"] / table["D"])
-  list:AddLine("Total Kills", table["K"])
-  list:AddLine("Total Deaths", table["D"])
+  list:AddLine("Enemy K/D ", calculateEnemyKD(table))
+  list:AddLine("Enemy K/D including times killed by allies", calculateEnemyKDWithAllDeaths(table))
+  list:AddLine("Total K/D (includes ally kills and deaths)", DDD.Gui.formatKD(calculateKills(table) / calculateDeaths(table)))
+  list:AddLine("Total Kills", calculateKills(table))
+  list:AddLine("Total Deaths", calculateDeaths(table))
   list:AddLine("Enemy Kills", calculateEnemyKills(table))
   list:AddLine("Enemy Deaths", calculateEnemyDeaths(table))
   list:AddLine("Ally Kills", calculateAllyKills(table))
   list:AddLine("Ally Deaths", calculateAllyDeaths(table))
-  list:AddLine("Ally K/D", calculateAllyKills(table) / calculateAllyDeaths(table))
+  list:AddLine("Ally K/D", DDD.Gui.formatKD(calculateAllyKills(table) / calculateAllyDeaths(table)))
   --list:AddLine("Assists", "Not Yet Implemented")
   --list:AddLine("Falls", "Not Yet Implemented")
-  list:AddLine("Suicides", table["TraitorSuicides"] + table["InnocentSuicides"] + table["DetectiveSuicides"])
+  list:AddLine("Suicides", table["traitor_suicides"] + table["innocent_suicides"] + table["detective_suicides"])
   --list:AddLine("Discombobulators Used", "Not Yet Implemented")
   --list:AddLine("Incendiaries Used", "Not Yet Implemented")
   --list:AddLine("Smokes Used", "Not Yet Implemented")
@@ -88,7 +112,7 @@ local function populateListView(list, table)
   --list:AddLine("Total Innocent Deaths", table["InnocentD"])
   --list:AddLine("Times Killed By Another Innocent",
   
-  list:AddLine("Total HP You Healed", tonumber(table["TotalHPYouHealed"]))
+  list:AddLine("Total HP You Healed", tonumber(table["self_hp_healed"]))
   --SetValue example. Parameters: Column Number (Starts at 1), Value
   --kd:SetValue(2, "Infinite")
 end

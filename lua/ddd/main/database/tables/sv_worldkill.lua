@@ -11,6 +11,7 @@ foreignKeys:addConstraint("round_id", tables.RoundId, "id")
 foreignKeys:addConstraint("victim_id", tables.PlayerId, "id")
                         
 local worldKillTable = DDD.SqlTable:new("ddd_world_kill", columns, foreignKeys)
+worldKillTable:addIndex("victimIndex", "victim_id")
 
 --[[
 Adds a row tracking a person's death due to the world (props, falling accidentally, and T-traps).

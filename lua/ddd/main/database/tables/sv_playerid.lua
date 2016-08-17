@@ -7,6 +7,7 @@ local columns = {
   last_known_name = "TEXT NOT NULL"
   }
 local playerIdTable = DDD.SqlTable:new("ddd_player_id", columns)
+playerIdTable:addIndex("steamIdIndex", {"steam_id"})
 
 function playerIdTable:addPlayer(ply)
   local row = {
@@ -25,6 +26,25 @@ end
 
 function playerIdTable:getPlayerId(ply)
   return self:getPlayerIdBySteamId(ply:SteamID())
+end
+
+--[[
+Gets every player ID from the table.
+Used in aggregation tables.
+]]
+function playerIdTable:getPlayerIdList()
+  local query = "SELECT id FROM " .. self.tableName
+  local result = self:query("getPlayerIdBySteamId", query)
+  
+  if (result != nil and result != false) then
+    local list = {}
+    for row, columns in pairs(result) do
+      table.insert(list, columns["id"])
+    end
+    return list
+  end
+  
+  return result
 end
 
 function playerIdTable:updatePlayerName(ply)

@@ -1,13 +1,14 @@
 DDD = {}
+DDD.Config = {}
 DDD.CurrentRound = {}
 DDD.Database = {}
 DDD.Database.Tables = {}
 DDD.Gui = {}
 DDD.Gui.Achievements = {}
-DDD.Gui.Rank = {}
+DDD.Gui.Rank = {} 
 DDD.Gui.Stats = {}
 DDD.Misc = {}
-DDD.version = "v0.1.0-RC1"
+DDD.version = "v0.1.1-SNAPSHOT"
 
 if SERVER then
   local roles = {
@@ -36,10 +37,14 @@ if SERVER then
   include("ddd/main/misc/sv_enums.lua")
   include("ddd/main/misc/sv_logging.lua")
   include("ddd/main/overrides/sv_corpse.lua")
+  --include("ddd/main/overrides/sv_c4.lua")
   include("ddd/main/database/sv_sqlitedb.lua")
+  include("ddd/main/hooks/sv_hooks.lua")
+  include("ddd/main/hooks/sv_combathooks.lua")
+  include("ddd/main/hooks/sv_overridehooks.lua")
   include("ddd/main/config/sv_config.lua")
   include("ddd/main/gui/sv_overview.lua")
-  include("ddd/main/sv_currentround.lua") 
+  include("ddd/main/sv_active.lua")
   include("ddd/test/sv_testinit.lua")
 end
 
