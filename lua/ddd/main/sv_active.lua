@@ -18,8 +18,20 @@ function DDD.CurrentRound.isPopTooLow(currentPop)
   return false
 end
 
+function DDD.CurrentRound.getNonSpectatingPlayers()
+  local nonSpectators = 0
+  
+  for index, ply in pairs(player.GetAll()) do
+    if ply:GetObserverMode() == 0 then
+      nonSpectators = nonSpectators + 1
+    end
+  end
+  
+  return nonSpectators
+end
+
 DDD.CurrentRound.blacklisted = DDD.CurrentRound.isMapBlacklisted(game.GetMap())
-DDD.CurrentRound.disabledByPop = DDD.CurrentRound.isPopTooLow(#player.GetAll())
+DDD.CurrentRound.disabledByPop = DDD.CurrentRound.isPopTooLow(DDD.CurrentRound.getNonSpectatingPlayers())
 DDD.CurrentRound.roundStartTime = 0
 DDD.CurrentRound.roundId = 0
 DDD.CurrentRound.isActive = false
@@ -38,7 +50,7 @@ function DDD:updateEnabled(tables)
   if (DDD.CurrentRound.blacklisted) then
     PrintMessage(HUD_PRINTTALK, "DDD: This map has been excluded from stat tracking.")
   else
-    DDD.CurrentRound.disabledByPop = DDD.CurrentRound.isPopTooLow(#player.GetAll())
+    DDD.CurrentRound.disabledByPop = DDD.CurrentRound.isPopTooLow(DDD.CurrentRound.getNonSpectatingPlayers())
     if (DDD.CurrentRound.disabledByPop) then
       PrintMessage(HUD_PRINTTALK, "DDD: Population is too low for stats to be tracked this round.")
     end

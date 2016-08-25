@@ -59,8 +59,11 @@ end)
 function DDD.Hooks.trackPlayerRoles(tables)
   tables.RoundId:addRound()
   for k, ply in pairs(player:GetAll()) do
-    tables.RoundRoles:addRole(ply)
-    tables.AggregateStats:incrementRounds(ply, ply:GetRole())
+    if ply:GetObserverMode() == 0 then
+      tables.RoundRoles:addRole(ply)
+      local playerId = tables.PlayerId:getPlayerId(ply)
+      tables.AggregateStats:incrementRounds(playerId, ply:GetRole())
+    end
   end
 end
 
@@ -102,7 +105,7 @@ function DDD.Hooks.TrackHealing(tables, ply, ent_station, healed)
   local userId = tables.PlayerId:getPlayerId(ply)
   local placerId = tables.PlayerId:getPlayerId(ent_station:GetPlacer())
   tables.Healing:addHeal(userId, placerId, healed)
-  tables.AggregateStats:incrementHealing(userId)
+  tables.AggregateStats:incrementSelfHPHealed(userId)
 end
 
 hook.Add("TTTPlayerUsedHealthStation", "DDDAddHeals", function(ply, ent_station, healed)

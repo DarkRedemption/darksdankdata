@@ -36,7 +36,6 @@ function simulatedRoundBuilder:findUniquePairs(players, pairsNeeded, id)
     if (pairsNeeded == pairTableSize) then
       return pairTable
     else
-      --TODO: Finish this after doing achievements/ranks
       local first = id or math.random(1, arraySize)
       local second = math.random(1, arraySize)
       if (first == second || pairExists(pairTable, first, second)) then
@@ -69,7 +68,8 @@ end
 --[[
 Sets everyone's round roles to the ratios of a standard TTT round.
 A standard TTT round has 1 traitor for every 4 players, and 1 detective for every 8 players.
-@PARAM randomPlayers:Array[FakePlayer] - An array of generated players whose order is random relative to their database IDs.
+PARAM randomPlayers:Array[FakePlayer] - An array of generated players whose order is random relative to their database IDs.
+RETURNS The modified randomPlayers.
 ]]
 function simulatedRoundBuilder:setRoundRolesToTTTStandards(randomPlayers)
   local traitorRatio = 0.25
@@ -90,12 +90,27 @@ function simulatedRoundBuilder:setRoundRolesToTTTStandards(randomPlayers)
       v:SetRole(0)
     end
   end
+  
+  return randomPlayers
 end
 
-function simulatedRoundBuilder:new()
+--[[
+SimulatedRoundBuilder creates a variety of round data for use with tests on things 
+such as rank, achievements, and aggregate data.
+PARAM tables:Table[String -> SqlTable] - The SqlTables to output the data to.
+]]
+function simulatedRoundBuilder:new(tables)
   local newBuilder = {}
   setmetatable(newBuilder, self)
+  newBuilder.tables = tables
+  newBuilder.roundsToGenerate = 250
+  newBuilder.players = 100
+  newBuilder.minPlayers = 2
+  newBuilder.maxPlayers = 32
   return newBuilder
+end
+
+function simulatedRoundBuilder:build()
 end
 
 DDDTest.Helpers.Generators.SimulatedRoundBuilder = simulatedRoundBuilder

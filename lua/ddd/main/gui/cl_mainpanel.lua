@@ -24,12 +24,17 @@ local function addStatsPropertySheet(mainPropertySheet)
 end
 
 local function addRankPropertySheet(mainPropertySheet)
+  net.Start("DDDGetRankings")
+  net.SendToServer()
+  net.Receive("DDDGetRankings", function(len, _)
+    local rankTable = net.ReadTable()
     local rankPropertySheet = vgui.Create( "DPropertySheet", mainPropertySheet )
-    DDD.Gui.Rank.createEnemyKdTab(rankPropertySheet)
-    DDD.Gui.Rank.createEnemyKillTab(rankPropertySheet)
+    DDD.Gui.Rank.createOverallTab(rankPropertySheet, rankTable)
+    DDD.Gui.Rank.createEnemyKillTab(rankPropertySheet, rankTable)
     rankPropertySheet:Dock(FILL)
     DDD.Gui.setSizeToParent(rankPropertySheet)
     mainPropertySheet:AddSheet("Rank", rankPropertySheet, "icon16/chart_bar.png")
+  end)
 end
 
 function DDD.createMainFrame()
@@ -37,7 +42,7 @@ function DDD.createMainFrame()
   local mainPropertySheet = vgui.Create( "DPropertySheet", mainFrame )
   mainPropertySheet:Dock(FILL)
   configureMainPanel(mainFrame)
-  --addRankPropertySheet(mainPropertySheet)
+  addRankPropertySheet(mainPropertySheet)
   addStatsPropertySheet(mainPropertySheet)
   mainFrame:MakePopup()
 end

@@ -21,6 +21,6 @@ function DDD.Gui.Rank.createEnemyKillTab(rankPropertySheet)
   panel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 255, 0 ) ) end 
   DDD.Gui.setSizeToParent(panel)
   local list = createListView(panel)
-  rankPropertySheet:AddSheet( "Traitor K/D", panel, "materials/ddd/icons/t.png")
+  rankPropertySheet:AddSheet( "Traitor Ranks", panel, "materials/ddd/icons/t.png")
   populateListView(list)
 end
