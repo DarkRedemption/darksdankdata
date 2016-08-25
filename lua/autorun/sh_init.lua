@@ -18,14 +18,15 @@ if SERVER then
     Detective = 2
   }
   DDD.Database.Roles = roles
-  
-  --AddDir("materials/ddd/icons")
+
   AddCSLuaFile("ddd/main/misc/sh_inheritsfrom.lua")
   
   AddCSLuaFile("ddd/main/gui/cl_shared.lua")
   AddCSLuaFile("ddd/main/gui/cl_mainpanel.lua")
   AddCSLuaFile("ddd/main/gui/rank/cl_rank.lua")
-  AddCSLuaFile("ddd/main/gui/rank/cl_enemykd.lua")
+  AddCSLuaFile("ddd/main/gui/rank/cl_overall.lua")
+  AddCSLuaFile("ddd/main/gui/rank/cl_detectiverank.lua")
+  AddCSLuaFile("ddd/main/gui/rank/cl_innocentrank.lua")
   AddCSLuaFile("ddd/main/gui/rank/cl_traitorrank.lua")
   AddCSLuaFile("ddd/main/gui/rank/cl_totalkills.lua")
   AddCSLuaFile("ddd/main/gui/stats/cl_overview.lua")
@@ -67,8 +68,10 @@ if CLIENT then
   include("ddd/main/gui/stats/cl_innocent.lua")
   include("ddd/main/gui/stats/cl_detective.lua")
   include("ddd/main/gui/rank/cl_totalkills.lua")
-  include("ddd/main/gui/rank/cl_enemykd.lua")
+  include("ddd/main/gui/rank/cl_overall.lua")
   include("ddd/main/gui/rank/cl_rank.lua")
+  include("ddd/main/gui/rank/cl_detectiverank.lua")
+  include("ddd/main/gui/rank/cl_innocentrank.lua")
   include("ddd/main/gui/rank/cl_traitorrank.lua")
 
   DDD.Misc.createDelayedTimer("DDDCommandPSA", 15, 3600, 0, function()

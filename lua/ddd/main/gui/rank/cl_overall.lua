@@ -1,6 +1,6 @@
 local enemyKd = "Overall Enemy K/D" 
 --local serverTime = "Server Time" 
-local enemyKills = "Total Enemy Kills" 
+local enemyKills = "Total Enemies Killed" 
 local roundsPlayed = "Total Rounds Played"
 
 local currentValue = ""
