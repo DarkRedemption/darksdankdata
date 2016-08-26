@@ -41,15 +41,13 @@ local function populateWithDetectiveRoundsPlayed(list, rankTable)
 end
 
 local function updateListView(list, value, rankTable)
-  if (value != currentValue) then
-    currentValue = value
-    if (value == traitorKd) then
-      populateWithDetectiveEnemyKd(list, rankTable)
-    elseif (value == traitorKills) then
-      populateWithDetectiveEnemyKills(list, rankTable)
-    elseif (value == roundsPlayed) then
-      populateWithDetectiveRoundsPlayed(list, rankTable)
-    end
+  currentValue = value
+  if (value == traitorKd) then
+    populateWithDetectiveEnemyKd(list, rankTable)
+  elseif (value == traitorKills) then
+    populateWithDetectiveEnemyKills(list, rankTable)
+  elseif (value == roundsPlayed) then
+    populateWithDetectiveRoundsPlayed(list, rankTable)
   end
 end
 
@@ -72,11 +70,10 @@ function DDD.Gui.Rank.createDetectiveTab(rankPropertySheet, rankTable)
   list:SetParent(panel)
   
   comboBox.OnSelect = function(panel, index, value)
-    if (currentValue != value) then
-      list:Clear()
-      updateListView(list, value, rankTable)
-    end
+    list:Clear()
+    updateListView(list, value, rankTable)
   end
   
+  comboBox:ChooseOptionID(1)
   rankPropertySheet:AddSheet("Detective Ranks", panel, "materials/ddd/icons/d.png")
 end

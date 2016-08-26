@@ -79,6 +79,7 @@ hook.Add("TTTEndRound", "DDDTrackRoundResult", function(result)
       tables.RoundResult:addResult(result)
     end
     DDD.CurrentRound.isActive = false
+    DDD.Rank.RankTable:update()
   end)
 
 hook.Add("TTTBodyFound", "DDDTrackCorpseIdentified", function(ply, deadply, rag)

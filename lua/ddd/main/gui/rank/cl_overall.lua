@@ -42,15 +42,12 @@ local function populateWithRoundsPlayed(list, rankTable)
 end
 
 local function updateListView(list, value, rankTable)
-  if (value != currentValue) then
-    currentValue = value
-    if (value == enemyKd) then
-      populateWithOverallEnemyKd(list, rankTable)
-    elseif (value == enemyKills) then
-      populateWithTotalEnemyKills(list, rankTable)
-    elseif (value == roundsPlayed) then
-      populateWithRoundsPlayed(list, rankTable)
-    end
+  if (value == enemyKd) then
+    populateWithOverallEnemyKd(list, rankTable)
+  elseif (value == enemyKills) then
+    populateWithTotalEnemyKills(list, rankTable)
+  elseif (value == roundsPlayed) then
+    populateWithRoundsPlayed(list, rankTable)
   end
 end
 
@@ -81,5 +78,6 @@ function DDD.Gui.Rank.createOverallTab(rankPropertySheet, rankTable)
     end
   end
   
+  comboBox:ChooseOptionID(1)
   rankPropertySheet:AddSheet("Overall", panel, "icon16/chart_bar.png")
 end

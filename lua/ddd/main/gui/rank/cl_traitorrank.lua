@@ -57,19 +57,17 @@ local function populateWithTraitorRoundsPlayed(list, rankTable)
 end
 
 local function updateListView(list, value, rankTable)
-  if (value != currentValue) then
-    currentValue = value
-    if (value == enemyKd) then
-      populateWithTraitorEnemyKd(list, rankTable)
-    elseif (value == enemyKills) then
-      populateWithTraitorEnemyKills(list, rankTable)
-    elseif (value == innocentKills) then
-      populateWithTraitorInnocentKills(list, rankTable)
-    elseif (value == detectiveKills) then
-      populateWithTraitorDetectiveKills(list, rankTable)
-    elseif (value == roundsPlayed) then
-      populateWithTraitorRoundsPlayed(list, rankTable)
-    end
+  currentValue = value
+  if (value == enemyKd) then
+    populateWithTraitorEnemyKd(list, rankTable)
+  elseif (value == enemyKills) then
+    populateWithTraitorEnemyKills(list, rankTable)
+  elseif (value == innocentKills) then
+    populateWithTraitorInnocentKills(list, rankTable)
+  elseif (value == detectiveKills) then
+    populateWithTraitorDetectiveKills(list, rankTable)
+  elseif (value == roundsPlayed) then
+    populateWithTraitorRoundsPlayed(list, rankTable)
   end
 end
 
@@ -94,11 +92,10 @@ function DDD.Gui.Rank.createTraitorTab(rankPropertySheet, rankTable)
   list:SetParent(panel)
   
   comboBox.OnSelect = function(panel, index, value)
-    if (currentValue != value) then
-      list:Clear()
-      updateListView(list, value, rankTable)
-    end
+    list:Clear()
+    updateListView(list, value, rankTable)
   end
   
+  comboBox:ChooseOptionID(1)
   rankPropertySheet:AddSheet( "Traitor Ranks", panel, "materials/ddd/icons/t.png")
 end

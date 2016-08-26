@@ -152,8 +152,6 @@ function rankTable:getInnocentRoundsPlayedRank()
     return DDD.SqlTable:query("RankTable:getInnocentRoundsPlayedRank", query)
 end
 
-
-
 function rankTable:getDetectiveTraitorKdRank()
   local query = [[SELECT
                   ROUND(
@@ -220,6 +218,7 @@ function rankTable:new(tables)
   setmetatable(newTable, self)
   newTable.rankings = {}
   newTable.tables = tables or DDD.Database.Tables
+  newTable:update()
   return newTable
 end
 
@@ -228,7 +227,6 @@ DDD.Rank.RankTable = rankTable:new()
 util.AddNetworkString("DDDGetRankings")
 
 net.Receive("DDDGetRankings", function(len, ply)
-    DDD.Rank.RankTable:update()
     net.Start("DDDGetRankings")
     net.WriteTable(DDD.Rank.RankTable.rankings)
     net.Send(ply)
