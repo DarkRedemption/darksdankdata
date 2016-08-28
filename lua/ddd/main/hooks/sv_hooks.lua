@@ -97,16 +97,19 @@ function DDD.Hooks.TrackRadioCallouts(tables, ply, commandName, commandTarget)
 end
 
 hook.Add("TTTPlayerRadioCommand", "DDDTrackRadioCallouts", function(ply, cmd_name, cmd_target)
-    if DDD:enabled() then
-      DDD.Hooks.TrackRadioCallouts(tables, ply, cmd_name, cmd_target)
-    end
-  end)
+  if DDD:enabled() then
+    DDD.Hooks.TrackRadioCallouts(tables, ply, cmd_name, cmd_target)
+  end
+end)
 
 function DDD.Hooks.TrackHealing(tables, ply, ent_station, healed)
-  local userId = tables.PlayerId:getPlayerId(ply)
-  local placerId = tables.PlayerId:getPlayerId(ent_station:GetPlacer())
-  tables.Healing:addHeal(userId, placerId, healed)
-  tables.AggregateStats:incrementSelfHPHealed(userId)
+  local placer = ent_station:GetPlacer()
+  if (IsValid(placer)) then
+    local userId = tables.PlayerId:getPlayerId(ply)
+    local placerId = tables.PlayerId:getPlayerId(placer)
+    tables.Healing:addHeal(userId, placerId, healed)
+    tables.AggregateStats:incrementSelfHPHealed(userId)
+  end
 end
 
 hook.Add("TTTPlayerUsedHealthStation", "DDDAddHeals", function(ply, ent_station, healed)
