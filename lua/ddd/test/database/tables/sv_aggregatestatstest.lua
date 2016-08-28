@@ -50,6 +50,27 @@ local function genAndAddPlayer()
   return ply, id
 end
 
+--[[
+A higher order function that creates a standard test for aggregate table incrementation functions.
+PARAM getFunc: Int, Int, Int => Int - The function that takes a playerId, playerRole, and otherPlayerRole to get the value.
+PARAM incrementFunc: Int, Int, Int => Int - The function that takes the same as above to increment the value.
+RETURNS Int, Int, Int => Int - A new function that will call the getFunc, the incrementFunc, and ensure incrementFunc = getFunc + 1
+]]
+local function buildIncrementingFunctionTest(tables, getFunc, incrementFunc)
+  
+  local newFunc = function(id, ...)
+    local arg = {...}
+    local originalValue = getFunc(tables.AggregateStats, id, unpack(arg))
+    incrementFunc(tables.AggregateStats, id, unpack(arg))
+    local row = tables.AggregateStats:getPlayerStats(id)
+    local newValue = getFunc(tables.AggregateStats, id, unpack(arg))
+    GUnit.assert(newValue):shouldEqual(originalValue + 1)
+  end
+
+  return newFunc
+end
+
+
 local function confirmRecalculatedValuesMatchOriginal(tables, playerList)
   local oldRows = {}
   
@@ -83,12 +104,8 @@ local function incrementRoundsSpec()
   for i = 1, 100 do
     local playerRole = math.random(0, 2)
     
-    local currentRounds = tables.AggregateStats:getRounds(id, playerRole)
-    tables.AggregateStats:incrementRounds(id, playerRole)
-    local row = tables.AggregateStats:getPlayerStats(id)
-    local newRounds = tables.AggregateStats:getRounds(id, playerRole)
-    
-    GUnit.assert(newRounds):shouldEqual(currentRounds + 1)
+    local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getRounds, tables.AggregateStats.incrementRounds)
+    testFunc(id, playerRole)
   end
 end
 
@@ -99,12 +116,8 @@ local function incrementKillsSpec()
     local playerRole = math.random(0, 2)
     local victimRole = math.random(0, 2)
     
-    local currentKills = tables.AggregateStats:getKills(id, playerRole, victimRole)
-    tables.AggregateStats:incrementKills(id, playerRole, victimRole)
-    local row = tables.AggregateStats:getPlayerStats(id)
-    local newKills = tables.AggregateStats:getKills(id, playerRole, victimRole)
-    
-    GUnit.assert(newKills):shouldEqual(currentKills + 1)
+    local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getKills, tables.AggregateStats.incrementKills)
+    testFunc(id, playerRole, victimRole)
   end
 end
 
@@ -115,12 +128,8 @@ local function incrementDeathsSpec()
     local playerRole = math.random(0, 2)
     local attackerRole = math.random(0, 2)
     
-    local currentDeaths = tables.AggregateStats:getDeaths(id, playerRole, attackerRole)
-    tables.AggregateStats:incrementDeaths(id, playerRole, attackerRole)
-    local row = tables.AggregateStats:getPlayerStats(id)
-    local newDeaths = tables.AggregateStats:getDeaths(id, playerRole, attackerRole)
-    
-    GUnit.assert(newDeaths):shouldEqual(currentDeaths + 1)
+    local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getDeaths, tables.AggregateStats.incrementDeaths)
+    testFunc(id, playerRole, attackerRole)
   end
 end
 
@@ -130,12 +139,8 @@ local function incrementSuicidesSpec()
   for i = 1, 100 do
     local playerRole = math.random(0, 2)
     
-    local currentSuicides = tables.AggregateStats:getSuicides(id, playerRole)
-    tables.AggregateStats:incrementSuicides(id, playerRole)
-    local row = tables.AggregateStats:getPlayerStats(id)
-    local newSuicides = tables.AggregateStats:getSuicides(id, playerRole)
-    
-    GUnit.assert(newSuicides):shouldEqual(currentSuicides + 1)
+    local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getSuicides, tables.AggregateStats.incrementSuicides)
+    testFunc(id, playerRole)
   end
 end
 
@@ -145,12 +150,8 @@ local function incrementWorldDeathsSpec()
   for i = 1, 100 do
     local playerRole = math.random(0, 2)
     
-    local currentDeaths = tables.AggregateStats:getWorldDeaths(id, playerRole)
-    tables.AggregateStats:incrementWorldDeaths(id, playerRole)
-    local row = tables.AggregateStats:getPlayerStats(id)
-    local newDeaths = tables.AggregateStats:getWorldDeaths(id, playerRole)
-    
-    GUnit.assert(newDeaths):shouldEqual(currentDeaths + 1)
+    local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getWorldDeaths, tables.AggregateStats.incrementWorldDeaths)
+    testFunc(id, playerRole)
   end
 end
 
@@ -168,11 +169,10 @@ local function incrementPurchasesSpec()
       thisRoundsPurchase = detectiveValidPurchases[math.random(1, #detectiveValidPurchases)]
     end
     
-    local currentPurchases = tables.AggregateStats:getItemPurchases(id, playerRole, thisRoundsPurchase)
-    tables.AggregateStats:incrementItemPurchases(id, playerRole, thisRoundsPurchase)
-    local newPurchases = tables.AggregateStats:getItemPurchases(id, playerRole, thisRoundsPurchase)
-    
-    GUnit.assert(newPurchases):shouldEqual(currentPurchases + 1)
+    local testFunc = buildIncrementingFunctionTest(tables, 
+                                                   tables.AggregateStats.getItemPurchases, 
+                                                   tables.AggregateStats.incrementItemPurchases)
+    testFunc(id, playerRole, thisRoundsPurchase)
   end
 end
 
@@ -184,12 +184,8 @@ local function incrementC4KillsSpec()
     local victimRole = math.random(0, 2)
     local weaponName = "ttt_c4"
     
-    local currentKills = tables.AggregateStats:getWeaponKills(id, playerRole, victimRole, weaponName)
-    tables.AggregateStats:incrementWeaponKills(id, playerRole, victimRole, weaponName)
-    local row = tables.AggregateStats:getPlayerStats(id)
-    local newKills = tables.AggregateStats:getWeaponKills(id, playerRole, victimRole, weaponName)
-    
-    GUnit.assert(newKills):shouldEqual(currentKills + 1)
+    local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getWeaponKills, tables.AggregateStats.incrementWeaponKills)
+    testFunc(id, playerRole, victimRole, weaponName)
   end
 end
 
@@ -199,12 +195,8 @@ local function incrementSelfHealingSpec()
   for i = 1, 100 do
     local playerRole = math.random(0, 2)
     
-    local currentHPHealed = tables.AggregateStats:getSelfHPHealed(id)
-    tables.AggregateStats:incrementSelfHPHealed(id)
-    local row = tables.AggregateStats:getPlayerStats(id)
-    local newKills = tables.AggregateStats:getSelfHPHealed(id)
-    
-    GUnit.assert(newKills):shouldEqual(currentHPHealed + 1)
+    local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getSelfHPHealed, tables.AggregateStats.incrementSelfHPHealed)
+    testFunc(id)
   end
 end
 
