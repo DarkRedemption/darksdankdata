@@ -10,11 +10,10 @@ local columns = {
   round_time = "REAL NOT NULL"  
 }
 
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()  
-foreignKeyTable:addConstraint("round_id", tables.RoundId, "id")
-foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
-                        
-local teleportStartTable = DDD.SqlTable:new("ddd_teleport_start", columns, foreignKeyTable)
+local teleportStartTable = DDD.SqlTable:new("ddd_teleport_start", columns)
+
+teleportStartTable:addForeignConstraint("round_id", tables.RoundId, "id")
+teleportStartTable:addForeignConstraint("player_id", tables.PlayerId, "id")
 
 function teleportStartTable:addTeleportStart(player)
   local roundIdTable = self:getForeignTableByColumn("round_id")

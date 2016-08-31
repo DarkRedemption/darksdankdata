@@ -6,10 +6,9 @@ local columns = { id = "INTEGER PRIMARY KEY",
                   total_round_time = "REAL NOT NULL"
                 }
 
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
+local roundResultTable = DDD.SqlTable:new("ddd_round_result", columns)
 
-local roundResultTable = DDD.SqlTable:new("ddd_round_result", columns, foreignKeyTable)
+roundResultTable:addForeignConstraint("round_id", roundIdTable, "id")
 
 function roundResultTable:addResult(roundResult)
   local roundId = self:getForeignTableByColumn("round_id"):getCurrentRoundId()

@@ -7,13 +7,13 @@ local columns = {id = "INTEGER PRIMARY KEY",
                  role_id = "INTEGER NOT NULL"
                 }
                 
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("player_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
-
 local uniqueConstraints = {{"player_id", "round_id"}}
 
-local roundRolesTable = DDD.SqlTable:new("ddd_round_roles", columns, foreignKeyTable, uniqueConstraints)
+local roundRolesTable = DDD.SqlTable:new("ddd_round_roles", columns, nil, uniqueConstraints)
+
+roundRolesTable:addForeignConstraint("player_id", playerIdTable, "id")
+roundRolesTable:addForeignConstraint("round_id", roundIdTable, "id")
+
 roundRolesTable:addIndex("playerAndRoleIndex", {"player_id", "role_id"})
 
 function roundRolesTable:addRole(ply)

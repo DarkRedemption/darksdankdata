@@ -9,12 +9,12 @@ local columns = {id = "INTEGER PRIMARY KEY",
                 damage_dealt = "INTEGER NOT NULL",
                 damage_type = "INTEGER NOT NULL"
               }
-              
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", tables.RoundId, "id")
-foreignKeyTable:addConstraint("victim_id", tables.PlayerId, "id")
-                        
-local worldDamageTable = DDD.SqlTable:new("ddd_world_damage", columns, foreignKeyTable)
+                                      
+local worldDamageTable = DDD.SqlTable:new("ddd_world_damage", columns)
+
+worldDamageTable:addForeignConstraint("round_id", tables.RoundId, "id")
+worldDamageTable:addForeignConstraint("victim_id", tables.PlayerId, "id")
+
 worldDamageTable:addIndex("victimIndex", "victim_id")
 
 --[[

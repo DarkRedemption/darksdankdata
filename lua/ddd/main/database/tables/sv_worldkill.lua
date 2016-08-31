@@ -5,12 +5,12 @@ local columns = { id = "INTEGER PRIMARY KEY",
                   victim_id = "INTEGER NOT NULL",
                   round_time = "REAL NOT NULL"
                 }
-                
-local foreignKeys = DDD.Database.ForeignKeyTable:new()
-foreignKeys:addConstraint("round_id", tables.RoundId, "id")
-foreignKeys:addConstraint("victim_id", tables.PlayerId, "id")
-                        
-local worldKillTable = DDD.SqlTable:new("ddd_world_kill", columns, foreignKeys)
+
+local worldKillTable = DDD.SqlTable:new("ddd_world_kill", columns)
+
+worldKillTable:addForeignConstraint("round_id", tables.RoundId, "id")
+worldKillTable:addForeignConstraint("victim_id", tables.PlayerId, "id")
+
 worldKillTable:addIndex("victimIndex", "victim_id")
 
 --[[

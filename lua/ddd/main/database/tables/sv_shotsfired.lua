@@ -12,12 +12,12 @@ local columns = {
   round_time = "REAL NOT NULL"
 }
 
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()  
-foreignKeyTable:addConstraint("round_id", tables.RoundId, "id")
-foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
-foreignKeyTable:addConstraint("weapon_id", tables.WeaponId, "id")
-                        
-local shotsFiredTable = DDD.SqlTable:new("ddd_shots_fired", columns, foreignKeyTable)
+local shotsFiredTable = DDD.SqlTable:new("ddd_shots_fired", columns)
+
+shotsFiredTable:addForeignConstraint("round_id", tables.RoundId, "id")
+shotsFiredTable:addForeignConstraint("player_id", tables.PlayerId, "id")
+shotsFiredTable:addForeignConstraint("weapon_id", tables.WeaponId, "id")
+
 shotsFiredTable:addIndex("playerAndWeaponIndex", {"player_id", "weapon_id"})
 
 function shotsFiredTable:addShot(player, attackType)

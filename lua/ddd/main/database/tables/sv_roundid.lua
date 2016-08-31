@@ -6,10 +6,8 @@ local columns = {
   start_timestamp = "INTEGER NOT NULL"
 }
 
-local foreignKeys = DDD.Database.ForeignKeyTable:new()
-foreignKeys:addConstraint("map_id", mapIdTable, "id")
-
-local roundIdTable = DDD.SqlTable:new("ddd_round_id", columns, foreignKeys)
+local roundIdTable = DDD.SqlTable:new("ddd_round_id", columns)
+roundIdTable:addForeignConstraint("map_id", mapIdTable, "id")
 
 function roundIdTable:addRound()
   local timestamp = os.time()
