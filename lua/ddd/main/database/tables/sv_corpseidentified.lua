@@ -7,13 +7,12 @@ local columns = { id = "INTEGER PRIMARY KEY",
                   corpse_owner_id = "INTEGER NOT NULL",
                   round_time = "REAL NOT NULL"
                 }
-                
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", tables.RoundId, "id")
-foreignKeyTable:addConstraint("finder_id", tables.PlayerId, "id")
-foreignKeyTable:addConstraint("corpse_owner_id", tables.PlayerId, "id")
-              
-local corpseIdentifiedTable = DDD.SqlTable:new("ddd_corpse_identified", columns, foreignKeyTable)
+                              
+local corpseIdentifiedTable = DDD.SqlTable:new("ddd_corpse_identified", columns)
+
+corpseIdentifiedTable:addForeignConstraint("round_id", tables.RoundId, "id")
+corpseIdentifiedTable:addForeignConstraint("finder_id", tables.PlayerId, "id")
+corpseIdentifiedTable:addForeignConstraint("corpse_owner_id", tables.PlayerId, "id")
 
 function corpseIdentifiedTable:addCorpseFound(finder, corpseOwner, rag)
   local playerIdTable = self:getForeignTableByColumn("finder_id")

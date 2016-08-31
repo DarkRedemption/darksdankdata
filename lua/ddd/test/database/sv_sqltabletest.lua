@@ -23,14 +23,14 @@ local function tableNameModifySpec()
 end
 
 local function basicSpec()
-    GUnit.assert(sqlTableTest.table.foreignKeyTable):isNil()
+    GUnit.assert(sqlTableTest.table.foreignKeyTable:getSize()):shouldEqual(0)
     GUnit.assert(sqlTableTest.table.uniqueGroups):isNil()
     
     local rowToInsert = {
       name = "testname"
     }
     local insertResult = sqlTableTest.table:insertTable(rowToInsert)
-    assert(tonumber(insertResult) == 1)
+    GUnit.assert(tonumber(insertResult)):shouldEqual(1)
   end
   
 local function selectSpec()
@@ -40,7 +40,7 @@ local function selectSpec()
   sqlTableTest.table:insertTable(rowToInsert)
   
   local selectedValue = sqlTableTest.table:selectById("1")
-  assert(selectedValue["name"] == rowToInsert["name"])
+  GUnit.assert(selectedValue["name"]):shouldEqual(rowToInsert["name"])
 end
 
 local function uniqueConstraintQuerySpec()

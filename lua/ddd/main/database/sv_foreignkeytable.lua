@@ -14,7 +14,17 @@ PARAM foreignColumn: String - The column in the foreignSqlTable to constrain the
 function foreignKeyTable:addConstraint(columnName, foreignSqlTable, foreignColumn)
   self.foreignKeys[columnName] = DDD.Database.ForeignKeyRef:new(foreignSqlTable, foreignColumn)
 end
+
+function foreignKeyTable:getSize()
+  local numOfForeignKeys = 0
   
+  for key, value in pairs(self.foreignKeys) do
+    numOfForeignKeys = numOfForeignKeys + 1
+  end
+  
+  return numOfForeignKeys
+end
+
 --[[
 Generates the part of the Create Table query that adds the foreign key constraints.
 RETURNS A string that should be appended to the create table query.
@@ -22,11 +32,7 @@ RETURNS A string that should be appended to the create table query.
 function foreignKeyTable:generateConstraintQuery()
   local query = ""
   local keysConverted = 0
-  local numOfForeignKeys = 0
-  
-  for key, value in pairs(self.foreignKeys) do
-    numOfForeignKeys = numOfForeignKeys + 1
-  end
+  local numOfForeignKeys = self:getSize()
   
   for columnName, foreignKeyRef in pairs(self.foreignKeys) do
     local tableName = foreignKeyRef.sqlTable.tableName

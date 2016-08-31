@@ -12,14 +12,13 @@ local columns = {id = "INTEGER PRIMARY KEY",
                  attacker_id = "INTEGER NOT NULL",
                  weapon_id = "INTEGER NOT NULL"
                }
-      
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
-foreignKeyTable:addConstraint("victim_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("attacker_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("weapon_id", weaponIdTable, "id")
-  
-local playerKillTable = DDD.SqlTable:new("ddd_player_kill", columns, foreignKeyTable)
+
+local playerKillTable = DDD.SqlTable:new("ddd_player_kill", columns)
+
+playerKillTable:addForeignConstraint("round_id", roundIdTable, "id")
+playerKillTable:addForeignConstraint("victim_id", playerIdTable, "id")
+playerKillTable:addForeignConstraint("attacker_id", playerIdTable, "id")
+playerKillTable:addForeignConstraint("weapon_id", weaponIdTable, "id")
 
 playerIdTable:addIndex("roundIdIndex", {"round_id"})
 playerIdTable:addIndex("victimIndex", {"victim_id"})

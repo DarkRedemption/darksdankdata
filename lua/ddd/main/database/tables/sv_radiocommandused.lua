@@ -9,13 +9,13 @@ local columns = { id = "INTEGER PRIMARY KEY",
                   round_time = "REAL NOT NULL",
                   target_type = "INTEGER NOT NULL" --1 = player/identified corpse, 2 = disguised, 3 = unidentified corpse, 4 = nobody 
                 }
-                
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", tables.RoundId, "id")
-foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
-foreignKeyTable:addConstraint("command_id", tables.RadioCommand, "id")
 
-local radioCommandUsedTable = DDD.SqlTable:new("ddd_radio_command_used", columns, foreignKeyTable)
+local radioCommandUsedTable = DDD.SqlTable:new("ddd_radio_command_used", columns)
+
+radioCommandUsedTable:addForeignConstraint("round_id", tables.RoundId, "id")
+radioCommandUsedTable:addForeignConstraint("player_id", tables.PlayerId, "id")
+radioCommandUsedTable:addForeignConstraint("command_id", tables.RadioCommand, "id")
+
 radioCommandUsedTable:addIndex("playerAndCommand", {"player_id", "command_id"})
 --[[
 Find the target type, then convert it into an integer

@@ -8,12 +8,15 @@ local columns = { id = "INTEGER PRIMARY KEY",
                   shop_item_id = "INTEGER NOT NULL",
                   round_time = "REAL NOT NULL"
                 }
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
-foreignKeyTable:addConstraint("player_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("shop_item_id", shopItemIdTable, "id")
+                
 
-local purchasesTable = DDD.SqlTable:new("ddd_purchases", columns, foreignKeyTable)
+
+local purchasesTable = DDD.SqlTable:new("ddd_purchases", columns)
+
+purchasesTable:addForeignConstraint("round_id", roundIdTable, "id")
+purchasesTable:addForeignConstraint("player_id", playerIdTable, "id")
+purchasesTable:addForeignConstraint("shop_item_id", shopItemIdTable, "id")
+
 purchasesTable:addIndex("playerAndItemIndex", {"player_id", "shop_item_id"})
 
 function purchasesTable:addPurchase(playerId, itemId)

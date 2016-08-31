@@ -12,20 +12,20 @@ local columns = {id = "INTEGER PRIMARY KEY",
                  attacker_id = "INTEGER NOT NULL",
                  weapon_id = "INTEGER NOT NULL"
                }
-      
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
-foreignKeyTable:addConstraint("victim_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("attacker_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("weapon_id", weaponIdTable, "id")
   
-local playerPushKillTable = DDD.SqlTable:new("ddd_player_push_kill", columns, foreignKeyTable)
-playerIdTable:addIndex("roundIdIndex", {"round_id"})
-playerIdTable:addIndex("victimIndex", {"victim_id"})
-playerIdTable:addIndex("attackerIndex", {"attacker_id"})
-playerIdTable:addIndex("attackerVsVictimIndex", {"attacker_id, victim_id"})
-playerIdTable:addIndex("killsWithWeaponIndex", {"attacker_id, weapon_id"})
-playerIdTable:addIndex("deathsFromWeaponIndex", {"victim_id, weapon_id"})
+local playerPushKillTable = DDD.SqlTable:new("ddd_player_push_kill", columns)
+
+playerPushKillTable:addForeignConstraint("round_id", roundIdTable, "id")
+playerPushKillTable:addForeignConstraint("victim_id", playerIdTable, "id")
+playerPushKillTable:addForeignConstraint("attacker_id", playerIdTable, "id")
+playerPushKillTable:addForeignConstraint("weapon_id", weaponIdTable, "id")
+
+playerPushKillTable:addIndex("roundIdIndex", {"round_id"})
+playerPushKillTable:addIndex("victimIndex", {"victim_id"})
+playerPushKillTable:addIndex("attackerIndex", {"attacker_id"})
+playerPushKillTable:addIndex("attackerVsVictimIndex", {"attacker_id, victim_id"})
+playerPushKillTable:addIndex("killsWithWeaponIndex", {"attacker_id, weapon_id"})
+playerPushKillTable:addIndex("deathsFromWeaponIndex", {"victim_id, weapon_id"})
 
 function playerPushKillTable:addKill(victimId, attackerId, weaponId)
   local queryTable = {

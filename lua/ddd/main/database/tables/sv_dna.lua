@@ -13,14 +13,14 @@ local columns = { id = "INTEGER PRIMARY KEY",
                   entity_found_on = "INTEGER NOT NULL",
                   round_time = "REAL NOT NULL"
                 }
-                
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", roundIdTable, "id")
-foreignKeyTable:addConstraint("finder_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("dna_owner_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("entity_found_on", entityIdTable, "id")
-              
-local dnaTable = DDD.SqlTable:new("ddd_dna", columns, foreignKeyTable)
+
+local dnaTable = DDD.SqlTable:new("ddd_dna", columns)
+
+dnaTable:addForeignConstraint("round_id", roundIdTable, "id")
+dnaTable:addForeignConstraint("finder_id", playerIdTable, "id")
+dnaTable:addForeignConstraint("dna_owner_id", playerIdTable, "id")
+dnaTable:addForeignConstraint("entity_found_on", entityIdTable, "id")
+
 dnaTable:addIndex("finderIndex", {"finder_id"})
 dnaTable:addIndex("ownerIndex", {"dna_owner_id"})
 

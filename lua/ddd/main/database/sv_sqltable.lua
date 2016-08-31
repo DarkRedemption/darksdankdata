@@ -76,7 +76,7 @@ function SqlTable:createTable()
             self.tableName .. 
             self:generateColumnQuery()
             
-  if (self.foreignKeyTable) then
+  if (self.foreignKeyTable:getSize() > 0) then
      query = query .. ", " .. self.foreignKeyTable:generateConstraintQuery()
   end
   
@@ -90,7 +90,7 @@ function SqlTable:createTable()
   local result = sql.Query(query)
   
   if (result == false) then
-    log.logError("Table " .. self.tableName .. " could not be created! Error was: " .. sql.LastError())
+    log.logError("Table " .. self.tableName .. " could not be created! Error was: " .. sql.LastError() .. "\nQuery was : " .. query)
     return false
   else
     return true
@@ -253,7 +253,11 @@ since you'd always be calling the original table instead of a table created just
 function SqlTable:getForeignTableByColumn(columnName)
   return self.foreignKeyTable.foreignKeys[columnName].sqlTable
 end
-  
+
+function SqlTable:addForeignConstraint(localColumnName, table, foreignColumnName)
+  self.foreignKeyTable:addConstraint(localColumnName, table, foreignColumnName)
+end
+
 --[[
 Instantiates a new SqlTable class.
 PARAM tablename:String - The name of the table.
@@ -267,9 +271,7 @@ function SqlTable:new(tableName, columns, foreignKeyTable, uniqueGroups)
   newTable.tableName = tableName
   newTable.columns = columns
   
-  if (foreignKeyTable) then
-    newTable.foreignKeyTable = foreignKeyTable
-  end
+  newTable.foreignKeyTable = foreignKeyTable or DDD.Database.ForeignKeyTable:new()
   
   if (uniqueGroups) then
     newTable.uniqueGroups = uniqueGroups

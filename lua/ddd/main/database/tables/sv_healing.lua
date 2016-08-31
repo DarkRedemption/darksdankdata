@@ -8,12 +8,12 @@ local columns = { id = "INTEGER PRIMARY KEY",
                   heal_amount = "INTEGER NOT NULL",
                 }
 
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("round_id", DDD.Database.Tables.RoundId, "id")
-foreignKeyTable:addConstraint("deployer_id", playerIdTable, "id")
-foreignKeyTable:addConstraint("user_id", playerIdTable, "id")
 
-local healingTable = DDD.SqlTable:new("ddd_healing", columns, foreignKeyTable)
+local healingTable = DDD.SqlTable:new("ddd_healing", columns)
+
+healingTable:addForeignConstraint("round_id", DDD.Database.Tables.RoundId, "id")
+healingTable:addForeignConstraint("deployer_id", playerIdTable, "id")
+healingTable:addForeignConstraint("user_id", playerIdTable, "id")
 
 healingTable:addIndex("roundIdIndex", {"round_id"})
 healingTable:addIndex("userIndex", {"user_id"})

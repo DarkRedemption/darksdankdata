@@ -5,8 +5,10 @@ local columns = {
   steam_id = "TEXT UNIQUE NOT NULL",
   first_seen = "INTEGER NOT NULL",
   last_known_name = "TEXT NOT NULL"
-  }
+}
+
 local playerIdTable = DDD.SqlTable:new("ddd_player_id", columns)
+
 playerIdTable:addIndex("steamIdIndex", {"steam_id"})
 
 function playerIdTable:addPlayer(ply)

@@ -8,11 +8,10 @@ local columns = { id = "INTEGER PRIMARY KEY",
                 
 --This table is the only time I can see statuses being used, so statuses will not have their own table.
 
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("command_used_id", tables.RadioCommandUsed, "id")
-foreignKeyTable:addConstraint("target_id", tables.PlayerId, "id")
+local radioCommandTargetTable = DDD.SqlTable:new("ddd_radio_command_target", columns)
 
-local radioCommandTargetTable = DDD.SqlTable:new("ddd_radio_command_target", columns, foreignKeyTable)
+radioCommandTargetTable:addForeignConstraint("command_used_id", tables.RadioCommandUsed, "id")
+radioCommandTargetTable:addForeignConstraint("target_id", tables.PlayerId, "id")
 
 local function getTargetSteamId(target)
   if (target:GetClass() == "prop_ragdoll") then
