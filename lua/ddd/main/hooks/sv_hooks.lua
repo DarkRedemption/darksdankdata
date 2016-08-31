@@ -7,8 +7,8 @@ hook.Add("Initialize", "DDDAddNewMap", function(ply)
   tables.MapId:addMap()
 end)
 
-hook.Add("PlayerInitialSpawn", "DDDAddNewPlayer", function(ply)
-  tables.PlayerId:addPlayer(ply)
+hook.Add("PlayerInitialSpawn", "DDDAddOrUpdatePlayer", function(ply)
+  tables.PlayerId:addOrUpdatePlayer(ply)
   tables.AggregateStats:addPlayer(tables.PlayerId:getPlayerId(ply))
 end)
 

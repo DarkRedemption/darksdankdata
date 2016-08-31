@@ -62,8 +62,16 @@ function playerIdTable:getPlayerRow(ply)
 end
 
 function playerIdTable:playerExists(ply)
-  local id = playerIdTable:getPlayerIdBySteamId(ply)
+  local id = self:getPlayerId(ply)
   return (id > 0)
+end
+
+function playerIdTable:addOrUpdatePlayer(ply)
+  if self:playerExists(ply) then
+    self:updatePlayerName(ply)
+  else
+    self:addPlayer(ply)
+  end
 end
 
 DDD.Database.Tables.PlayerId = playerIdTable
