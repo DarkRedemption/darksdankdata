@@ -67,7 +67,11 @@ function PlayerStats:getPlayerTime()
     local result = sql.Query(query)
     if (result != nil && result != false) then
       local totalSeconds = tonumber(result[1]["totaltime"])
-      local formattedTime = string.format("%.2d:%.2d:%.2d", totalSeconds/(60*60), totalSeconds/60%60, totalSeconds%60)
+      print(totalSeconds)
+      local formattedTime = string.format("%.2d:%.2d:%.2d", 
+                                          math.floor(totalSeconds/(60 * 60)), 
+                                          totalSeconds/60 % 60, 
+                                          totalSeconds % 60)
       self.statsTable["TotalServerTime"] = formattedTime
     end
   end
