@@ -23,9 +23,9 @@ playerPushKillTable:addForeignConstraint("weapon_id", weaponIdTable, "id")
 playerPushKillTable:addIndex("roundIdIndex", {"round_id"})
 playerPushKillTable:addIndex("victimIndex", {"victim_id"})
 playerPushKillTable:addIndex("attackerIndex", {"attacker_id"})
-playerPushKillTable:addIndex("attackerVsVictimIndex", {"attacker_id, victim_id"})
-playerPushKillTable:addIndex("killsWithWeaponIndex", {"attacker_id, weapon_id"})
-playerPushKillTable:addIndex("deathsFromWeaponIndex", {"victim_id, weapon_id"})
+playerPushKillTable:addIndex("attackerVsVictimIndex", {"attacker_id", "victim_id"})
+playerPushKillTable:addIndex("killsWithWeaponIndex", {"attacker_id", "weapon_id"})
+playerPushKillTable:addIndex("deathsFromWeaponIndex", {"victim_id", "weapon_id"})
 
 function playerPushKillTable:addKill(victimId, attackerId, weaponId)
   local queryTable = {

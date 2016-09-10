@@ -78,8 +78,30 @@ local function trackDnaDiscoverySpec()
   end
 end
 
+local function trackCreditsLootedSpec()
+  for i = 1, 100 do
+    tables.RoundId:addRound()
+    
+    local looter = GUnit.Generators.FakePlayer:new()
+    local victim = GUnit.Generators.FakePlayer:new()
+    tables.PlayerId:addPlayer(looter)
+    tables.PlayerId:addPlayer(victim)
+    local fakeCorpse = GUnit.Generators.FakeEntity:new()
+    CORPSE.SetPlayerSteamID(fakeCorpse, victim)
+    
+    local steamid = CORPSE.GetPlayerSteamID(fakeCorpse, "")
+    GUnit.assert(steamid):shouldEqual(victim:SteamID())
+    
+    local credits = math.random(1, 10)
+    
+    local id = DDD.Hooks.trackCreditsLooted(tables, looter, fakeCorpse, credits)
+    GUnit.assert(id):shouldEqual(i)
+  end
+end
+
 hookTest:beforeEach(beforeEach)
 hookTest:afterEach(afterEach)
 
 hookTest:addSpec("track player purchases", trackPurchasesSpec)
 hookTest:addSpec("track when player DNA is found", trackDnaDiscoverySpec)
+hookTest:addSpec("track when a player loots credits", trackCreditsLootedSpec)

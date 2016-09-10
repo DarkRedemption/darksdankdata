@@ -103,20 +103,28 @@ hook.Add("TTTPlayerRadioCommand", "DDDTrackRadioCallouts", function(ply, cmd_nam
 end)
 
 function DDD.Hooks.TrackHealing(tables, ply, ent_station, healed)
-  --local placer = ent_station:GetPlacer()
   local placerId = ent_station.DDDOwnerId
-  print(placerId)
-  --if (IsValid(placer)) then
   local userId = tables.PlayerId:getPlayerId(ply)
-    --local placerId = tables.PlayerId:getPlayerId(placer)
   tables.Healing:addHeal(userId, placerId, healed)
   tables.AggregateStats:incrementSelfHPHealed(userId)
-  --end
 end
 
 hook.Add("TTTPlayerUsedHealthStation", "DDDAddHeals", function(ply, ent_station, healed)
   if DDD:enabled() then
     DDD.Hooks.TrackHealing(tables, ply, ent_station, healed)
+  end
+end)
+
+function DDD.Hooks.trackCreditsLooted(tables, looter, rag, credits)
+  local looterId = tables.PlayerId:getPlayerId(looter)
+  local victimSteamId = CORPSE.GetPlayerSteamID(rag, "")
+  local victimId = tables.PlayerId:getPlayerIdBySteamId(victimSteamId)
+  return tables.CreditsLooted:addCreditsLooted(looterId, victimId, credits)
+end
+
+hook.Add("DDDCreditsLooted", "DDDTrackCreditsLooted", function(ply, rag, credits)
+  if DDD:enabled() then
+    DDD.Hooks.TrackCreditsLooted(tables, ply, rag, credits)
   end
 end)
 
