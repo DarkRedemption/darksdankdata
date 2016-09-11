@@ -58,11 +58,13 @@ end)
 
 function DDD.Hooks.trackPlayerRoles(tables)
   tables.RoundId:addRound()
+  
   for k, ply in pairs(player:GetAll()) do
     if ply:GetObserverMode() == 0 then
       tables.RoundRoles:addRole(ply)
       local playerId = tables.PlayerId:getPlayerId(ply)
       tables.AggregateStats:incrementRounds(playerId, ply:GetRole())
+      DDD.CurrentRound.roundParticipantIds[playerId] = ply:GetRole()
     end
   end
 end
@@ -74,11 +76,23 @@ hook.Add("TTTBeginRound", "DDDTrackRoundRoles", function()
   end
 end)
 
+function DDD.Hooks.addRoundResult(tables, roundResult)
+  tables.RoundResult:addResult(result)
+  
+  for playerId, playerRole in pairs(DDD.CurrentRound.roundParticipantIds) do
+    if (playerRole == 1 and roundResult == 2) or 
+       (playerRole != 1 and roundResult > 2) then
+      tables.AggregateStats:incrementRoundsWon(playerId, playerRole)
+    end
+  end
+end
+
 hook.Add("TTTEndRound", "DDDTrackRoundResult", function(result)
     if DDD:enabled() then
-      tables.RoundResult:addResult(result)
+      DDD.Hooks.addRoundResult(tables, result)
     end
     DDD.CurrentRound.isActive = false
+    DDD.CurrentRound.roundParticipantIds = {}
     DDD.Rank.RankTable:update()
   end)
 

@@ -36,6 +36,14 @@ local columns = { player_id = "INTEGER PRIMARY KEY",
                   detective_rounds = "INTEGER NOT NULL DEFAULT 0",
                   traitor_rounds = "INTEGER NOT NULL DEFAULT 0",
                   
+                  innocent_rounds_won = "INTEGER NOT NULL DEFAULT 0",
+                  detective_rounds_won = "INTEGER NOT NULL DEFAULT 0",
+                  traitor_rounds_won = "INTEGER NOT NULL DEFAULT 0",
+                  
+                  innocent_rounds_incomplete = "INTEGER NOT NULL DEFAULT 0",
+                  detective_rounds_incomplete = "INTEGER NOT NULL DEFAULT 0",
+                  traitor_rounds_incomplete = "INTEGER NOT NULL DEFAULT 0",
+                  
                   innocent_suicides = "INTEGER NOT NULL DEFAULT 0",
                   traitor_suicides = "INTEGER NOT NULL DEFAULT 0",
                   detective_suicides = "INTEGER NOT NULL DEFAULT 0",
@@ -278,6 +286,31 @@ function aggregateStatsTable:calculateRoleData(playerStatsLuaTable)
   end
 end
 
+function aggregateStatsTable:getRoleWins(playerId, roleId)
+  local expectedResult = ""
+  
+  if roleId == 1 then
+    expectedResult = "== 2"
+  else
+    expectedResult = "> 2"
+  end
+  
+  local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults 
+                  LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roundroles ON roundresults.round_id == roundroles.round_id
+                  WHERE player_id == ]] .. playerId .. [[ and role_id == ]] .. roleId .. [[ and `result` ]] .. expectedResult
+  local result = sql.Query(query)
+  return countResult(result)
+end
+
+function aggregateStatsTable:calculateRoleWins(playerStatsLuaTable)
+  local playerId = playerStatsLuaTable.player_id
+  
+  for rolename, rolevalue in pairs(roleToRoleId) do
+    local keyname = rolename .. "_rounds_won"
+    playerStatsLuaTable[keyname] = self:getRoleWins(playerId, rolevalue)
+  end
+end
+
 --[[
 Recalculates a single player's stats.
 --]]
@@ -291,6 +324,7 @@ function aggregateStatsTable:recalculateSinglePlayer(playerId)
   self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_kills", self.calculateRoleWeaponKills, {"ttt_c4"})
   self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_deaths", self.calculateRoleWeaponDeaths, {"ttt_c4"})
   self:calculateRoleData(playerStatsLuaTable)
+  self:calculateRoleWins(playerStatsLuaTable)
   self:calculateSelfHPHealed(playerStatsLuaTable)
   return playerStatsLuaTable
 end
@@ -330,6 +364,11 @@ end
 
 function aggregateStatsTable:getRounds(playerId, playerRole)
   local columnName = roleIdToRole[playerRole] .. "_rounds"
+  return self:selectColumn(playerId, columnName)
+end
+
+function aggregateStatsTable:getRoundsWon(playerId, playerRole)
+  local columnName = roleIdToRole[playerRole] .. "_rounds_won"
   return self:selectColumn(playerId, columnName)
 end
 
@@ -375,6 +414,12 @@ end
 function aggregateStatsTable:incrementRounds(playerId, playerRole)
   local rounds = self:getRounds(playerId, playerRole) + 1
   local columnName = roleIdToRole[playerRole] .. "_rounds"
+  return self:updateColumn(playerId, columnName, rounds)
+end
+
+function aggregateStatsTable:incrementRoundsWon(playerId, playerRole)
+  local rounds = self:getRoundsWon(playerId, playerRole) + 1
+  local columnName = roleIdToRole[playerRole] .. "_rounds_won"
   return self:updateColumn(playerId, columnName, rounds)
 end
 

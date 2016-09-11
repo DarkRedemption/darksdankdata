@@ -34,6 +34,7 @@ DDD.CurrentRound.blacklisted = DDD.CurrentRound.isMapBlacklisted(game.GetMap())
 DDD.CurrentRound.disabledByPop = DDD.CurrentRound.isPopTooLow(DDD.CurrentRound.getNonSpectatingPlayers())
 DDD.CurrentRound.roundStartTime = 0
 DDD.CurrentRound.roundId = 0
+DDD.CurrentRound.roundParticipantIds = {}
 DDD.CurrentRound.isActive = false
 
 function DDD:enabled()
