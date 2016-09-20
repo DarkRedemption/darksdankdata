@@ -50,28 +50,19 @@ local function determineWeaponFromDamageInfo(damageInfo)
   elseif damageInfo:IsDamageType(DMG_PHYSGUN) then
 		return "a massive bulk"
   elseif inflictor:IsPlayer() then
-		weapon = inflictor:GetActiveWeapon()
-    if not IsValid(weapon) then
+		wep = inflictor:GetActiveWeapon()
+    if not IsValid(wep) then
 			return IsValid(inflictor.dying_wep) and inflictor.dying_wep
     else
-      return weapon:GetClass()
+      return wep:GetClass()
     end
-  end
-end
-
-local function determineTTTWeapon(weaponClass)
-  if (weaponClass == "weapon_zm_revolver") then
-    return "Deagle"
-  elseif (weaponClass == "weapon_ttt_glock") then
-    return "Glock"
-  else
-    return weaponClass
   end
 end
 
 function DDD.determineWeapon(damageInfo)
 	if IsValid(damageInfo:GetInflictor()) then
-		return determineWeaponFromDamageInfo(damageInfo)
+    return damageInfo:GetInflictor():GetClass()
+		--return determineWeaponFromDamageInfo(damageInfo)
 	else
     return "UnknownWeapon"
   end
