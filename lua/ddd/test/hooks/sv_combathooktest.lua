@@ -20,6 +20,7 @@ local function trackPlayerCombatDeathSpec()
     local attackerId = tables.PlayerId:addPlayer(attacker)
     local weapon = GUnit.Generators.FakeEntity:new()
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
+    weapon:SetIsWeapon(true)
     damageInfo:SetInflictor(weapon)
     
     local id = DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
