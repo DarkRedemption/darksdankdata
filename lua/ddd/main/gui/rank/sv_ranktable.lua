@@ -1,6 +1,27 @@
 local rankTable = {}
 rankTable.__index = rankTable
 
+--[[
+Queries the database for the rank information and creates default information if it can't find any.
+PARAM functionName:String - The name of the function that called rankQuery, for logging purposes.
+PARAM query:String - The SQL query.
+RETURNS A table with the rankings or a table containing a message that there are no ranks yet for this category.
+]]
+local function rankQuery(functionName, query, valueName)
+  local result = DDD.SqlTable:query("RankTable:getOverallEnemyKdRank", query)
+  
+  if (result == 0) then --SQL found no results but didn't error
+    local defaultRank = {}
+    local defaultTable = {}
+    defaultRank["last_known_name"] = "No one has met the prerequisites to be ranked for this category."
+    defaultRank["value"] = 0
+    table.insert(defaultTable, defaultRank)
+    return defaultTable
+  else
+    return result
+  end
+end
+
 function rankTable:getOverallEnemyKdRank()
   local query = [[SELECT
     ROUND(
@@ -8,16 +29,16 @@ function rankTable:getOverallEnemyKdRank()
     SUM(stats.traitor_innocent_deaths + stats.traitor_detective_deaths + stats.traitor_traitor_deaths + stats.traitor_world_deaths +
     stats.detective_innocent_deaths + stats.detective_traitor_deaths + stats.detective_detective_deaths + stats.detective_world_deaths +
     stats.innocent_traitor_deaths + stats.innocent_detective_deaths + stats.innocent_innocent_deaths + stats.innocent_world_deaths), 
-    3) as overall_enemy_kd, 
+    3) as value, 
     player_id.last_known_name
     FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
     LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
     WHERE (stats.traitor_rounds + stats.innocent_rounds + stats.detective_rounds) > 500
     GROUP BY stats.player_id
-    ORDER BY overall_enemy_kd DESC
+    ORDER BY value DESC
     LIMIT 25
     ]]
-  return DDD.SqlTable:query("RankTable:getOverallEnemyKdRank", query)
+  return rankQuery("RankTable:getOverallEnemyKdRank", query)
 end
 
 function rankTable:getTotalEnemyKillRank()
@@ -25,27 +46,27 @@ function rankTable:getTotalEnemyKillRank()
                 SUM(stats.traitor_innocent_kills + 
                 stats.traitor_detective_kills + 
                 stats.innocent_traitor_kills + 
-                stats.detective_traitor_kills) as total_enemy_kills, player_id.last_known_name
+                stats.detective_traitor_kills) as value, player_id.last_known_name
                 FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
                 LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                 GROUP BY stats.player_id
-                ORDER BY stats.traitor_innocent_kills DESC
+                ORDER BY value DESC
                 LIMIT 25
                 ]]
-  return DDD.SqlTable:query("RankTable:getTotalEnemyKillRank", query)
+  return rankQuery("RankTable:getTotalEnemyKillRank", query)
 end
 
 function rankTable:getTotalRoundsPlayedRank()
   local query = [[SELECT
-                  SUM(stats.traitor_rounds + stats.innocent_rounds + stats.detective_rounds) as total_rounds_played,
+                  SUM(stats.traitor_rounds + stats.innocent_rounds + stats.detective_rounds) as value,
                   player_id.last_known_name
                   FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
                   LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
-                  ORDER BY total_rounds_played DESC
+                  ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return DDD.SqlTable:query("RankTable:getTotalRoundsPlayedRank", query)
+  return rankQuery("RankTable:getTotalRoundsPlayedRank", query)
 end
 
 function rankTable:getTraitorEnemyKdRank()
@@ -53,38 +74,38 @@ function rankTable:getTraitorEnemyKdRank()
                   ROUND(
                   SUM(stats.traitor_innocent_kills + stats.traitor_detective_kills) * 1.000 / 
                   SUM(stats.traitor_innocent_deaths + stats.traitor_detective_deaths + stats.traitor_traitor_deaths + stats.traitor_world_deaths),
-                  3) as traitor_enemy_kd, 
+                  3) as value, 
                   player_id.last_known_name
                   FROM ddd_aggregate_stats as stats
                   LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
                   WHERE stats.traitor_rounds > 125
                   GROUP BY stats.player_id
-                  ORDER BY traitor_enemy_kd DESC
+                  ORDER BY value DESC
                   LIMIT 25
   ]]
-  return DDD.SqlTable:query("RankTable:getTraitorEnemyKdRank", query)
+  return rankQuery("RankTable:getTraitorEnemyKdRank", query)
 end
 
 function rankTable:getTraitorEnemyKillRank()
-  local query = [[SELECT SUM(stats.traitor_innocent_kills + stats.traitor_detective_kills) as traitor_enemy_kills, player_id.last_known_name
+  local query = [[SELECT SUM(stats.traitor_innocent_kills + stats.traitor_detective_kills) as value, player_id.last_known_name
                   from ddd_aggregate_stats as stats
                   LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
-                  ORDER BY stats.traitor_innocent_kills DESC
+                  ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return DDD.SqlTable:query("RankTable:getTraitorEnemyKillRank", query)
+  return rankQuery("RankTable:getTraitorEnemyKillRank", query)
 end
 
 function rankTable:getTraitorInnocentKillRank()
-  local query = [[SELECT stats.traitor_innocent_kills, player_id.last_known_name
+  local query = [[SELECT stats.traitor_innocent_kills as value, player_id.last_known_name
                   from ddd_aggregate_stats as stats
                   LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
-                  ORDER BY stats.traitor_innocent_kills DESC
+                  ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return DDD.SqlTable:query("RankTable:getTraitorInnocentKillRank", query)
+  return rankQuery("RankTable:getTraitorInnocentKillRank", query)
 end
 
 function rankTable:getTraitorDetectiveKillRank()
@@ -95,20 +116,20 @@ function rankTable:getTraitorDetectiveKillRank()
                   ORDER BY stats.traitor_innocent_kills DESC
                   LIMIT 25
                 ]]
-  return DDD.SqlTable:query("RankTable:getTraitorInnocentKillRank", query)
+  return rankQuery("RankTable:getTraitorInnocentKillRank", query)
 end
 
 function rankTable:getTraitorRoundsPlayedRank()
     local query = [[SELECT 
-                  stats.traitor_rounds as traitor_rounds_played,
+                  stats.traitor_rounds as value,
                   player_id.last_known_name
                   FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
                   LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
-                  ORDER BY traitor_rounds_played DESC
+                  ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return DDD.SqlTable:query("RankTable:getTraitorRoundsPlayedRank", query)
+    return rankQuery("RankTable:getTraitorRoundsPlayedRank", query)
 end
 
 function rankTable:getInnocentTraitorKdRank()
@@ -116,40 +137,40 @@ function rankTable:getInnocentTraitorKdRank()
                   ROUND(
                   stats.innocent_traitor_kills * 1.000 / 
                   SUM(stats.innocent_traitor_deaths + stats.innocent_detective_deaths + stats.innocent_innocent_deaths + stats.innocent_world_deaths),
-                  3) as innocent_traitor_kd, 
+                  3) as value, 
                   player_id.last_known_name
                   FROM ddd_aggregate_stats as stats
                   LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
                   WHERE stats.innocent_rounds > 250
                   GROUP BY stats.player_id
-                  ORDER BY innocent_traitor_kd DESC
+                  ORDER BY value DESC
                   LIMIT 25
   ]]
-  return DDD.SqlTable:query("RankTable:getInnocentTraitorKdRank", query)
+  return rankQuery("RankTable:getInnocentTraitorKdRank", query)
 end
 
 function rankTable:getInnocentTraitorKillRank()
-  local query = [[SELECT stats.innocent_traitor_kills, player_id.last_known_name
+  local query = [[SELECT stats.innocent_traitor_kills as value, player_id.last_known_name
                   from ddd_aggregate_stats as stats
                   LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
-                  ORDER BY stats.innocent_traitor_kills DESC
+                  ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return DDD.SqlTable:query("RankTable:getInnocentTraitorKillRank", query)
+  return rankQuery("RankTable:getInnocentTraitorKillRank", query)
 end
 
 function rankTable:getInnocentRoundsPlayedRank()
     local query = [[SELECT 
-                  stats.innocent_rounds as innocent_rounds_played,
+                  stats.innocent_rounds as value,
                   player_id.last_known_name
                   FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
                   LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
-                  ORDER BY innocent_rounds_played DESC
+                  ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return DDD.SqlTable:query("RankTable:getInnocentRoundsPlayedRank", query)
+    return rankQuery("RankTable:getInnocentRoundsPlayedRank", query)
 end
 
 function rankTable:getDetectiveTraitorKdRank()
@@ -157,40 +178,40 @@ function rankTable:getDetectiveTraitorKdRank()
                   ROUND(
                   stats.detective_traitor_kills * 1.000 / 
                   SUM(stats.detective_traitor_deaths + stats.detective_innocent_deaths + stats.detective_detective_deaths + stats.detective_world_deaths),
-                  3) as detective_traitor_kd, 
+                  3) as value, 
                   player_id.last_known_name
                   FROM ddd_aggregate_stats as stats
                   LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
                   WHERE stats.detective_rounds > 75
                   GROUP BY stats.player_id
-                  ORDER BY detective_traitor_kd DESC
+                  ORDER BY value DESC
                   LIMIT 25
   ]]
-  return DDD.SqlTable:query("RankTable:getDetectiveTraitorKdRank", query)
+  return rankQuery("RankTable:getDetectiveTraitorKdRank", query)
 end
 
 function rankTable:getDetectiveTraitorKillRank()
-  local query = [[SELECT stats.detective_traitor_kills, player_id.last_known_name
+  local query = [[SELECT stats.detective_traitor_kills as value, player_id.last_known_name
                   from ddd_aggregate_stats as stats
                   LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
-                  ORDER BY stats.detective_traitor_kills DESC
+                  ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return DDD.SqlTable:query("RankTable:getDetectiveTraitorKillRank", query)
+  return rankQuery("RankTable:getDetectiveTraitorKillRank", query)
 end
 
 function rankTable:getDetectiveRoundsPlayedRank()
     local query = [[SELECT 
-                  stats.detective_rounds as detective_rounds_played,
+                  stats.detective_rounds as value,
                   player_id.last_known_name
                   FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
                   LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
-                  ORDER BY detective_rounds_played DESC
+                  ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return DDD.SqlTable:query("RankTable:getDetectiveRoundsPlayedRank", query)
+    return rankQuery("RankTable:getDetectiveRoundsPlayedRank", query)
 end
 
 function rankTable:update()

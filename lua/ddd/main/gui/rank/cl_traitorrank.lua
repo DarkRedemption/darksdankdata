@@ -24,35 +24,35 @@ end
 local function populateWithTraitorEnemyKd(list, rankTable)
   list.thirdColumn:SetName(enemyKd)
   for key, value in pairs(rankTable["traitor_enemy_kd"]) do
-    list:AddLine(key, value["last_known_name"], value["traitor_enemy_kd"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function populateWithTraitorEnemyKills(list, rankTable)
   list.thirdColumn:SetName(enemyKills)
   for key, value in pairs(rankTable["traitor_enemy_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["traitor_enemy_kills"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function populateWithTraitorInnocentKills(list, rankTable)
   list.thirdColumn:SetName(innocentKills)
   for key, value in pairs(rankTable["traitor_innocent_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["traitor_innocent_kills"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function populateWithTraitorDetectiveKills(list, rankTable)
   list.thirdColumn:SetName(detectiveKills)
   for key, value in pairs(rankTable["traitor_detective_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["traitor_detective_kills"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function populateWithTraitorRoundsPlayed(list, rankTable)
   list.thirdColumn:SetName(roundsPlayed)
   for key, value in pairs(rankTable["traitor_rounds_played"]) do
-    list:AddLine(key, value["last_known_name"], value["traitor_rounds_played"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 

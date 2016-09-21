@@ -22,21 +22,21 @@ end
 local function populateWithDetectiveEnemyKd(list, rankTable)
   list.thirdColumn:SetName(traitorKd)
   for key, value in pairs(rankTable["detective_traitor_kd"]) do
-    list:AddLine(key, value["last_known_name"], value["detective_traitor_kd"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function populateWithDetectiveEnemyKills(list, rankTable)
   list.thirdColumn:SetName(traitorKills)
   for key, value in pairs(rankTable["detective_traitor_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["detective_traitor_kills"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function populateWithDetectiveRoundsPlayed(list, rankTable)
   list.thirdColumn:SetName(roundsPlayed)
   for key, value in pairs(rankTable["detective_rounds_played"]) do
-    list:AddLine(key, value["last_known_name"], value["detective_rounds_played"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 

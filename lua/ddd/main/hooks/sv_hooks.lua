@@ -138,7 +138,7 @@ end
 
 hook.Add("DDDCreditsLooted", "DDDTrackCreditsLooted", function(ply, rag, credits)
   if DDD:enabled() then
-    DDD.Hooks.TrackCreditsLooted(tables, ply, rag, credits)
+    DDD.Hooks.trackCreditsLooted(tables, ply, rag, credits)
   end
 end)
 

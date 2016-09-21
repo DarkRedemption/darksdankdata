@@ -22,22 +22,23 @@ end
 
 local function populateWithOverallEnemyKd(list, rankTable)
   list.thirdColumn:SetName(enemyKd)
+  print(rankTable["overall_enemy_kd"])
   for key, value in pairs(rankTable["overall_enemy_kd"]) do
-    list:AddLine(key, value["last_known_name"], value["overall_enemy_kd"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function populateWithTotalEnemyKills(list, rankTable)
   list.thirdColumn:SetName(enemyKills)
   for key, value in pairs(rankTable["total_enemy_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["total_enemy_kills"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function populateWithRoundsPlayed(list, rankTable)
   list.thirdColumn:SetName(roundsPlayed)
   for key, value in pairs(rankTable["total_rounds_played"]) do
-    list:AddLine(key, value["last_known_name"], value["total_rounds_played"])
+    list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
