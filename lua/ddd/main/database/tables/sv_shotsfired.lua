@@ -30,7 +30,7 @@ function shotsFiredTable:addShot(player, attackType)
     player_id = playerIdTable:getPlayerId(player),
     weapon_id = weaponIdTable:getOrAddWeaponId(player:GetActiveWeapon():GetClass()),
     attack_type = attackType,
-    round_time =  DDD.CurrentRound:getCurrentRoundTime()
+    round_time = DDD.CurrentRound:getCurrentRoundTime()
     }
   return self:insertTable(row)
 end

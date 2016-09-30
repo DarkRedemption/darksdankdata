@@ -77,7 +77,7 @@ hook.Add("TTTBeginRound", "DDDTrackRoundRoles", function()
 end)
 
 function DDD.Hooks.addRoundResult(tables, roundResult)
-  tables.RoundResult:addResult(result)
+  tables.RoundResult:addResult(roundResult)
   
   for playerId, playerRole in pairs(DDD.CurrentRound.roundParticipantIds) do
     if (playerRole == 1 and roundResult == 2) or 

@@ -33,9 +33,11 @@ local function handleNilAttackerKill(tables, victim, damageInfo)
   else
     local victimId = tables.PlayerId:getPlayerId(victim)
     local addKillResult = tables.WorldKill:addPlayerKill(victimId, damageInfo)
+    
     if (addKillResult != nil and addKillResult != false) then
       tables.AggregateStats:incrementWorldDeaths(victimId, victim:GetRole())
     end
+    
     return addKillResult
   end
 end
@@ -49,6 +51,7 @@ function DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
       local weaponClass = DDD.determineWeapon(damageInfo)
       local weaponId = tables.WeaponId:getOrAddWeaponId(weaponClass)
       local addKillResult = tables.PlayerKill:addKill(victimId, attackerId, weaponId)
+      
       if (addKillResult != nil and addKillResult != false) then
         incrementAggregateKillsAndDeaths(attacker, victim, attackerId, victimId)
         if (weaponClass == "ttt_c4") then
@@ -56,6 +59,7 @@ function DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
           tables.AggregateStats:incrementWeaponDeaths(victimId, victim:GetRole(), attacker:GetRole(), weaponClass)
         end
       end
+      
       return addKillResult
     end
 end
@@ -70,6 +74,7 @@ hook.Add("DoPlayerDeath", "DDDTrackPlayerDeath", function(victim, attacker, dama
 
 local function handleNilAttackerDamage(tables, victim, damageInfo)
   local victimId = tables.PlayerId:getPlayerId(victim)
+  
   if (victim.was_pushed and IsValid(victim.was_pushed.att)) then
     local attackerId = tables.PlayerId:getPlayerId(victim.was_pushed.att)
     local weaponId = tables.WeaponId:getOrAddWeaponId(victim.was_pushed.wep)
@@ -86,10 +91,12 @@ function DDD.Hooks.trackDamage(tables, victim, damageInfo)
     return handleNilAttackerDamage(tables, victim, damageInfo)
   else
     --print(attacker:GetClass())
-    local weaponClass = damageInfo:GetInflictor():GetClass()
+    --local weaponClass = damageInfo:GetInflictor():GetClass()
+    local weaponClass = DDD.determineWeapon(damageInfo)
     local victimId = tables.PlayerId:getPlayerId(victim)
     local attackerId = tables.PlayerId:getPlayerId(attacker)
     local weaponId = tables.WeaponId:getOrAddWeaponId(weaponClass)
+    
     return tables.CombatDamage:addDamage(victimId, attackerId, weaponId, damageInfo)
   end
 end

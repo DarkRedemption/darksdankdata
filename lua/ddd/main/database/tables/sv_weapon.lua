@@ -27,30 +27,44 @@ function weaponIdTable:getOrAddWeaponId(weaponClass)
   end
 end
 
-local function determineWeaponFromDamageInfo(damageInfo)
+local function determineFireWeapon(damageInfo, victim)
+  local inflictor = damageInfo:GetInflictor()
+  if (victim && victim.ignite_info) then
+    --[[Flaregun is the only known weapon that sets ignite info in Vanilla.]]
+    return "weapon_ttt_flaregun" 
+  elseif inflictor:GetClass() == "env_fire" then
+    return "ttt_firegrenade_proj"
+  else
+    return "fire" --Unknown fire-based weapon
+  end
+  
+end
+
+local function determineWeaponFromDamageInfo(damageInfo, victim)
   local inflictor = damageInfo:GetInflictor()
   if inflictor:IsWeapon() or inflictor.Projectile or (inflictor:GetClass() == "ttt_c4") then
 		return inflictor:GetClass()
   elseif damageInfo:IsDamageType(DMG_BLAST) then
-    return "an explosion"
+    --TODO: Check if incendiary grenade blasts return explosion or their class with this code
+    return "explosion"
   elseif damageInfo:IsDamageType(DMG_DIRECT) or damageInfo:IsDamageType(DMG_BURN) then
-		return "fire"
+    return determineFireWeapon(damageInfo, victim)
   elseif damageInfo:IsDamageType(DMG_CRUSH) then
-		return "falling or prop damage"
+		return "falling_or_prop"
   elseif damageInfo:IsDamageType(DMG_SLASH) then
-		return "a sharp object"
+		return "edged_weapon"
   elseif damageInfo:IsDamageType(DMG_CLUB) then
-		return "clubbed to death"
+		return "blunt_weapon"
   elseif damageInfo:IsDamageType(DMG_SHOCK) then
-		return "an electric shock"
+		return "electricity"
 	elseif damageInfo:IsDamageType(DMG_ENERGYBEAM) then
-		return "a laser"
+		return "laser"
   elseif damageInfo:IsDamageType(DMG_SONIC) then
-		return "a teleport collision"
+		return "weapon_ttt_teleport" --Unless there's something else that can telefrag...
   elseif damageInfo:IsDamageType(DMG_PHYSGUN) then
-		return "a massive bulk"
+		return "physgun"
   elseif inflictor:IsPlayer() then
-		wep = inflictor:GetActiveWeapon()
+		local wep = inflictor:GetActiveWeapon()
     if not IsValid(wep) then
 			return IsValid(inflictor.dying_wep) and inflictor.dying_wep
     else
@@ -59,10 +73,10 @@ local function determineWeaponFromDamageInfo(damageInfo)
   end
 end
 
-function DDD.determineWeapon(damageInfo)
+function DDD.determineWeapon(damageInfo, victim)
 	if IsValid(damageInfo:GetInflictor()) then
-    return damageInfo:GetInflictor():GetClass()
-		--return determineWeaponFromDamageInfo(damageInfo)
+    --return damageInfo:GetInflictor():GetClass()
+		return determineWeaponFromDamageInfo(damageInfo, victim)
 	else
     return "UnknownWeapon"
   end

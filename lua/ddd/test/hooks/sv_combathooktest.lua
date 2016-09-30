@@ -20,6 +20,7 @@ local function trackPlayerCombatDeathSpec()
     local attackerId = tables.PlayerId:addPlayer(attacker)
     local weapon = GUnit.Generators.FakeEntity:new()
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
+    
     weapon:SetIsWeapon(true)
     damageInfo:SetInflictor(weapon)
     
@@ -37,13 +38,13 @@ end
 local function trackPlayerPushDeathSpec()
   for i = 1, 100 do
     local roundId = tables.RoundId:addRound()
-    
     local victim = GUnit.Generators.FakePlayer:new()
     local attacker = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local attackerId = tables.PlayerId:addPlayer(attacker)
     local weapon = GUnit.Generators.FakeEntity:new()
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
+    
     damageInfo:SetDamageType(DMG_FALL)
     
     local wasPushed = {
@@ -66,15 +67,15 @@ end
 local function trackPlayerWorldDeathSpec()  
   for i = 1, 100 do
     local roundId = tables.RoundId:addRound()
-    
     local victim = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
-    
     local id = DDD.Hooks.trackPlayerDeath(tables, victim, nil, damageInfo)
+    
     GUnit.assert(id):shouldEqual(i)
     
     local killRow = tables.WorldKill:selectById(id)
+    
     GUnit.assert(killRow):shouldNotEqual(0)
     GUnit.assert(tonumber(killRow["round_id"])):shouldEqual(roundId)
     GUnit.assert(tonumber(killRow["victim_id"])):shouldEqual(victimId)
@@ -91,13 +92,17 @@ local function trackPlayerCombatDamageSpec()
     local attackerId = tables.PlayerId:addPlayer(attacker)
     local weapon = GUnit.Generators.FakeEntity:new()
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
+    
+    weapon:SetIsWeapon(true)
     damageInfo:SetAttacker(attacker)
     damageInfo:SetInflictor(weapon)
     
     local id = DDD.Hooks.trackDamage(tables, victim, damageInfo)
+    
     GUnit.assert(id):shouldEqual(i)
     
     local damageRow = tables.CombatDamage:selectById(id)
+    
     GUnit.assert(damageRow):shouldNotEqual(0)
     GUnit.assert(tonumber(damageRow["round_id"])):shouldEqual(roundId)
     GUnit.assert(tonumber(damageRow["victim_id"])):shouldEqual(victimId)
@@ -109,11 +114,11 @@ end
 local function trackPlayerWorldDamageSpec()
   for i = 1, 100 do
     local roundId = tables.RoundId:addRound()
-    
     local victim = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
     local id = DDD.Hooks.trackDamage(tables, victim, damageInfo)
+    
     GUnit.assert(id):shouldEqual(i)
     
     local damageRow = tables.WorldDamage:selectById(id)
