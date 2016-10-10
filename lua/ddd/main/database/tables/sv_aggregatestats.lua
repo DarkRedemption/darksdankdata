@@ -31,27 +31,27 @@ itemColumnSuffix["weapon_ttt_health_station"] = "healthstation_purchases"
 
 --All kills/deaths are in the format of <thisplayerrole>_<opponentrole>_<kills/deaths>
 local columns = { player_id = "INTEGER PRIMARY KEY",
-  
+
                   innocent_rounds = "INTEGER NOT NULL DEFAULT 0",
                   detective_rounds = "INTEGER NOT NULL DEFAULT 0",
                   traitor_rounds = "INTEGER NOT NULL DEFAULT 0",
-                  
+
                   innocent_rounds_won = "INTEGER NOT NULL DEFAULT 0",
                   detective_rounds_won = "INTEGER NOT NULL DEFAULT 0",
                   traitor_rounds_won = "INTEGER NOT NULL DEFAULT 0",
-                  
+
                   innocent_rounds_lost = "INTEGER NOT NULL DEFAULT 0",
                   detective_rounds_lost = "INTEGER NOT NULL DEFAULT 0",
                   traitor_rounds_lost = "INTEGER NOT NULL DEFAULT 0",
-                  
+
                   innocent_suicides = "INTEGER NOT NULL DEFAULT 0",
                   traitor_suicides = "INTEGER NOT NULL DEFAULT 0",
                   detective_suicides = "INTEGER NOT NULL DEFAULT 0",
-                  
+
                   innocent_world_deaths = "INTEGER NOT NULL DEFAULT 0",
                   traitor_world_deaths = "INTEGER NOT NULL DEFAULT 0",
                   detective_world_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  
+
                   traitor_armor_purchases = "INTEGER NOT NULL DEFAULT 0",
                   traitor_radar_purchases = "INTEGER NOT NULL DEFAULT 0",
                   traitor_disguiser_purchases = "INTEGER NOT NULL DEFAULT 0",
@@ -64,7 +64,7 @@ local columns = { player_id = "INTEGER PRIMARY KEY",
                   traitor_decoy_purchases = "INTEGER NOT NULL DEFAULT 0",
                   traitor_poltergeist_purchases = "INTEGER NOT NULL DEFAULT 0",
                   traitor_c4_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  
+
                   detective_radar_purchases = "INTEGER NOT NULL DEFAULT 0",
                   detective_visualizer_purchases = "INTEGER NOT NULL DEFAULT 0",
                   detective_defuser_purchases = "INTEGER NOT NULL DEFAULT 0",
@@ -72,11 +72,11 @@ local columns = { player_id = "INTEGER PRIMARY KEY",
                   detective_binoculars_purchases = "INTEGER NOT NULL DEFAULT 0",
                   detective_ump_purchases = "INTEGER NOT NULL DEFAULT 0",
                   detective_healthstation_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  
+
                   self_hp_healed = "INTEGER NOT NULL DEFAULT 0",
                   others_hp_healed = "INTEGER NOT NULL DEFAULT 0"
                 }
-                
+
 local function createColumnsForAllRoleCombinations(suffix)
   for rolename, rolevalue in pairs(roleToRoleId) do
     for secondrolename, secondrolevalue in pairs(roleToRoleId) do
@@ -106,7 +106,7 @@ local function countResult(result)
   elseif (result == false) then
     DDD.Logging.logError("sv_aggregatestats.lua.countResult: An error occured. Error was: " .. sql.LastError())
     return -1
-else 
+else
   return result[1]["count"]
   end
 end
@@ -114,7 +114,7 @@ end
 function aggregateStatsTable:runKillCountQuery(whereStatement)
   local query = [[SELECT COUNT(*) AS count
            FROM ]] .. self.tables.PlayerKill.tableName .. [[ AS kill
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles 
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
            ON kill.round_id == victim_roles.round_id
            AND kill.victim_id == victim_roles.player_id
            LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
@@ -150,7 +150,7 @@ function aggregateStatsTable:calculateRoleWeaponKills(playerStatsLuaTable, playe
   local playerId = playerStatsLuaTable.player_id
   local weaponId = self.tables.WeaponId:getWeaponId(weaponName)
   if (weaponId == -1) then return 0 end
-  
+
   local whereStatement = [[WHERE kill.attacker_id == ]] .. tostring(playerId) .. [[
                   AND kill.victim_id != ]] .. tostring(playerId) .. [[
                   AND attacker_roles.role_id == ]] .. tostring(playerRole) .. [[
@@ -163,7 +163,7 @@ function aggregateStatsTable:calculateRoleWeaponDeaths(playerStatsLuaTable, play
   local playerId = playerStatsLuaTable.player_id
   local weaponId = self.tables.WeaponId:getWeaponId(weaponName)
   if (weaponId == -1) then return 0 end
-  
+
   local whereStatement = [[WHERE kill.victim_id == ]] .. tostring(playerId) .. [[
                   AND attacker_roles.role_id == ]] .. tostring(attackerRole) .. [[
                   AND victim_roles.role_id == ]] .. tostring(playerRole) .. [[
@@ -174,7 +174,7 @@ end
 function aggregateStatsTable:makeWorldDeathCountQuery(playerId, playerRole)
   return [[SELECT COUNT(*) AS count
            FROM ]] .. self.tables.WorldKill.tableName .. [[ AS kill
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles 
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
            ON kill.round_id == victim_roles.round_id
            AND kill.victim_id == victim_roles.player_id
            WHERE kill.victim_id == ]] .. tostring(playerId) .. [[
@@ -189,7 +189,7 @@ end
 
 function aggregateStatsTable:getAllCombatKillsAndDeaths(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
-  
+
   for playerRole, playerRoleName in pairs(roleIdToRole) do
     for opponentRole, opponentRoleName in pairs(roleIdToRole) do
       local killColumnName = playerRoleName .. "_" .. opponentRoleName .. "_kills"
@@ -198,7 +198,7 @@ function aggregateStatsTable:getAllCombatKillsAndDeaths(playerStatsLuaTable)
       playerStatsLuaTable[deathColumnName] = self:calculateRoleDeaths(playerId, playerRole, opponentRole)
     end
   end
-  
+
   return self
 end
 
@@ -217,25 +217,25 @@ end
 
 function aggregateStatsTable:getAllWorldDeaths(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
-  
+
   for playerRole, playerRoleName in pairs(roleIdToRole) do
     local deathColumnName = playerRoleName .. "_world_deaths"
     playerStatsLuaTable[deathColumnName] = self:calculateWorldDeaths(playerId, playerRole)
   end
-  
+
   return self
 end
 
 function aggregateStatsTable:getPurchasesAsRole(playerId, itemName, roleId)
   local itemId = self.tables.ShopItem:getItemId(itemName)
   if (itemId > 0) then
-    local query = 
-    "SELECT COUNT(*) AS count FROM " .. self.tables.Purchases.tableName .. " as purchases " .. 
+    local query =
+    "SELECT COUNT(*) AS count FROM " .. self.tables.Purchases.tableName .. " as purchases " ..
     "LEFT JOIN " .. self.tables.RoundRoles.tableName .. " as roles " ..
     "ON purchases.round_id == roles.round_id " ..
     "WHERE purchases.player_id == " .. playerId .. " AND purchases.shop_item_id == " .. itemId .. " AND roles.role_id == " .. roleId
     return DDD.SqlTable:query("purchasesTable:getPurchases", query, 1, "count")
-  else 
+  else
     return 0
   end
 end
@@ -249,7 +249,7 @@ end
 
 function aggregateStatsTable:getPurchases(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
-  
+
   playerStatsLuaTable["traitor_armor_purchases"] = self:getPurchasesAsRole(playerId, "1", roleToRoleId["Traitor"])
   playerStatsLuaTable["traitor_radar_purchases"] = self:getPurchasesAsRole(playerId, "2",  roleToRoleId["Traitor"])
   playerStatsLuaTable["traitor_disguiser_purchases"] = self:getPurchasesAsRole(playerId, "4",  roleToRoleId["Traitor"])
@@ -262,7 +262,7 @@ function aggregateStatsTable:getPurchases(playerStatsLuaTable)
   playerStatsLuaTable["traitor_decoy_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_decoy",  roleToRoleId["Traitor"])
   playerStatsLuaTable["traitor_poltergeist_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_phammer",  roleToRoleId["Traitor"])
   playerStatsLuaTable["traitor_c4_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_c4",  roleToRoleId["Traitor"])
-  
+
   playerStatsLuaTable["detective_radar_purchases"] = self:getPurchasesAsRole(playerId, "2",  roleToRoleId["Detective"])
   playerStatsLuaTable["detective_visualizer_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_cse",  roleToRoleId["Detective"])
   playerStatsLuaTable["detective_defuser_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_defuser",  roleToRoleId["Detective"])
@@ -279,7 +279,7 @@ end
 
 function aggregateStatsTable:calculateRoleData(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
-  
+
   for rolename, rolevalue in pairs(roleToRoleId) do
     local keyname = rolename .. "_rounds"
     playerStatsLuaTable[keyname] = self.tables.RoundRoles:getRoundsAsRole(playerId, rolevalue)
@@ -288,14 +288,14 @@ end
 
 function aggregateStatsTable:getRoleWins(playerId, roleId)
   local expectedResult = ""
-  
+
   if roleId == 1 then
     expectedResult = "== 2"
   else
     expectedResult = "> 2"
   end
-  
-  local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults 
+
+  local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults
                   LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roundroles ON roundresults.round_id == roundroles.round_id
                   WHERE player_id == ]] .. playerId .. [[ and role_id == ]] .. roleId .. [[ and `result` ]] .. expectedResult
   local result = sql.Query(query)
@@ -304,7 +304,7 @@ end
 
 function aggregateStatsTable:calculateRoleWins(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
-  
+
   for rolename, rolevalue in pairs(roleToRoleId) do
     local keyname = rolename .. "_rounds_won"
     playerStatsLuaTable[keyname] = self:getRoleWins(playerId, rolevalue)
@@ -313,14 +313,14 @@ end
 
 function aggregateStatsTable:getRoleLosses(playerId, roleId)
   local expectedResult = ""
-  
+
   if roleId == 1 then
     expectedResult = "> 2"
   else
     expectedResult = "== 2"
   end
-  
-  local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults 
+
+  local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults
                   LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roundroles ON roundresults.round_id == roundroles.round_id
                   WHERE player_id == ]] .. playerId .. [[ and role_id == ]] .. roleId .. [[ and `result` ]] .. expectedResult
   local result = sql.Query(query)
@@ -329,7 +329,7 @@ end
 
 function aggregateStatsTable:calculateRoleLosses(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
-  
+
   for rolename, rolevalue in pairs(roleToRoleId) do
     local keyname = rolename .. "_rounds_lost"
     playerStatsLuaTable[keyname] = self:getRoleLosses(playerId, rolevalue)
@@ -362,7 +362,7 @@ function aggregateStatsTable:recalculate()
   self:drop()
   self:create()
   local players = self.tables.PlayerId:getPlayerIdList()
-  
+
   for rowId, playerId in pairs(players) do
     local playerStatsLuaTable = self:recalculateSinglePlayer(playerId)
     self:insertTable(playerStatsLuaTable)
@@ -515,13 +515,3 @@ end
 
 DDD.Database.Tables.AggregateStats = aggregateStatsTable
 aggregateStatsTable:create()
-
-concommand.Add("ddd_recalculate", function(ply, cmd, args, argStr)
-  if (ply == NULL) then
-    MsgC(lightBlue, "Recalculating aggregate data. This may take a long time.\n")
-    aggregateStatsTable:recalculate()
-    MsgC(lightBlue, "Aggregate data recalculated.\n")
-  else         
-    MsgC(red, "This command may only be run through the server console.\n")
-  end
-end)

@@ -1,24 +1,55 @@
 ﻿--Holds aggregate data specifically for individual weapons.
 --Made into its own table due to the number of columns each weapon produces for each role.
 
+local roleIdToRole = {} -- The reverse of the main roles table, this is roleValue -> roleName instead.
+roleIdToRole[0] = "innocent"
+roleIdToRole[1] = "traitor"
+roleIdToRole[2] = "detective"
+
+--[[
+A list of things that cannot be used to kill that still count as SWEPs.
+These are not added to the table.
+]]
+local weaponFilter = {
+  "weapon_ttt_radio",
+  "weapon_ttt_decoy",
+  "weapon_ttt_binoculars",
+  "weapon_ttt_defuser",
+  "weapon_ttt_cse"
+}
+
+local function makeKillColumnName(weaponClass, attackerRoleId, victimRoleId)
+  return weaponClass .. "_" .. roleIdToRole[attackerRoleId] .. "_" .. roleIdToRole[victimRoleId] .. "_kills"
+end
+
+local function makeDeathColumnName(weaponClass, attackerRoleId, victimRoleId)
+  return weaponClass .. "_" .. roleIdToRole[victimRoleId] .. "_" .. roleIdToRole[attackerRoleId] .. "_deaths"
+end
+
 local function generateWeaponColumns()
   local columns = { player_id = "INTEGER NOT NULL" }
-  local weapons = weapons.GetAll()
-  
-  for key, value in pairs(weapons) do
-    if (value.ClassName) then
-      columns[value.ClassName + "_innocent_kills"] = "INTEGER NOT NULL DEFAULT 0"
-      columns[value.ClassName + "_traitor_kills"] = "INTEGER NOT NULL DEFAULT 0"
-      columns[value.ClassName + "_detective_kills"] = "INTEGER NOT NULL DEFAULT 0"
-      
-      columns[value.ClassName + "_innocent_deaths"] = "INTEGER NOT NULL DEFAULT 0"
-      columns[value.ClassName + "_traitor_deaths"] = "INTEGER NOT NULL DEFAULT 0"
-      columns[value.ClassName + "_detective_deaths"] = "INTEGER NOT NULL DEFAULT 0"
-      
-      columns[value.ClassName + "_shots_fired"] = "INTEGER NOT NULL DEFAULT 0"
+  local weaponList = weapons.GetList()
+
+  for key, weaponInfo in pairs(weaponList) do
+    if (weaponInfo.ClassName) then
+
+      for playerRoleKey, playerRoleName in pairs(roleIdToRole) do
+
+        for opponentRoleKey, opponentRoleName in pairs(roleIdToRole) do
+            local killColumnName = makeKillColumnName(weaponInfo.ClassName, playerRoleKey, opponentRoleKey)
+            local deathColumnName = makeDeathColumnName(weaponInfo.ClassName, playerRoleKey, opponentRoleKey)
+            columns[killColumnName] = "INTEGER NOT NULL DEFAULT 0"
+            columns[deathColumnName] = "INTEGER NOT NULL DEFAULT 0"
+        end
+
+        local shotsColumnName = weaponInfo.ClassName .. "_" .. playerRoleName .. "_shots_fired"
+        columns[shotsColumnName] = "INTEGER NOT NULL DEFAULT 0"
+
+      end
+
     end
   end
-  
+
   return columns
 end
 
@@ -33,30 +64,51 @@ local function countResult(result)
   elseif (result == false) then
     DDD.Logging.logError("sv_aggregateweaponstats.lua.countResult: An error occured. Error was: " .. sql.LastError())
     return -1
-else 
-  return result[1]["count"]
+  else
+    return result[1]["count"]
   end
 end
 
 function aggregateWeaponStatsTable:getWeaponKillsFromRawData()
   local query = [[
-  SELECT COUNT(kills.attacker_id), 
-  kills.attacker_id, 
-  weapons.weapon_class, 
-  attackerRoles.role_id as attacker_role, 
+  SELECT COUNT(kills.attacker_id),
+  kills.attacker_id,
+  weapons.weapon_class,
+  attackerRoles.role_id as attacker_role,
   victimRoles.role_id as victim_role
   FROM ]] .. self.tables.PlayerKill.tableName .. [[ as kills
-  LEFT JOIN ]] .. self.tables.WeaponId.tableName [[ as weapons 
-  LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as attackerRoles  
+  LEFT JOIN ]] .. self.tables.WeaponId.tableName .. [[ as weapons
+  LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as attackerRoles
   LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as victimRoles
-  WHERE kills.weapon_id == weapons.id 
-  AND attackerRoles.player_id == kills.attacker_id 
+  WHERE kills.weapon_id == weapons.id
+  AND attackerRoles.player_id == kills.attacker_id
   AND attackerRoles.round_id == kills.round_id
   AND victimRoles.round_id == kills.round_id
   GROUP BY kills.attacker_id, attacker_role, victim_role, weapon_class
   ]]
-  
-  return SqlTable.query("aggregateWeaponStatsTable:selectWeaponKills", query)
+
+  return self:query("aggregateWeaponStatsTable:getWeaponKillsFromRawData", query)
+end
+
+function aggregateWeaponStatsTable:getWeaponDeathsFromRawData()
+  local query = [[
+  SELECT COUNT(kills.victim_id),
+  kills.victim_id,
+  weapons.weapon_class,
+  attackerRoles.role_id as attacker_role,
+  victimRoles.role_id as victim_role
+  FROM ]] .. self.tables.PlayerKill.tableName .. [[ as kills
+  LEFT JOIN ]] .. self.tables.WeaponId.tableName .. [[ as weapons
+  LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as attackerRoles
+  LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as victimRoles
+  WHERE kills.weapon_id == weapons.id
+  AND attackerRoles.player_id == kills.attacker_id
+  AND attackerRoles.round_id == kills.round_id
+  AND victimRoles.round_id == kills.round_id
+  GROUP BY kills.victim_id, attacker_role, victim_role, weapon_class
+  ]]
+
+  return self:query("aggregateWeaponStatsTable:getWeaponDeathsFromRawData", query)
 end
 
 --Adds a player known to have no stats.
@@ -64,39 +116,65 @@ function aggregateWeaponStatsTable:addPlayer(playerId)
   local newPlayerTable = {
     player_id = playerId
   }
+
   return self:insertTable(newPlayerTable)
 end
 
-local function addPlayerToLuaTable(playerStatsLuaTable, playerId)
-   if !playerStatsLuaTable[playerId] then
-     playerStatsLuaTable[playerId] = {
-       player_id = playerId
-     }
-   end
+local function addPlayerToRecalculatedTable(playerStatsLuaTable, playerId)
+  if !playerStatsLuaTable[playerId] then
+    playerStatsLuaTable[playerId] = {
+      player_id = playerId
+    }
+  end
 end
 
-local function incrementRecalculatedColumn(playerStatsLuaTable, playerId, columnName)
-  if playerStatsLuaTable[playerId][columnName] then
-    playerStatsLuaTable[playerId][columnName] = playerStatsLuaTable[playerId][columnName] + 1
-  else
-    playerStatsLuaTable[playerId[columnName] = 1
-  end
+function aggregateWeaponStatsTable:incrementKillColumn(weaponClass, attackerTableId, attackerRoleId, victimRoleId)
+  local columnName = makeKillColumnName(weaponClass, attackerRoleId, victimRoleId)
+  local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. columnName .. " + 1 " ..
+                "WHERE player_id == " .. attackerTableId
+
+  return self:query("aggregateWeaponStatsTable:incrementKillColumn", query)
+end
+
+function aggregateWeaponStatsTable:incrementDeathColumn(weaponClass, victimTableId, attackerRoleId, victimRoleId)
+  local columnName = makeDeathColumnName(weaponClass, attackerRoleId, victimRoleId)
+  local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. columnName .. " + 1 " ..
+                "WHERE player_id == " .. victimTableId
+
+  return self:query("aggregateWeaponStatsTable:incrementDeathColumn", query)
 end
 
 function aggregateWeaponStatsTable:recalculate()
   self:drop()
   self:create()
-  
+
   local playerStatsLuaTable = {}
   local players = self.tables.PlayerId:getPlayerIdList()
+
   for rowId, columns in pairs(players) do
-    addPlayerToLuaTable(playerStatsLuaTable, rowId)
+    addPlayerToRecalculatedTable(playerStatsLuaTable, rowId)
   end
-  
-  local killRows = self:selectWeaponKillsFromMainTables()
-  
+
+  local killRows = self:getWeaponKillsFromRawData()
+  local deathRows = self:getWeaponDeathsFromRawData()
+
   for rowId, columns in pairs(killRows) do
-    incrementRecalculatedColumn(playerStatsLuaTable, columns["attacker_id"], columns["weapon_class"] .. "_kills")
-    incrementRecalculatedColumn(playerStatsLuaTable, columns["victim_id"], columns["weapon_class"] .. "_deaths")
+    local playerId = columns["attacker_id"]
+    local columnName = makeKillColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
+    setRecalculatedColumn(playerStatsLuaTable, columns["attacker_id"], columnName)
+  end
+
+  for rowId, columns in pairs(deathRows) do
+    local playerId = columns["victim_id"]
+    local columnName = makeDeathColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
+    setRecalculatedColumn(playerStatsLuaTable, columns["victim_id"], columnName)
   end
 end
+
+function aggregateWeaponStatsTable:getPlayerStats(playerId)
+  local query = "SELECT * from " .. self.tableName .. " WHERE player_id == " .. playerId
+  return self:query("aggregateWeaponStatsTable:getPlayerStats", query, 1)
+end
+
+DDD.Database.Tables.AggregateWeaponStats = aggregateWeaponStatsTable
+aggregateWeaponStatsTable:create()

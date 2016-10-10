@@ -20,7 +20,7 @@ if SERVER then
   DDD.Database.Roles = roles
 
   AddCSLuaFile("ddd/main/misc/sh_inheritsfrom.lua")
-  
+
   AddCSLuaFile("ddd/main/gui/cl_shared.lua")
   AddCSLuaFile("ddd/main/gui/cl_mainpanel.lua")
   AddCSLuaFile("ddd/main/gui/rank/cl_overall.lua")
@@ -34,11 +34,11 @@ if SERVER then
 
   AddCSLuaFile("ddd/main/cl_command.lua")
   AddCSLuaFile("ddd/main/misc/sh_delayedtimer.lua")
-  
+
   resource.AddFile("materials/ddd/icons/t.png")
   resource.AddFile("materials/ddd/icons/d.png")
   resource.AddFile("materials/ddd/icons/i.png")
-  
+
   include("ddd/main/misc/sh_inheritsfrom.lua")
   include("ddd/main/misc/sv_enums.lua")
   include("ddd/main/misc/sv_logging.lua")
@@ -53,13 +53,16 @@ if SERVER then
   include("ddd/main/gui/rank/sv_ranktable.lua")
   include("ddd/main/gui/stats/sv_overview.lua")
   include("ddd/main/sv_active.lua")
+  include("ddd/main/database/sv_recalculate.lua")
   include("ddd/test/sv_testinit.lua")
+
+
 end
 
 if CLIENT then
   include("ddd/main/misc/sh_inheritsfrom.lua")
   include("ddd/main/misc/sh_delayedtimer.lua")
-  
+
   include("ddd/main/gui/cl_shared.lua")
   include("ddd/main/gui/cl_mainpanel.lua")
   include("ddd/main/gui/stats/cl_overview.lua")

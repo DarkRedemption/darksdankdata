@@ -29,25 +29,26 @@ function DDDTest.Helpers.makeTables()
     RadioCommandUsed = tables.RadioCommandUsed,
     RadioCommandTarget = tables.RadioCommandTarget,
     CreditsLooted = tables.CreditsLooted,
-    AggregateStats = tables.AggregateStats
+    AggregateStats = tables.AggregateStats,
+    AggregateWeaponStats = tables.AggregateWeaponStats
     }
   local convertedTables = {}
-  
+
   for tableName, sqlTable in pairs(tablesToConvert) do
     local convertedTable = DDDTest.TestSqlTable:convertTable(sqlTable)
     convertedTables[tableName] = convertedTable
   end
-  
+
   for key, sqlTable in pairs(convertedTables) do
     sqlTable:create()
   end
-  
+
   return convertedTables
 end
 
 function DDDTest.Helpers.dropAll(tables)
   --Needed until I add sorted tables.
-  local dropOrder = {"AggregateStats", "CreditsLooted", "RadioCommandTarget", "RadioCommandUsed", "CorpseIdentified", "ShotsFired", "PlayerPushKill", "WorldDamage", "Dna", "EntityId", "RoundResult", "Purchases", "ShopItem", "PlayerKill", "RoundRoles", "Healing", "CombatDamage", "WorldKill", "RadioCommand", "WeaponId", "RoundId", "MapId", "PlayerId"}
+  local dropOrder = {"AggregateWeaponStats", "AggregateStats", "CreditsLooted", "RadioCommandTarget", "RadioCommandUsed", "CorpseIdentified", "ShotsFired", "PlayerPushKill", "WorldDamage", "Dna", "EntityId", "RoundResult", "Purchases", "ShopItem", "PlayerKill", "RoundRoles", "Healing", "CombatDamage", "WorldKill", "RadioCommand", "WeaponId", "RoundId", "MapId", "PlayerId"}
   local arraySize = table.getn(dropOrder)
   for i=1, arraySize do
     tables[dropOrder[i]]:drop()
