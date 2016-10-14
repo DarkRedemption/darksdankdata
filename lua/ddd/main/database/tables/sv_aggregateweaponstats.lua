@@ -19,11 +19,11 @@ local weaponFilter = {
 }
 
 local function makeKillColumnName(weaponClass, attackerRoleId, victimRoleId)
-  return weaponClass .. "_" .. roleIdToRole[attackerRoleId] .. "_" .. roleIdToRole[victimRoleId] .. "_kills"
+  return weaponClass .. "_" .. roleIdToRole[tonumber(attackerRoleId)] .. "_" .. roleIdToRole[tonumber(victimRoleId)] .. "_kills"
 end
 
 local function makeDeathColumnName(weaponClass, attackerRoleId, victimRoleId)
-  return weaponClass .. "_" .. roleIdToRole[victimRoleId] .. "_" .. roleIdToRole[attackerRoleId] .. "_deaths"
+  return weaponClass .. "_" .. roleIdToRole[tonumber(victimRoleId)] .. "_" .. roleIdToRole[tonumber(attackerRoleId)] .. "_deaths"
 end
 
 local function generateWeaponColumns()
@@ -71,7 +71,7 @@ end
 
 function aggregateWeaponStatsTable:getWeaponKillsFromRawData()
   local query = [[
-  SELECT COUNT(kills.attacker_id),
+  SELECT COUNT(kills.attacker_id) as count,
   kills.attacker_id,
   weapons.weapon_class,
   attackerRoles.role_id as attacker_role,
@@ -82,6 +82,7 @@ function aggregateWeaponStatsTable:getWeaponKillsFromRawData()
   LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as victimRoles
   WHERE kills.weapon_id == weapons.id
   AND attackerRoles.player_id == kills.attacker_id
+  AND victimRoles.player_id == kills.victim_id
   AND attackerRoles.round_id == kills.round_id
   AND victimRoles.round_id == kills.round_id
   GROUP BY kills.attacker_id, attacker_role, victim_role, weapon_class
@@ -92,7 +93,7 @@ end
 
 function aggregateWeaponStatsTable:getWeaponDeathsFromRawData()
   local query = [[
-  SELECT COUNT(kills.victim_id),
+  SELECT COUNT(kills.victim_id) as count,
   kills.victim_id,
   weapons.weapon_class,
   attackerRoles.role_id as attacker_role,
@@ -103,6 +104,7 @@ function aggregateWeaponStatsTable:getWeaponDeathsFromRawData()
   LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as victimRoles
   WHERE kills.weapon_id == weapons.id
   AND attackerRoles.player_id == kills.attacker_id
+  AND victimRoles.player_id == kills.victim_id
   AND attackerRoles.round_id == kills.round_id
   AND victimRoles.round_id == kills.round_id
   GROUP BY kills.victim_id, attacker_role, victim_role, weapon_class
@@ -120,11 +122,17 @@ function aggregateWeaponStatsTable:addPlayer(playerId)
   return self:insertTable(newPlayerTable)
 end
 
-local function addPlayerToRecalculatedTable(playerStatsLuaTable, playerId)
+local function addPlayerToLuaTable(playerStatsLuaTable, playerId)
   if !playerStatsLuaTable[playerId] then
     playerStatsLuaTable[playerId] = {
       player_id = playerId
     }
+  end
+end
+
+local function addRecalculatedPlayerStats(weaponStatsTable, playerStatsLuaTable)
+  for playerId, values in pairs(playerStatsLuaTable) do
+    weaponStatsTable:insertTable(values)
   end
 end
 
@@ -152,23 +160,25 @@ function aggregateWeaponStatsTable:recalculate()
   local players = self.tables.PlayerId:getPlayerIdList()
 
   for rowId, columns in pairs(players) do
-    addPlayerToRecalculatedTable(playerStatsLuaTable, rowId)
+    addPlayerToLuaTable(playerStatsLuaTable, rowId)
   end
 
   local killRows = self:getWeaponKillsFromRawData()
   local deathRows = self:getWeaponDeathsFromRawData()
 
   for rowId, columns in pairs(killRows) do
-    local playerId = columns["attacker_id"]
+    local playerId = tonumber(columns["attacker_id"])
     local columnName = makeKillColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
-    setRecalculatedColumn(playerStatsLuaTable, columns["attacker_id"], columnName)
+    playerStatsLuaTable[playerId][columnName] = columns["count"]
   end
 
   for rowId, columns in pairs(deathRows) do
-    local playerId = columns["victim_id"]
+    local playerId = tonumber(columns["victim_id"])
     local columnName = makeDeathColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
-    setRecalculatedColumn(playerStatsLuaTable, columns["victim_id"], columnName)
+    playerStatsLuaTable[playerId][columnName] = columns["count"]
   end
+
+  addRecalculatedPlayerStats(self, playerStatsLuaTable)
 end
 
 function aggregateWeaponStatsTable:getPlayerStats(playerId)

@@ -44,7 +44,7 @@ if SERVER then
   include("ddd/main/misc/sv_logging.lua")
   include("ddd/main/overrides/sv_corpse.lua")
   include("ddd/main/overrides/sv_health_station.lua")
-  --include("ddd/main/overrides/sv_c4.lua")
+  include("ddd/main/overrides/sv_c4.lua")
   include("ddd/main/database/sv_sqlitedb.lua")
   include("ddd/main/hooks/sv_hooks.lua")
   include("ddd/main/hooks/sv_combathooks.lua")

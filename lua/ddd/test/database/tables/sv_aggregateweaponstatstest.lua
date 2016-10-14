@@ -10,7 +10,7 @@ local function beforeEach()
 end
 
 local function afterEach()
-  DDDTest.Helpers.dropAll(tables)
+  --DDDTest.Helpers.dropAll(tables)
   DDD.Logging:enable()
 end
 
@@ -54,13 +54,16 @@ local function recalculateWeaponKillsSpec()
   for i = 1, 100 do
     local victim = fakePlayerList[math.random(2, #fakePlayerList)]
     local weaponId = math.random(1, #weaponSqlIds)
-
+    local weaponClass = weaponSqlIds[weaponId]
+    attacker:SetRole(math.random(0, 2))
+    victim:SetRole(math.random(0, 2))
     tables.RoundId:addRound()
     tables.RoundRoles:addRole(attacker)
     tables.RoundRoles:addRole(victim)
 
     tables.PlayerKill:addKill(victim.tableId, attacker.tableId, weaponId)
-    tables.AggregateWeaponStats:incrementKillColumn(weaponSqlIds[weaponId], attacker.tableId, attacker:GetRole(), victim:GetRole())
+    tables.AggregateWeaponStats:incrementKillColumn(
+                        weaponClass, attacker.tableId, attacker:GetRole(), victim:GetRole())
     tables.AggregateWeaponStats:incrementDeathColumn(weaponSqlIds[weaponId], victim.tableId, attacker:GetRole(), victim:GetRole())
   end
 
@@ -70,11 +73,13 @@ local function recalculateWeaponKillsSpec()
 
   tables.AggregateWeaponStats:recalculate()
 
-  local newRow = tables.AggregateWeaponStats:getPlayerStats(1)
+for i = 1, #fakePlayerList do
+  local newRow = tables.AggregateWeaponStats:getPlayerStats(i)
 
-  --Needs to only check kills
-  for columnName, columnValue in pairs(newRow) do
-    GUnit.assert(oldRows[1][columnName]):shouldEqual(columnValue)
+    for columnName, columnValue in pairs(newRow) do
+      --print(columnName .. " value is " .. columnValue .. ", was " .. oldRows[i][columnName])
+      GUnit.assert(oldRows[i][columnName]):shouldEqual(columnValue)
+    end
   end
 end
 
