@@ -19,12 +19,11 @@ local function addWeaponColumnsTest()
   local weapons = weapons.GetList()
 
   for key, value in pairs(weapons) do
-    if (value.ClassName) then
+    if (value.ClassName and !filterContains(value.ClassName)) then
       columns[value.ClassName] = "INTEGER NOT NULL DEFAULT 0"
     end
   end
 
-  PrintTable(columns)
 end
 
 local function addWeaponsToTableSpec()
@@ -49,7 +48,6 @@ local function recalculateWeaponKillsSpec()
 
   local attacker = fakePlayerList[1]
   GUnit.assert(attacker.tableId):shouldEqual(1)
-
 
   for i = 1, 100 do
     local victim = fakePlayerList[math.random(2, #fakePlayerList)]

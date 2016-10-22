@@ -6,17 +6,16 @@ roleIdToRole[0] = "innocent"
 roleIdToRole[1] = "traitor"
 roleIdToRole[2] = "detective"
 
---[[
-A list of things that cannot be used to kill that still count as SWEPs.
-These are not added to the table.
-]]
-local weaponFilter = {
-  "weapon_ttt_radio",
-  "weapon_ttt_decoy",
-  "weapon_ttt_binoculars",
-  "weapon_ttt_defuser",
-  "weapon_ttt_cse"
-}
+
+local function filterContains(weaponClass)
+  for key, value in pairs(DDD.Config.AggregateWeaponStatsFilter) do
+    if (value == weaponClass) then
+      return true
+    end
+  end
+
+  return false
+end
 
 local function makeKillColumnName(weaponClass, attackerRoleId, victimRoleId)
   return weaponClass .. "_" .. roleIdToRole[tonumber(attackerRoleId)] .. "_" .. roleIdToRole[tonumber(victimRoleId)] .. "_kills"
@@ -31,7 +30,7 @@ local function generateWeaponColumns()
   local weaponList = weapons.GetList()
 
   for key, weaponInfo in pairs(weaponList) do
-    if (weaponInfo.ClassName) then
+    if (weaponInfo.ClassName and !filterContains(weaponInfo.ClassName)) then
 
       for playerRoleKey, playerRoleName in pairs(roleIdToRole) do
 

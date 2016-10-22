@@ -15,3 +15,30 @@ Got some fun but very unbalanced maps that could ruin someone's stats?
 Blacklist them here and stats will never be tracked on them.
 ]]
 DDD.Config.MapBlacklist = {"ttt_crazy_cubes_b4", "ttt_thismapsucksdontpickit_b0"}
+
+--[[
+This is a list of items that are considered weapons, but cannot be used
+to actually kill people. This list prevents them from being added to the
+aggregate weapon stats table out of efficiency.
+]]
+DDD.Config.AggregateWeaponStatsFilter = {
+  "weapon_base",
+  "weapon_ttt_base",
+  "weapon_ttt_unarmed",
+  "weapon_ttt_wtester",
+  "weapon_ttt_decoy",
+  "weapon_ttt_beacon",
+  "weapon_ttt_health_station",
+  "weapon_ttt_smokegrenade",
+  "weapon_ttt_radio",
+  "weapon_ttt_binoculars",
+  "weapon_ttt_basegrenade",
+  "weapon_ttt_defuser",
+  "weapon_ttt_cse",
+  "weapon_zm_carry",
+
+  --These items have been known to be re-enabled in mods,
+  --and are placed here for convenience.
+  "weapon_fists",
+  "weapon_medkit"
+}
