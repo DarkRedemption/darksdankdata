@@ -37,6 +37,7 @@ if SERVER then
 
   AddCSLuaFile("ddd/main/cl_command.lua")
   AddCSLuaFile("ddd/main/misc/sh_delayedtimer.lua")
+  AddCSLuaFile("ddd/main/misc/sv_votedisableddd.lua")
 
   resource.AddFile("materials/ddd/icons/t.png")
   resource.AddFile("materials/ddd/icons/d.png")
@@ -77,6 +78,8 @@ if CLIENT then
   include("ddd/main/gui/rank/cl_innocentrank.lua")
   include("ddd/main/gui/rank/cl_traitorrank.lua")
 
+  include("ddd/main/misc/sv_votedisableddd.lua")
+
   local red = Color(255, 0, 0, 255)
   local yellow = Color(255, 255, 0, 255)
 
@@ -88,7 +91,7 @@ if CLIENT then
 
     DDD.Misc.createDelayedTimer("DDDDisableCommandPSA", 25, 3600, 0, function()
       chat.AddText(red, "Want to disable Dark's Dank Data to mess around without ruining your stats?")
-      chat.AddText(red, "Type, type ", yellow, "!votedisableddd <rounds>", red, "or use in console ", yellow, "ulx votedisableddd <rounds>" )
+      chat.AddText(red, "Type ", yellow, "!votedisableddd <rounds>", red, " or use in console ", yellow, "ulx votedisableddd <rounds>" )
     end)
 end
 

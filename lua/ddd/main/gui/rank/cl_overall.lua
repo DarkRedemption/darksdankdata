@@ -1,6 +1,6 @@
-local enemyKd = "Overall Enemy K/D" 
---local serverTime = "Server Time" 
-local enemyKills = "Total Enemies Killed" 
+local enemyKd = "Overall Enemy K/D"
+--local serverTime = "Server Time"
+local enemyKills = "Total Enemies Killed"
 local roundsPlayed = "Total Rounds Played"
 
 local currentValue = ""
@@ -22,7 +22,6 @@ end
 
 local function populateWithOverallEnemyKd(list, rankTable)
   list.thirdColumn:SetName(enemyKd)
-  print(rankTable["overall_enemy_kd"])
   for key, value in pairs(rankTable["overall_enemy_kd"]) do
     list:AddLine(key, value["last_known_name"], value["value"])
   end
@@ -66,19 +65,19 @@ end
 
 function DDD.Gui.Rank.createOverallTab(rankPropertySheet, rankTable)
   local panel = vgui.Create( "DPanel", rankPropertySheet )
-  panel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 255, 255 ) ) end 
+  panel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 255, 255 ) ) end
   DDD.Gui.setSizeToParent(panel)
   local comboBox = createComboBox(panel)
   local list = createListView("Value")
   list:SetParent(panel)
-  
+
   comboBox.OnSelect = function(panel, index, value)
     if (currentValue != value) then
       list:Clear()
       updateListView(list, value, rankTable)
     end
   end
-  
+
   comboBox:ChooseOptionID(1)
   rankPropertySheet:AddSheet("Overall", panel, "icon16/chart_bar.png")
 end

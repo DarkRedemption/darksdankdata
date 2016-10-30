@@ -2,6 +2,14 @@ local lastCalled = 0
 
 local cooldown = 1200
 
+local function dddNotLoaded()
+  if !DDD then
+    ply:PrintMessage(HUD_PRINTTALK, "DDD not found. This vote would do nothing.")
+    return true
+  end
+    return false
+end
+
 local function inCooldown(ply)
   local cooldownTimePassed = os.time() - lastCalled
   local cooldownTimeRemaining = cooldown - cooldownTimePassed
@@ -55,13 +63,16 @@ local function voteDisableDDDDone(t, rounds, calling_ply)
 end
 
 local function voteDisableDDD( calling_ply, ... )
-  if inCooldown(calling_ply) then return end
+  if dddNotLoaded() or inCooldown(calling_ply) then return end
   lastCalled = os.time()
 
   local argv = { ... }
   local rounds = tonumber(argv[1])
 
-	if ulx.voteInProgress then
+  if rounds < 0 then
+    ULib.tsayError( calling_ply, "Rounds cannot be negative.", true )
+    return
+	elseif ulx.voteInProgress then
 		ULib.tsayError( calling_ply, "There is already a vote in progress. Please wait for the current one to end.", true )
 		return
   elseif DDD.CurrentRound.blacklisted then

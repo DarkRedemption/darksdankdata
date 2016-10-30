@@ -25,22 +25,22 @@ local function createListView(overviewPanel)
 end
 
 local function calculateRoundsPlayed(table)
-  return table["innocent_rounds"] + 
-         table["detective_rounds"] + 
+  return table["innocent_rounds"] +
+         table["detective_rounds"] +
          table["traitor_rounds"]
 end
 
 local function calculateAllyKills(table)
-  return table["innocent_innocent_kills"] + 
-         table["innocent_detective_kills"] + 
+  return table["innocent_innocent_kills"] +
+         table["innocent_detective_kills"] +
          table["detective_innocent_kills"] +
          table["detective_detective_kills"] +
-         table["traitor_traitor_kills"] 
+         table["traitor_traitor_kills"]
 end
 
 local function calculateAllyDeaths(table)
-  return table["innocent_innocent_deaths"] + 
-         table["innocent_detective_deaths"] + 
+  return table["innocent_innocent_deaths"] +
+         table["innocent_detective_deaths"] +
          table["detective_innocent_deaths"] +
          table["detective_detective_deaths"] +
          table["traitor_traitor_deaths"] -
@@ -50,15 +50,15 @@ local function calculateAllyDeaths(table)
 end
 
 local function calculateEnemyKills(table)
-  return table["innocent_traitor_kills"] + 
-         table["detective_traitor_kills"] + 
+  return table["innocent_traitor_kills"] +
+         table["detective_traitor_kills"] +
          table["traitor_innocent_kills"] +
          table["traitor_detective_kills"]
 end
 
 local function calculateEnemyDeaths(table)
-  return table["innocent_traitor_deaths"] + 
-         table["detective_traitor_deaths"] + 
+  return table["innocent_traitor_deaths"] +
+         table["detective_traitor_deaths"] +
          table["traitor_innocent_deaths"] +
          table["traitor_detective_deaths"]
 end
@@ -69,12 +69,18 @@ local function calculateWorldDeaths(table)
          table["detective_world_deaths"]
 end
 
+local function calculateSuicides(table)
+  return table["innocent_suicides"] +
+         table["traitor_suicides"] +
+         table["detective_suicides"]
+end
+
 local function calculateKills(table)
   return calculateAllyKills(table) + calculateEnemyKills(table)
 end
 
 local function calculateDeaths(table)
-  return calculateAllyDeaths(table) + calculateEnemyDeaths(table) + calculateWorldDeaths(table)
+  return calculateAllyDeaths(table) + calculateEnemyDeaths(table) + calculateWorldDeaths(table) + calculateSuicides(table)
 end
 
 local function calculateEnemyKD(table)
@@ -111,7 +117,7 @@ local function populateListView(list, table)
 
   --list:AddLine("Total Innocent Deaths", table["InnocentD"])
   --list:AddLine("Times Killed By Another Innocent",
-  
+
   list:AddLine("Total HP You Healed", tonumber(table["self_hp_healed"]))
   --SetValue example. Parameters: Column Number (Starts at 1), Value
   --kd:SetValue(2, "Infinite")

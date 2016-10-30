@@ -8,7 +8,7 @@ DDD.Logging.LogLevel = DDD.Logging.LogLevels.Warning
 The minimum number of players before stats are tracked.
 Default is 8 as that is when a Detective spawns and it becomes a "real" TTT game.
 ]]
-DDD.Config.MinPlayers = 8
+DDD.Config.MinPlayers = 2
 
 --[[
 Got some fun but very unbalanced maps that could ruin someone's stats?
@@ -41,4 +41,11 @@ DDD.Config.AggregateWeaponStatsFilter = {
   --and are placed here for convenience.
   "weapon_fists",
   "weapon_medkit"
+}
+
+--[[
+A dictionary of weaponClass -> in-game name.
+]]
+DDD.Config.AggregateWeaponStatsTranslation = {
+  weapon_zm_shotgun = "Shotgun"
 }
