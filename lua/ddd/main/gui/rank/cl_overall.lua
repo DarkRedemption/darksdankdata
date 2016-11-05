@@ -2,7 +2,7 @@ local enemyKd = "Overall Enemy K/D"
 --local serverTime = "Server Time"
 local enemyKills = "Total Enemies Killed"
 local roundsPlayed = "Total Rounds Played"
-
+local winRate = "Overall Win Rate (%)"
 local currentValue = ""
 
 local function createListView()
@@ -41,6 +41,20 @@ local function populateWithRoundsPlayed(list, rankTable)
   end
 end
 
+local function populateWithRoundsPlayed(list, rankTable)
+  list.thirdColumn:SetName(roundsPlayed)
+  for key, value in pairs(rankTable["overall_win_rate"]) do
+    list:AddLine(key, value["last_known_name"], value["value"])
+  end
+end
+
+local function populateWithOverallWinRate(list, rankTable)
+  list.thirdColumn:SetName(winRate)
+  for key, value in pairs(rankTable["overall_win_rate"]) do
+    list:AddLine(key, value["last_known_name"], value["value"])
+  end
+end
+
 local function updateListView(list, value, rankTable)
   if (value == enemyKd) then
     populateWithOverallEnemyKd(list, rankTable)
@@ -48,6 +62,8 @@ local function updateListView(list, value, rankTable)
     populateWithTotalEnemyKills(list, rankTable)
   elseif (value == roundsPlayed) then
     populateWithRoundsPlayed(list, rankTable)
+  elseif (value == winRate) then
+    populateWithOverallWinRate(list, rankTable)
   end
 end
 
@@ -60,6 +76,7 @@ local function createComboBox(panel)
   --comboBox:AddChoice(serverTime)
   comboBox:AddChoice(enemyKills)
   comboBox:AddChoice(roundsPlayed)
+  comboBox:AddChoice(winRate)
   return comboBox
 end
 

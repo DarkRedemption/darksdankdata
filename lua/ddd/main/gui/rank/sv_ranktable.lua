@@ -28,7 +28,7 @@ function rankTable:getOverallEnemyKdRank()
     SUM(stats.traitor_innocent_kills + stats.traitor_detective_kills + stats.innocent_traitor_kills + stats.detective_traitor_kills) * 1.000 /
     SUM(stats.traitor_innocent_deaths + stats.traitor_detective_deaths + stats.traitor_traitor_deaths + stats.traitor_world_deaths +
     stats.detective_innocent_deaths + stats.detective_traitor_deaths + stats.detective_detective_deaths + stats.detective_world_deaths +
-    stats.innocent_traitor_deaths + stats.innocent_detective_deaths + stats.innocent_innocent_deaths + stats.innocent_world_deaths) * 1.000, 
+    stats.innocent_traitor_deaths + stats.innocent_detective_deaths + stats.innocent_innocent_deaths + stats.innocent_world_deaths) * 1.000,
     3) as value,
     player_id.last_known_name
     FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
@@ -67,6 +67,24 @@ function rankTable:getTotalRoundsPlayedRank()
                   LIMIT 25
                 ]]
   return rankQuery("RankTable:getTotalRoundsPlayedRank", query)
+end
+
+
+function rankTable:getOverallWinRateRank()
+    local query = [[SELECT
+                  ROUND(
+                  (stats.detective_rounds_won + stats.innocent_rounds_won + stats.traitor_rounds_won) * 1.000 /
+                  (stats.detective_rounds + stats.innocent_rounds + stats.traitor_rounds_won),
+                  5) * 100 as value,
+                  player_id.last_known_name
+                  FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
+                  WHERE stats.detective_rounds > 75
+                  GROUP BY stats.player_id
+                  ORDER BY value DESC
+                  LIMIT 25
+                ]]
+    return rankQuery("RankTable:getInnocentWinRateRank", query)
 end
 
 function rankTable:getTraitorEnemyKdRank()
@@ -132,6 +150,23 @@ function rankTable:getTraitorRoundsPlayedRank()
     return rankQuery("RankTable:getTraitorRoundsPlayedRank", query)
 end
 
+function rankTable:getTraitorWinRateRank()
+    local query = [[SELECT
+                  ROUND(
+                  stats.traitor_rounds_won * 1.000 /
+                  stats.traitor_rounds,
+                  5) * 100 as value,
+                  player_id.last_known_name
+                  FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
+                  WHERE stats.traitor_rounds > 125
+                  GROUP BY stats.player_id
+                  ORDER BY value DESC
+                  LIMIT 25
+                ]]
+    return rankQuery("RankTable:getTraitorWinRateRank", query)
+end
+
 function rankTable:getInnocentTraitorKdRank()
   local query = [[SELECT
                   ROUND(
@@ -171,6 +206,23 @@ function rankTable:getInnocentRoundsPlayedRank()
                   LIMIT 25
                 ]]
     return rankQuery("RankTable:getInnocentRoundsPlayedRank", query)
+end
+
+function rankTable:getInnocentWinRateRank()
+    local query = [[SELECT
+                  ROUND(
+                  stats.innocent_rounds_won * 1.000 /
+                  stats.innocent_rounds,
+                  5) * 100 as value,
+                  player_id.last_known_name
+                  FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
+                  WHERE stats.innocent_rounds > 250
+                  GROUP BY stats.player_id
+                  ORDER BY value DESC
+                  LIMIT 25
+                ]]
+    return rankQuery("RankTable:getInnocentWinRateRank", query)
 end
 
 function rankTable:getDetectiveTraitorKdRank()
@@ -214,24 +266,45 @@ function rankTable:getDetectiveRoundsPlayedRank()
     return rankQuery("RankTable:getDetectiveRoundsPlayedRank", query)
 end
 
+function rankTable:getDetectiveWinRateRank()
+    local query = [[SELECT
+                  ROUND(
+                  stats.detective_rounds_won * 1.000 /
+                  stats.detective_rounds,
+                  5) * 100 as value,
+                  player_id.last_known_name
+                  FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
+                  WHERE stats.detective_rounds > 75
+                  GROUP BY stats.player_id
+                  ORDER BY value DESC
+                  LIMIT 25
+                ]]
+    return rankQuery("RankTable:getInnocentWinRateRank", query)
+end
+
 function rankTable:update()
   self.rankings["overall_enemy_kd"] = self:getOverallEnemyKdRank()
   self.rankings["total_enemy_kills"] = self:getTotalEnemyKillRank()
   self.rankings["total_rounds_played"] = self:getTotalRoundsPlayedRank()
+  self.rankings["overall_win_rate"] = self:getOverallWinRateRank()
 
   self.rankings["detective_traitor_kd"] = self:getDetectiveTraitorKdRank()
   self.rankings["detective_traitor_kills"] = self:getDetectiveTraitorKillRank()
   self.rankings["detective_rounds_played"] = self:getDetectiveRoundsPlayedRank()
+  self.rankings["detective_win_rate"] = self:getDetectiveWinRateRank()
 
   self.rankings["traitor_enemy_kd"] = self:getTraitorEnemyKdRank()
   self.rankings["traitor_enemy_kills"] = self:getTraitorEnemyKillRank()
   self.rankings["traitor_innocent_kills"] = self:getTraitorInnocentKillRank()
   self.rankings["traitor_detective_kills"] = self:getTraitorDetectiveKillRank()
   self.rankings["traitor_rounds_played"] = self:getTraitorRoundsPlayedRank()
+  self.rankings["traitor_win_rate"] = self:getTraitorWinRateRank()
 
   self.rankings["innocent_traitor_kd"] = self:getInnocentTraitorKdRank()
   self.rankings["innocent_traitor_kills"] = self:getInnocentTraitorKillRank()
   self.rankings["innocent_rounds_played"] = self:getInnocentRoundsPlayedRank()
+  self.rankings["innocent_win_rate"] = self:getInnocentWinRateRank()
 end
 
 function rankTable:new(tables)

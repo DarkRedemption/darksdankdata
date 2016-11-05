@@ -1,19 +1,19 @@
 local function calculateDetectiveTotalKD(table)
-  local kd = (table["detective_traitor_kills"] + 
-              table["detective_innocent_kills"] + 
-              table["detective_detective_kills"]) / 
-          (table["detective_traitor_deaths"] + 
-          table["detective_detective_deaths"] + 
-          table["detective_innocent_deaths"] + 
+  local kd = (table["detective_traitor_kills"] +
+              table["detective_innocent_kills"] +
+              table["detective_detective_kills"]) /
+          (table["detective_traitor_deaths"] +
+          table["detective_detective_deaths"] +
+          table["detective_innocent_deaths"] +
           table["detective_world_deaths"])
-        
+
   return DDD.Gui.formatKD(kd)
 end
 
 local function calculateDetectiveEnemyKD(table)
-  local kd = table["detective_traitor_kills"] / 
+  local kd = table["detective_traitor_kills"] /
          (table["detective_traitor_deaths"] + table["detective_detective_deaths"] + table["detective_innocent_deaths"] + table["detective_world_deaths"])
-  
+
   return DDD.Gui.formatKD(kd)
 end
 
@@ -43,8 +43,16 @@ local function createListView(overviewPanel)
   return list
 end
 
+local function calculateWinRate(table)
+  return table["detective_rounds_won"] / table["detective_rounds"]
+end
+
+
 local function populateListView(list, table)
   list:AddLine("Total D Rounds", table["detective_rounds"])
+  list:AddLine("D Rounds Won", table["detective_rounds_won"])
+  list:AddLine("D Rounds Lost", table["detective_rounds_lost"])
+  list:AddLine("Detective Win Rate", DDD.Gui.formatPercentage(calculateWinRate(table)))
   list:AddLine("Enemy K/D", calculateDetectiveEnemyKD(table))
   --list:AddLine("Peak Enemy K/D", "Not Yet Implemented")
   list:AddLine("Total K/D (includes ally kills)", calculateDetectiveTotalKD(table))
@@ -59,7 +67,7 @@ local function populateListView(list, table)
   list:AddLine("Times Killed by the World", table["detective_world_deaths"])
   list:AddLine("Suicides", table["detective_suicides"])
   --list:AddLine("Total HP Others Healed Using Your Health Stations", tonumber(table["TotalHPOthersHealed"]))
-    
+
   list:AddLine("Times Radar Purchased", table["detective_radar_purchases"])
   list:AddLine("Times Visualizer purchased", table["detective_visualizer_purchases"])
   list:AddLine("Times Defuser purchased", table["detective_defuser_purchases"])
@@ -71,7 +79,7 @@ end
 
 function DDD.Gui.createDetectiveTab(mainPropertySheet, statsTable)
   local detectivePanel = vgui.Create( "DPanel", mainPropertySheet )
-  detectivePanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 0, 255 ) ) end 
+  detectivePanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 0, 255 ) ) end
   DDD.Gui.setSizeToParent(detectivePanel)
   createDetectiveText(detectivePanel)
   local list = createListView(detectivePanel)

@@ -75,6 +75,22 @@ local function calculateSuicides(table)
          table["detective_suicides"]
 end
 
+local function calculateRoundsWon(table)
+  return table["innocent_rounds_won"] +
+         table["traitor_rounds_won"] +
+         table["detective_rounds_won"]
+end
+
+local function calculateRoundsLost(table)
+  return table["innocent_rounds_lost"] +
+         table["traitor_rounds_lost"] +
+         table["detective_rounds_lost"]
+end
+
+local function calculateWinRate(table)
+  return calculateRoundsWon(table) / calculateRoundsPlayed(table)
+end
+
 local function calculateKills(table)
   return calculateAllyKills(table) + calculateEnemyKills(table)
 end
@@ -98,6 +114,9 @@ local function populateListView(list, table)
     list:AddLine("Total Server Time", table["TotalServerTime"])
   end
   list:AddLine("Total Rounds Played", calculateRoundsPlayed(table))
+  list:AddLine("Total Rounds Won", calculateRoundsWon(table))
+  list:AddLine("Total Rounds Lost", calculateRoundsLost(table))
+  list:AddLine("Overall Win Rate", DDD.Gui.formatPercentage(calculateWinRate(table)))
   list:AddLine("Enemy K/D ", calculateEnemyKD(table))
   list:AddLine("Enemy K/D including times killed by allies", calculateEnemyKDWithAllDeaths(table))
   list:AddLine("Total K/D (includes ally kills and deaths)", DDD.Gui.formatKD(calculateKills(table) / calculateDeaths(table)))

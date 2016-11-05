@@ -1,22 +1,22 @@
 local function calculateInnocentAllKD(table)
-  local kd = (table["innocent_traitor_kills"] + 
-              table["innocent_innocent_kills"] + 
-              table["innocent_detective_kills"]) / 
-             (table["innocent_traitor_deaths"] + 
-              table["innocent_detective_deaths"] + 
-              table["innocent_innocent_deaths"] + 
+  local kd = (table["innocent_traitor_kills"] +
+              table["innocent_innocent_kills"] +
+              table["innocent_detective_kills"]) /
+             (table["innocent_traitor_deaths"] +
+              table["innocent_detective_deaths"] +
+              table["innocent_innocent_deaths"] +
               table["innocent_world_deaths"])
-         
+
   return DDD.Gui.formatKD(kd)
 end
 
 local function calculateInnocentNonAllyKD(table)
-  local kd = table["innocent_traitor_kills"] / 
-            (table["innocent_traitor_deaths"] + 
-             table["innocent_detective_deaths"] + 
-             table["innocent_innocent_deaths"] + 
+  local kd = table["innocent_traitor_kills"] /
+            (table["innocent_traitor_deaths"] +
+             table["innocent_detective_deaths"] +
+             table["innocent_innocent_deaths"] +
              table["innocent_world_deaths"])
-           
+
   return DDD.Gui.formatKD(kd)
 end
 
@@ -46,8 +46,15 @@ local function createListView(overviewPanel)
   return list
 end
 
+local function calculateWinRate(table)
+  return table["innocent_rounds_won"] / table["innocent_rounds"]
+end
+
 local function populateListView(list, table)
   list:AddLine("Total Inno Rounds", table["innocent_rounds"])
+  list:AddLine("Inno Rounds Won", table["innocent_rounds_won"])
+  list:AddLine("Inno Rounds Lost", table["innocent_rounds_lost"])
+  list:AddLine("Innocent Win Rate", DDD.Gui.formatPercentage(calculateWinRate(table)))
   list:AddLine("Enemy K/D", calculateInnocentNonAllyKD(table))
   --list:AddLine("Peak Enemy K/D", "0")
   list:AddLine("Total K/D (includes ally kills)", calculateInnocentAllKD(table))
@@ -70,7 +77,7 @@ end
 
 function DDD.Gui.createInnocentTab(mainPropertySheet, statsTable)
   local innocentPanel = vgui.Create( "DPanel", mainPropertySheet )
-  innocentPanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 255, 0 ) ) end 
+  innocentPanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 255, 0 ) ) end
   DDD.Gui.setSizeToParent(innocentPanel)
   createInnocentText(innocentPanel)
   local list = createListView(innocentPanel)

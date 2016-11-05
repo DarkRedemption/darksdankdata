@@ -1,8 +1,9 @@
-local enemyKd = "Enemy K/D" 
+local enemyKd = "Enemy K/D"
 local enemyKills = "Enemies Killed"
 local innocentKills = "Innocents Killed"
 local detectiveKills = "Detectives Killed"
 local roundsPlayed = "Rounds Played"
+local winRate = "Win Rate (%)"
 
 local currentValue = ""
 
@@ -56,6 +57,13 @@ local function populateWithTraitorRoundsPlayed(list, rankTable)
   end
 end
 
+local function populateWithTraitorWinRate(list, rankTable)
+  list.thirdColumn:SetName(winRate)
+  for key, value in pairs(rankTable["traitor_win_rate"]) do
+    list:AddLine(key, value["last_known_name"], value["value"])
+  end
+end
+
 local function updateListView(list, value, rankTable)
   currentValue = value
   if (value == enemyKd) then
@@ -68,6 +76,8 @@ local function updateListView(list, value, rankTable)
     populateWithTraitorDetectiveKills(list, rankTable)
   elseif (value == roundsPlayed) then
     populateWithTraitorRoundsPlayed(list, rankTable)
+  elseif (value == winRate) then
+    populateWithTraitorWinRate(list, rankTable)
   end
 end
 
@@ -80,22 +90,23 @@ local function createComboBox(panel)
   comboBox:AddChoice(innocentKills)
   comboBox:AddChoice(detectiveKills)
   comboBox:AddChoice(roundsPlayed)
+  comboBox:AddChoice(winRate)
   return comboBox
 end
 
 function DDD.Gui.Rank.createTraitorTab(rankPropertySheet, rankTable)
   local panel = vgui.Create( "DPanel", rankPropertySheet )
-  panel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 0, 0 ) ) end 
+  panel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 0, 0 ) ) end
   DDD.Gui.setSizeToParent(panel)
   local comboBox = createComboBox(panel)
   local list = createListView("Value")
   list:SetParent(panel)
-  
+
   comboBox.OnSelect = function(panel, index, value)
     list:Clear()
     updateListView(list, value, rankTable)
   end
-  
+
   comboBox:ChooseOptionID(1)
   rankPropertySheet:AddSheet( "Traitor Ranks", panel, "materials/ddd/icons/t.png")
 end
