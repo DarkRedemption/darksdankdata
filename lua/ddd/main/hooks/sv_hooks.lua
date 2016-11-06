@@ -23,7 +23,7 @@ function DDD.Hooks.trackPurchases(tables, ply, equipment)
   if (purchaseResult != nil and purchaseResult != false) then
     tables.AggregateStats:incrementItemPurchases(playerId, ply:GetRole(), equipment)
   end
-  
+
     --Return the id for testing purposes.
   return purchaseResult
 end
@@ -58,7 +58,7 @@ end)
 
 function DDD.Hooks.trackPlayerRoles(tables)
   tables.RoundId:addRound()
-  
+
   for k, ply in pairs(player:GetAll()) do
     if ply:GetObserverMode() == 0 then
       tables.RoundRoles:addRole(ply)
@@ -78,11 +78,13 @@ end)
 
 function DDD.Hooks.addRoundResult(tables, roundResult)
   tables.RoundResult:addResult(roundResult)
-  
+
   for playerId, playerRole in pairs(DDD.CurrentRound.roundParticipantIds) do
-    if (playerRole == 1 and roundResult == 2) or 
+    if (playerRole == 1 and roundResult == 2) or
        (playerRole != 1 and roundResult > 2) then
       tables.AggregateStats:incrementRoundsWon(playerId, playerRole)
+    else
+      tables.AggregateStats:incrementRoundsLost(playerId, playerRole)
     end
   end
 end
@@ -141,4 +143,3 @@ hook.Add("DDDCreditsLooted", "DDDTrackCreditsLooted", function(ply, rag, credits
     DDD.Hooks.trackCreditsLooted(tables, ply, rag, credits)
   end
 end)
-

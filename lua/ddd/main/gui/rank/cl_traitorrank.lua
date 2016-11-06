@@ -22,44 +22,9 @@ local function createListView()
   return list
 end
 
-local function populateWithTraitorEnemyKd(list, rankTable)
-  list.thirdColumn:SetName(enemyKd)
-  for key, value in pairs(rankTable["traitor_enemy_kd"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithTraitorEnemyKills(list, rankTable)
-  list.thirdColumn:SetName(enemyKills)
-  for key, value in pairs(rankTable["traitor_enemy_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithTraitorInnocentKills(list, rankTable)
-  list.thirdColumn:SetName(innocentKills)
-  for key, value in pairs(rankTable["traitor_innocent_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithTraitorDetectiveKills(list, rankTable)
-  list.thirdColumn:SetName(detectiveKills)
-  for key, value in pairs(rankTable["traitor_detective_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithTraitorRoundsPlayed(list, rankTable)
-  list.thirdColumn:SetName(roundsPlayed)
-  for key, value in pairs(rankTable["traitor_rounds_played"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithTraitorWinRate(list, rankTable)
-  list.thirdColumn:SetName(winRate)
-  for key, value in pairs(rankTable["traitor_win_rate"]) do
+local function populateList(list, rankTableEntry, columnName)
+  list.thirdColumn:SetName(columnName)
+  for key, value in pairs(rankTableEntry) do
     list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
@@ -67,17 +32,17 @@ end
 local function updateListView(list, value, rankTable)
   currentValue = value
   if (value == enemyKd) then
-    populateWithTraitorEnemyKd(list, rankTable)
+    populateList(list, rankTable["traitor_enemy_kd"], enemyKd)
   elseif (value == enemyKills) then
-    populateWithTraitorEnemyKills(list, rankTable)
+    populateList(list, rankTable["traitor_enemy_kills"], enemyKills)
   elseif (value == innocentKills) then
-    populateWithTraitorInnocentKills(list, rankTable)
+    populateList(list, rankTable["traitor_innocent_kills"], innocentKills)
   elseif (value == detectiveKills) then
-    populateWithTraitorDetectiveKills(list, rankTable)
+    populateList(list, rankTable["traitor_detective_kills"], detectiveKills)
   elseif (value == roundsPlayed) then
-    populateWithTraitorRoundsPlayed(list, rankTable)
+    populateList(list, rankTable["traitor_rounds_played"], roundsPlayed)
   elseif (value == winRate) then
-    populateWithTraitorWinRate(list, rankTable)
+    populateList(list, rankTable["traitor_win_rate"], winRate)
   end
 end
 

@@ -60,7 +60,6 @@ if SERVER then
   include("ddd/main/misc/sv_votedisableddd.lua")
   include("ddd/test/sv_testinit.lua")
 
-
 end
 
 if CLIENT then

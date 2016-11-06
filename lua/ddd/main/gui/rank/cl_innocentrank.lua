@@ -19,30 +19,9 @@ local function createListView()
   return list
 end
 
-local function populateWithInnocentEnemyKd(list, rankTable)
-  list.thirdColumn:SetName(traitorKd)
-  for key, value in pairs(rankTable["innocent_traitor_kd"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithInnocentEnemyKills(list, rankTable)
-  list.thirdColumn:SetName(traitorKills)
-  for key, value in pairs(rankTable["innocent_traitor_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithInnocentRoundsPlayed(list, rankTable)
-  list.thirdColumn:SetName(roundsPlayed)
-  for key, value in pairs(rankTable["innocent_rounds_played"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithInnocentWinRate(list, rankTable)
-  list.thirdColumn:SetName(roundsPlayed)
-  for key, value in pairs(rankTable["innocent_win_rate"]) do
+local function populateList(list, rankTableEntry, columnName)
+  list.thirdColumn:SetName(columnName)
+  for key, value in pairs(rankTableEntry) do
     list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
@@ -50,13 +29,13 @@ end
 local function updateListView(list, value, rankTable)
   currentValue = value
   if (value == traitorKd) then
-    populateWithInnocentEnemyKd(list, rankTable)
+    populateList(list, rankTable["innocent_traitor_kd"], traitorKd)
   elseif (value == traitorKills) then
-    populateWithInnocentEnemyKills(list, rankTable)
+    populateList(list, rankTable["innocent_traitor_kills"], traitorKills)
   elseif (value == roundsPlayed) then
-    populateWithInnocentRoundsPlayed(list, rankTable)
+    populateList(list, rankTable["innocent_rounds_played"], roundsPlayed)
   elseif (value == winRate) then
-      populateWithInnocentWinRate(list, rankTable)
+    populateList(list, rankTable["innocent_win_rate"], winRate)
   end
 end
 

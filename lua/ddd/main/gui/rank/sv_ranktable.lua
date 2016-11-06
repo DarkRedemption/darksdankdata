@@ -74,7 +74,7 @@ function rankTable:getOverallWinRateRank()
     local query = [[SELECT
                   ROUND(
                   (stats.detective_rounds_won + stats.innocent_rounds_won + stats.traitor_rounds_won) * 1.000 /
-                  (stats.detective_rounds + stats.innocent_rounds + stats.traitor_rounds_won),
+                  (stats.detective_rounds + stats.innocent_rounds + stats.traitor_rounds),
                   5) * 100 as value,
                   player_id.last_known_name
                   FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
@@ -94,8 +94,8 @@ function rankTable:getTraitorEnemyKdRank()
                   SUM(stats.traitor_innocent_deaths + stats.traitor_detective_deaths + stats.traitor_traitor_deaths + stats.traitor_world_deaths),
                   3) as value,
                   player_id.last_known_name
-                  FROM ddd_aggregate_stats as stats
-                  LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
+                  FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   WHERE stats.traitor_rounds > 125
                   GROUP BY stats.player_id
                   ORDER BY value DESC
@@ -106,8 +106,8 @@ end
 
 function rankTable:getTraitorEnemyKillRank()
   local query = [[SELECT SUM(stats.traitor_innocent_kills + stats.traitor_detective_kills) as value, player_id.last_known_name
-                  from ddd_aggregate_stats as stats
-                  LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
+                  from ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
                   ORDER BY value DESC
                   LIMIT 25
@@ -117,8 +117,8 @@ end
 
 function rankTable:getTraitorInnocentKillRank()
   local query = [[SELECT stats.traitor_innocent_kills as value, player_id.last_known_name
-                  from ddd_aggregate_stats as stats
-                  LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
+                  from ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
                   ORDER BY value DESC
                   LIMIT 25
@@ -127,9 +127,9 @@ function rankTable:getTraitorInnocentKillRank()
 end
 
 function rankTable:getTraitorDetectiveKillRank()
-  local query = [[SELECT stats.traitor_detective_kills, player_id.last_known_name
-                  from ddd_aggregate_stats as stats
-                  LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
+  local query = [[SELECT stats.traitor_detective_kills as value, player_id.last_known_name
+                  from ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
                   ORDER BY stats.traitor_innocent_kills DESC
                   LIMIT 25
@@ -174,8 +174,8 @@ function rankTable:getInnocentTraitorKdRank()
                   SUM(stats.innocent_traitor_deaths + stats.innocent_detective_deaths + stats.innocent_innocent_deaths + stats.innocent_world_deaths),
                   3) as value,
                   player_id.last_known_name
-                  FROM ddd_aggregate_stats as stats
-                  LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
+                  FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   WHERE stats.innocent_rounds > 250
                   GROUP BY stats.player_id
                   ORDER BY value DESC
@@ -186,8 +186,8 @@ end
 
 function rankTable:getInnocentTraitorKillRank()
   local query = [[SELECT stats.innocent_traitor_kills as value, player_id.last_known_name
-                  from ddd_aggregate_stats as stats
-                  LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
+                  from ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
                   ORDER BY value DESC
                   LIMIT 25
@@ -232,8 +232,8 @@ function rankTable:getDetectiveTraitorKdRank()
                   SUM(stats.detective_traitor_deaths + stats.detective_innocent_deaths + stats.detective_detective_deaths + stats.detective_world_deaths),
                   3) as value,
                   player_id.last_known_name
-                  FROM ddd_aggregate_stats as stats
-                  LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
+                  FROM ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   WHERE stats.detective_rounds > 75
                   GROUP BY stats.player_id
                   ORDER BY value DESC
@@ -244,8 +244,8 @@ end
 
 function rankTable:getDetectiveTraitorKillRank()
   local query = [[SELECT stats.detective_traitor_kills as value, player_id.last_known_name
-                  from ddd_aggregate_stats as stats
-                  LEFT JOIN ddd_player_id as player_id on stats.player_id == player_id.id
+                  from ]] .. self.tables.AggregateStats.tableName .. [[ as stats
+                  LEFT JOIN ]] .. self.tables.PlayerId.tableName .. [[ as player_id on stats.player_id == player_id.id
                   GROUP BY stats.player_id
                   ORDER BY value DESC
                   LIMIT 25

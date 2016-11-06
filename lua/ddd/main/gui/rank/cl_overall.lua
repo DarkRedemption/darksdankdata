@@ -20,50 +20,22 @@ local function createListView()
   return list
 end
 
-local function populateWithOverallEnemyKd(list, rankTable)
-  list.thirdColumn:SetName(enemyKd)
-  for key, value in pairs(rankTable["overall_enemy_kd"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithTotalEnemyKills(list, rankTable)
-  list.thirdColumn:SetName(enemyKills)
-  for key, value in pairs(rankTable["total_enemy_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithRoundsPlayed(list, rankTable)
-  list.thirdColumn:SetName(roundsPlayed)
-  for key, value in pairs(rankTable["total_rounds_played"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithRoundsPlayed(list, rankTable)
-  list.thirdColumn:SetName(roundsPlayed)
-  for key, value in pairs(rankTable["overall_win_rate"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithOverallWinRate(list, rankTable)
-  list.thirdColumn:SetName(winRate)
-  for key, value in pairs(rankTable["overall_win_rate"]) do
+local function populateList(list, rankTableEntry, columnName)
+  list.thirdColumn:SetName(columnName)
+  for key, value in pairs(rankTableEntry) do
     list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function updateListView(list, value, rankTable)
   if (value == enemyKd) then
-    populateWithOverallEnemyKd(list, rankTable)
+    populateList(list, rankTable["overall_enemy_kd"], enemyKd)
   elseif (value == enemyKills) then
-    populateWithTotalEnemyKills(list, rankTable)
+    populateList(list, rankTable["total_enemy_kills"], enemyKills)
   elseif (value == roundsPlayed) then
-    populateWithRoundsPlayed(list, rankTable)
+    populateList(list, rankTable["total_rounds_played"], roundsPlayed)
   elseif (value == winRate) then
-    populateWithOverallWinRate(list, rankTable)
+    populateList(list, rankTable["overall_win_rate"], winRate)
   end
 end
 
