@@ -3,7 +3,7 @@
 
 local TestSqlTable = table.Copy(DDD.SqlTable)
 TestSqlTable.__index = TestSqlTable
-    
+
 --[[
 Converts foreign key constraint names to a test version where they have the same table name,
 but now "test_" has been prepended to them. This is to ensure only test tables are ever used
@@ -17,6 +17,12 @@ local function convertForeignKeyConstraints(foreignKeyTable)
       convertedTable:addConstraint(columnName, testTable, foreignKeyRef.foreignColumn)
       testTable:create()
     end
+
+    for constraintName, compositeRef in pairs(foreignKeyTable.compositeForeignKeys) do
+      local testTable = TestSqlTable:convertTable(compositeRef.sqlTable)
+      convertedTable:addCompositeConstraint(constraintName, compositeRef.columnNames, testTable, compositeRef.foreignColumns)
+      testTable:create()
+    end
   end
   return convertedTable
 end
@@ -26,12 +32,12 @@ Takes a regular DDD SQL table and converts it into a test version.
 This mostly means it renames the table it to not interfere with tables in use.
 ]]
 function TestSqlTable:convertTable(dddTable)
-  local testTable = table.Copy(dddTable) 
+  local testTable = table.Copy(dddTable)
   testTable.tableName = "test_" .. GUnit.timestamp .. "_" .. dddTable.tableName
   if (dddTable.foreignKeyTable) then
     testTable.foreignKeyTable = convertForeignKeyConstraints(dddTable.foreignKeyTable)
   end
-  
+
   return testTable
 end
 

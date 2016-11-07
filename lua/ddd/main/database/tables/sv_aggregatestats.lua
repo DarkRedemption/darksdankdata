@@ -111,6 +111,55 @@ else
   end
 end
 
+--Removes all kills where either the victim_id or attacker_id is null.
+--Likely happens due to a missed bug or hot-updating DDD.
+function aggregateStatsTable:cleanupKills()
+  local selectQuery = [[
+           SELECT kill.id,
+           kill.round_id,
+           kill.attacker_id,
+           kill.victim_id,
+           victim_roles.role_id as victim_role,
+           attacker_roles.role_id as attacker_role
+           FROM ]] .. self.tables.PlayerKill.tableName .. [[ AS kill
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
+           ON kill.round_id == victim_roles.round_id
+           AND kill.victim_id == victim_roles.player_id
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
+           ON kill.round_id == attacker_roles.round_id
+           AND kill.attacker_id == attacker_roles.player_id
+           WHERE kill.victim_id != kill.attacker_id
+		       AND (victim_role is null or attacker_role is null)
+       ]]
+
+  local badRows = sql.Query(selectQuery)
+
+  for key, value in pairs(badRows) do
+    local deleteQuery = "DELETE FROM " .. self.tables.PlayerKill.tableName .. " WHERE id == " .. value["id"]
+    sql.Query(deleteQuery)
+  end
+end
+
+--Placeholder to save query until I'm sure this is what we want
+function aggregateStatsTable:getAllKillCounts()
+  local query = [[
+                 SELECT COUNT(kill.id) AS count,
+                 kill.attacker_id,
+                 victim_roles.role_id as victim_role,
+                 attacker_roles.role_id as attacker_role
+                 FROM ddd_player_kill AS kill
+                 LEFT JOIN ddd_round_roles  AS victim_roles
+                 ON kill.round_id == victim_roles.round_id
+                 AND kill.victim_id == victim_roles.player_id
+                 LEFT JOIN ddd_round_roles AS attacker_roles
+                 ON kill.round_id == attacker_roles.round_id
+                 AND kill.attacker_id == attacker_roles.player_id
+                 WHERE kill.victim_id != kill.attacker_id
+      		       GROUP BY kill.attacker_id, victim_role, attacker_role
+  ]]
+end
+
+
 function aggregateStatsTable:runKillCountQuery(whereStatement)
   local query = [[SELECT COUNT(*) AS count
            FROM ]] .. self.tables.PlayerKill.tableName .. [[ AS kill

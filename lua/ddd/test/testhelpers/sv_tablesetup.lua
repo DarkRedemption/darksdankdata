@@ -11,11 +11,11 @@ function DDDTest.Helpers.makeTables()
     MapId = tables.MapId,
     RoundId = tables.RoundId,
     WeaponId = tables.WeaponId,
+    RoundRoles = tables.RoundRoles,
     RadioCommand = tables.RadioCommand,
     WorldKill = tables.WorldKill,
     CombatDamage = tables.CombatDamage,
     Healing = tables.Healing,
-    RoundRoles = tables.RoundRoles,
     PlayerKill = tables.PlayerKill,
     ShopItem = tables.ShopItem,
     Purchases = tables.Purchases,
@@ -48,7 +48,30 @@ end
 
 function DDDTest.Helpers.dropAll(tables)
   --Needed until I add sorted tables.
-  local dropOrder = {"AggregateWeaponStats", "AggregateStats", "CreditsLooted", "RadioCommandTarget", "RadioCommandUsed", "CorpseIdentified", "ShotsFired", "PlayerPushKill", "WorldDamage", "Dna", "EntityId", "RoundResult", "Purchases", "ShopItem", "PlayerKill", "RoundRoles", "Healing", "CombatDamage", "WorldKill", "RadioCommand", "WeaponId", "RoundId", "MapId", "PlayerId"}
+  local dropOrder = {"AggregateWeaponStats",
+                     "AggregateStats",
+                     "CreditsLooted",
+                     "RadioCommandTarget",
+                     "RadioCommandUsed",
+                     "CorpseIdentified",
+                     "ShotsFired",
+                     "PlayerPushKill",
+                     "WorldDamage",
+                     "Dna",
+                     "EntityId",
+                     "RoundResult",
+                     "Purchases",
+                     "ShopItem",
+                     "PlayerKill",
+                     "Healing",
+                     "CombatDamage",
+                     "WorldKill",
+                     "RadioCommand",
+                     "RoundRoles",
+                     "WeaponId",
+                     "RoundId",
+                     "MapId",
+                     "PlayerId"}
   local arraySize = table.getn(dropOrder)
   for i=1, arraySize do
     tables[dropOrder[i]]:drop()

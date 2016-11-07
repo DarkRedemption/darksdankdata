@@ -51,7 +51,7 @@ local function processUniqueColumnGroup(columnsToConstrain)
       query = query .. ")"
     end
   end
-  
+
   return query
 end
 
@@ -59,7 +59,7 @@ function SqlTable:generateUniqueConstraintsQuery()
   local query = ""
   local groupsConverted = 0
   local numGroups = self:getNumberOfUniqueGroups()
-  
+
   for groupNumber, columnsToConstrain in pairs(self.uniqueGroups) do
     query = query .. processUniqueColumnGroup(columnsToConstrain)
     groupsConverted = groupsConverted + 1
@@ -67,28 +67,28 @@ function SqlTable:generateUniqueConstraintsQuery()
       query = query .. ", "
     end
   end
-  
+
   return query
 end
 
 function SqlTable:createTable()
-  local query = "CREATE TABLE " .. 
-            self.tableName .. 
+  local query = "CREATE TABLE " ..
+            self.tableName ..
             self:generateColumnQuery()
-            
-  if (self.foreignKeyTable:getSize() > 0) then
+
+  if (self.foreignKeyTable:getForeignKeySize() > 0 or self.foreignKeyTable:getCompositeKeySize() > 0) then
      query = query .. ", " .. self.foreignKeyTable:generateConstraintQuery()
   end
-  
+
   if (self.uniqueGroups) then
     query = query .. ", " .. self:generateUniqueConstraintsQuery()
   end
-  
+
   query = query .. ")"
-  
+
   log.logDebug("Creating table with command: " .. query)
   local result = sql.Query(query)
-  
+
   if (result == false) then
     log.logError("Table " .. self.tableName .. " could not be created! Error was: " .. sql.LastError() .. "\nQuery was : " .. query)
     return false
@@ -115,7 +115,7 @@ function SqlTable:createIndices()
         columnString = columnString .. ", "
       end
     end
-  
+
     local query = "CREATE INDEX IF NOT EXISTS " .. indexName .. " ON " .. self.tableName .. "(" .. columnString .. ")"
     self:query("SqlTable:createIndices", query, 1)
   end
@@ -154,13 +154,13 @@ local function generateInsertQuery(sqlTable, luaTable)
   local i = 0
   for k, v in pairs(luaTable) do
     baseQuery = baseQuery .. k
-    
+
     if (type(v) == "string") then
       values = values .. "\"" .. v .. "\""
     else
       values = values .. v
     end
-    
+
     i = i + 1
     if (i == tableSize) then
       baseQuery = baseQuery .. ")"
@@ -209,7 +209,7 @@ function SqlTable:query(funcName, query, resultRow, resultColumn)
   elseif (result == false) then --Bad query
     queryError(self.tableName, funcName, query)
     return -1
-  --Everything after this point (other than the LogError) is for the user to select results safely. 
+  --Everything after this point (other than the LogError) is for the user to select results safely.
   elseif (resultRow == nil && resultColumn == nil) then --User wants everything
     return result
   elseif (resultRow != nil && resultColumn == nil) then --User wants one row
@@ -258,6 +258,10 @@ function SqlTable:addForeignConstraint(localColumnName, table, foreignColumnName
   self.foreignKeyTable:addConstraint(localColumnName, table, foreignColumnName)
 end
 
+function SqlTable:addCompositeForeignConstraint(constraintName, localColumnNames, sqlTable, foreignColumnNames)
+  self.foreignKeyTable:addCompositeConstraint(constraintName, localColumnNames, sqlTable, foreignColumnNames)
+end
+
 --[[
 Instantiates a new SqlTable class.
 PARAM tablename:String - The name of the table.
@@ -270,15 +274,15 @@ function SqlTable:new(tableName, columns, foreignKeyTable, uniqueGroups)
   setmetatable(newTable, self)
   newTable.tableName = tableName
   newTable.columns = columns
-  
+
   newTable.foreignKeyTable = foreignKeyTable or DDD.Database.ForeignKeyTable:new()
-  
+
   if (uniqueGroups) then
     newTable.uniqueGroups = uniqueGroups
   end
-  
+
   newTable.indices = {}
-  
+
   return newTable
 end
 
