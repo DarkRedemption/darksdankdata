@@ -48,7 +48,8 @@ end
 
 function DDDTest.Helpers.dropAll(tables)
   --Needed until I add sorted tables.
-  local dropOrder = {"AggregateWeaponStats",
+  local dropOrder = {
+                     "AggregateWeaponStats",
                      "AggregateStats",
                      "CreditsLooted",
                      "RadioCommandTarget",

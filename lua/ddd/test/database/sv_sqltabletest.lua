@@ -23,22 +23,24 @@ local function tableNameModifySpec()
 end
 
 local function basicSpec()
-    GUnit.assert(sqlTableTest.table.foreignKeyTable:getSize()):shouldEqual(0)
+    local foreignKeySize = sqlTableTest.table.foreignKeyTable:getForeignKeySize()
+    local compositeKeySize = sqlTableTest.table.foreignKeyTable:getCompositeKeySize()
+    GUnit.assert(foreignKeySize + compositeKeySize):shouldEqual(0)
     GUnit.assert(sqlTableTest.table.uniqueGroups):isNil()
-    
+
     local rowToInsert = {
       name = "testname"
     }
     local insertResult = sqlTableTest.table:insertTable(rowToInsert)
     GUnit.assert(tonumber(insertResult)):shouldEqual(1)
   end
-  
+
 local function selectSpec()
   local rowToInsert = {
      name = "testname"
   }
   sqlTableTest.table:insertTable(rowToInsert)
-  
+
   local selectedValue = sqlTableTest.table:selectById("1")
   GUnit.assert(selectedValue["name"]):shouldEqual(rowToInsert["name"])
 end
@@ -48,15 +50,15 @@ local function uniqueConstraintQuerySpec()
   local constraints = {"col1", "col2"}
   local constraints2 = {"col3", "col4", "col5"}
   local constraints3 = {"col6", "col12", "col11"}
-  
+
   table.insert(uniqueGroups, constraints)
   table.insert(uniqueGroups, constraints2)
   table.insert(uniqueGroups, constraints3)
-  
+
   sqlTableTest.table.uniqueGroups = uniqueGroups
   local query = sqlTableTest.table:generateUniqueConstraintsQuery()
   local expectedResult = "UNIQUE(col1, col2), UNIQUE(col3, col4, col5), UNIQUE(col6, col12, col11)"
-  
+
   GUnit.assert(query):shouldEqual(expectedResult)
 end
 

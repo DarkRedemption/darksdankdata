@@ -111,6 +111,14 @@ else
   end
 end
 
+function aggregateStatsTable:deleteBadRows(badRows, tableName)
+  for key, value in pairs(badRows) do
+    local deleteQuery = "DELETE FROM " .. tableName .. " WHERE id == " .. value["id"]
+    sql.Query(deleteQuery)
+  end
+end
+
+
 --Removes all kills where either the victim_id or attacker_id is null.
 --Likely happens due to a missed bug or hot-updating DDD.
 function aggregateStatsTable:cleanupKills()
@@ -134,11 +142,75 @@ function aggregateStatsTable:cleanupKills()
 
   local badRows = sql.Query(selectQuery)
 
-  for key, value in pairs(badRows) do
-    local deleteQuery = "DELETE FROM " .. self.tables.PlayerKill.tableName .. " WHERE id == " .. value["id"]
-    sql.Query(deleteQuery)
-  end
+  self:deleteBadRows(badRows, self.tables.PlayerKill.tableName)
 end
+
+function aggregateStatsTable:cleanupKills()
+  local selectQuery = [[
+           SELECT kill.id,
+           kill.round_id,
+           kill.attacker_id,
+           kill.victim_id,
+           victim_roles.role_id as victim_role,
+           attacker_roles.role_id as attacker_role
+           FROM ]] .. self.tables.PlayerPushKill.tableName .. [[ AS kill
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
+           ON kill.round_id == victim_roles.round_id
+           AND kill.victim_id == victim_roles.player_id
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
+           ON kill.round_id == attacker_roles.round_id
+           AND kill.attacker_id == attacker_roles.player_id
+           WHERE kill.victim_id != kill.attacker_id
+		       AND (victim_role is null or attacker_role is null)
+       ]]
+
+  local badRows = sql.Query(selectQuery)
+
+  self:deleteBadRows(badRows, self.tables.PlayerPushKill.tableName)
+end
+
+
+--Removes all damage logs where either the victim_id or attacker_id is null.
+--Likely happens due to a missed bug or hot-updating DDD.
+function aggregateStatsTable:cleanupCombatDamage()
+  local selectQuery = [[
+           SELECT dmg.id,
+           dmg.round_id,
+           dmg.attacker_id,
+           dmg.victim_id,
+           victim_roles.role_id as victim_role,
+           attacker_roles.role_id as attacker_role
+           FROM ]] .. self.tables.CombatDamage.tableName .. [[ AS dmg
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
+           ON dmg.round_id == victim_roles.round_id
+           AND dmg.victim_id == victim_roles.player_id
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
+           ON dmg.round_id == attacker_roles.round_id
+           AND dmg.attacker_id == attacker_roles.player_id
+           WHERE dmg.victim_id != dmg.attacker_id
+		       AND (victim_role is null or attacker_role is null)
+       ]]
+
+  local badRows = sql.Query(selectQuery)
+
+  self:deleteBadRows(badRows, self.tables.CombatDamage.tableName)
+end
+
+function aggregateStatsTable:cleanupPurchases()
+      local selectQuery = [[SELECT purchases.id, purchases.shop_item_id, purchases.round_id, roles.player_id, roles.role_id, items.name
+                            FROM ]] .. self.tables.Purchases.tableName .. [[ as purchases
+                            LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roles
+                            ON purchases.round_id == roles.round_id
+                            AND purchases.player_id == roles.player_id
+                            LEFT JOIN ]] .. self.tables.ShopItem.tableName .. [[ as items
+                        	  ON purchases.shop_item_id == items.id
+                        	  WHERE roles.role_id is null;
+                          ]]
+
+      local badRows = sql.Query(selectQuery)
+      self:deleteBadRows(badRows, self.tables.Purchases.tableName)
+end
+
 
 --Placeholder to save query until I'm sure this is what we want
 function aggregateStatsTable:getAllKillCounts()
@@ -147,16 +219,16 @@ function aggregateStatsTable:getAllKillCounts()
                  kill.attacker_id,
                  victim_roles.role_id as victim_role,
                  attacker_roles.role_id as attacker_role
-                 FROM ddd_player_kill AS kill
-                 LEFT JOIN ddd_round_roles  AS victim_roles
+                 FROM ]] .. self.tables.PlayerKill.tableName .. [[ AS kill
+                 LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
                  ON kill.round_id == victim_roles.round_id
                  AND kill.victim_id == victim_roles.player_id
-                 LEFT JOIN ddd_round_roles AS attacker_roles
+                 LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
                  ON kill.round_id == attacker_roles.round_id
                  AND kill.attacker_id == attacker_roles.player_id
                  WHERE kill.victim_id != kill.attacker_id
       		       GROUP BY kill.attacker_id, victim_role, attacker_role
-  ]]
+                ]]
 end
 
 
@@ -294,6 +366,19 @@ function aggregateStatsTable:getSuicideData(playerStatsLuaTable)
   playerStatsLuaTable["innocent_suicides"] = self:calculateRoleSuicides(playerId, 0)
   playerStatsLuaTable["traitor_suicides"] = self:calculateRoleSuicides(playerId, 1)
   playerStatsLuaTable["detective_suicides"] = self:calculateRoleSuicides(playerId, 2)
+end
+
+-- TODO: Finish this and make the cleanup for purchases
+function aggregateStatsTable:getAllPurchases(playerStatsLuaTable)
+    local query = [[SELECT COUNT(purchases.shop_item_id) AS count, roles.player_id, roles.role_id, items.name
+                    FROM ]] .. self.tables.Purchases.tableName .. [[ as purchases
+                    LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roles
+                    ON purchases.round_id == roles.round_id
+                    AND purchases.player_id == roles.player_id
+                    LEFT JOIN ddd_shop_item as items
+                	  ON purchases.shop_item_id == items.id
+                	  GROUP BY purchases.shop_item_id, purchases.player_id, roles.role_id
+                  ]]
 end
 
 function aggregateStatsTable:getPurchases(playerStatsLuaTable)

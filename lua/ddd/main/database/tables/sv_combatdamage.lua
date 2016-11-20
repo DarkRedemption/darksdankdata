@@ -4,13 +4,13 @@ local tables = DDD.Database.Tables
 
 local columns = { id = "INTEGER PRIMARY KEY",
                   round_id = "INTEGER NOT NULL",
-                  victim_id = "INTEGER NOT NULL", 
+                  victim_id = "INTEGER NOT NULL",
                   attacker_id = "INTEGER NOT NULL",
                   weapon_id = "INTEGER NOT NULL",
                   round_time = "REAL NOT NULL",
                   damage_dealt = "INTEGER NOT NULL",
                   damage_type = "INTEGER NOT NULL"}
-                  
+
 
 local combatDamageTable = DDD.SqlTable:new("ddd_combat_damage", columns)
 
@@ -18,6 +18,8 @@ combatDamageTable:addForeignConstraint("round_id", tables.RoundId, "id")
 combatDamageTable:addForeignConstraint("victim_id", tables.PlayerId, "id")
 combatDamageTable:addForeignConstraint("attacker_id", tables.PlayerId, "id")
 combatDamageTable:addForeignConstraint("weapon_id", tables.WeaponId, "id")
+combatDamageTable:addCompositeForeignConstraint("victimHasRole", {"round_id", "victim_id"}, tables.RoundRoles, {"round_id", "player_id"})
+combatDamageTable:addCompositeForeignConstraint("attackerHasRole", {"round_id", "attacker_id"}, tables.RoundRoles, {"round_id", "player_id"})
 
 combatDamageTable:addIndex("roundIdIndex", {"round_id"})
 combatDamageTable:addIndex("victimIndex", {"victim_id"})
@@ -38,7 +40,7 @@ function combatDamageTable:addDamage(victimId, attackerId, weaponId, dmgInfo)
   local roundIdTable = self:getForeignTableByColumn("round_id")
   local roundId = roundIdTable:getCurrentRoundId()
   local roundTime = DDD.CurrentRound:getCurrentRoundTime()
-  
+
   local queryTable = {
     round_id = roundId,
     victim_id = victimId,

@@ -4,6 +4,8 @@ local tables = {}
 
 local function beforeEach()
   tables = DDDTest.Helpers.makeTables()
+  tables.MapId:addMap()
+  tables.RoundId:addRound()
 end
 
 local function afterEach()
@@ -11,19 +13,18 @@ local function afterEach()
 end
 
 local function addDamageSpec()
-  tables.MapId:addMap()
-  tables.RoundId:addRound()
-  
   for i = 1, 100 do
     local victim = playerGen:new()
     local attacker = playerGen:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local attackerId = tables.PlayerId:addPlayer(attacker)
+    tables.RoundRoles:addRole(victim)
+    tables.RoundRoles:addRole(attacker)
     local randomWeaponName = GUnit.Generators.StringGen.generateAlphaNum()
     local weaponId = tables.WeaponId:addWeapon(randomWeaponName)
     local damage = GUnit.Generators.CTakeDamageInfo:new()
-    
     local damageId = tables.CombatDamage:addDamage(victimId, attackerId, weaponId, damage)
+    
     GUnit.assert(damageId):shouldEqual(i)
   end
 end
@@ -32,3 +33,4 @@ combatDamageTableTest:beforeEach(beforeEach)
 combatDamageTableTest:afterEach(afterEach)
 
 combatDamageTableTest:addSpec("add damage logs to the table", addDamageSpec)
+combatDamageTableTest:addSpec("fail to add damage logs without round roles being defined", GUnit.pending)

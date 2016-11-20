@@ -11,16 +11,17 @@ local function afterEach()
   DDDTest.Helpers.dropAll(tables)
 end
 
-local function addPlayerKillSpec()  
+local function addPlayerKillSpec()
   for i = 1, 100 do
     local victim = GUnit.Generators.FakePlayer:new()
     local attacker = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local attackerId = tables.PlayerId:addPlayer(attacker)
-
+    tables.RoundRoles:addRole(victim)
+    tables.RoundRoles:addRole(attacker)
     local randomWeaponName = GUnit.Generators.StringGen.generateAlphaNum()
     local weaponId = tables.WeaponId:addWeapon(randomWeaponName)
-        
+
     local killId = tables.PlayerPushKill:addKill(victimId, attackerId, weaponId)
     GUnit.assert(killId):shouldEqual(i)
   end
