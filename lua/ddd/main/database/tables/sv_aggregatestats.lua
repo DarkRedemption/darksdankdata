@@ -145,7 +145,7 @@ function aggregateStatsTable:cleanupKills()
   self:deleteBadRows(badRows, self.tables.PlayerKill.tableName)
 end
 
-function aggregateStatsTable:cleanupKills()
+function aggregateStatsTable:cleanupPushKills()
   local selectQuery = [[
            SELECT kill.id,
            kill.round_id,
@@ -196,6 +196,44 @@ function aggregateStatsTable:cleanupCombatDamage()
   self:deleteBadRows(badRows, self.tables.CombatDamage.tableName)
 end
 
+--Removes all damage logs where either the victim_id or attacker_id is null.
+--Likely happens due to a missed bug or hot-updating DDD.
+function aggregateStatsTable:cleanupWorldDamage()
+  local selectQuery = [[
+           SELECT dmg.id,
+           dmg.round_id,
+           dmg.victim_id,
+           victim_roles.role_id as victim_role,
+           FROM ]] .. self.tables.WorldDamage.tableName .. [[ AS dmg
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
+           ON dmg.round_id == victim_roles.round_id
+           AND dmg.victim_id == victim_roles.player_id
+           WHERE (victim_role is null)
+       ]]
+
+  local badRows = sql.Query(selectQuery)
+
+  self:deleteBadRows(badRows, self.tables.WorldDamage.tableName)
+end
+
+function aggregateStatsTable:cleanupWorldKills()
+  local selectQuery = [[
+           SELECT kill.id,
+           kill.round_id,
+           kill.victim_id,
+           victim_roles.role_id as victim_role,
+           FROM ]] .. self.tables.WorldKill.tableName .. [[ AS kill
+           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
+           ON kill.round_id == victim_roles.round_id
+           AND kill.victim_id == victim_roles.player_id
+		       WHERE victim_role is null
+       ]]
+
+  local badRows = sql.Query(selectQuery)
+
+  self:deleteBadRows(badRows, self.tables.WorldKill.tableName)
+end
+
 function aggregateStatsTable:cleanupPurchases()
       local selectQuery = [[SELECT purchases.id, purchases.shop_item_id, purchases.round_id, roles.player_id, roles.role_id, items.name
                             FROM ]] .. self.tables.Purchases.tableName .. [[ as purchases
@@ -212,8 +250,13 @@ function aggregateStatsTable:cleanupPurchases()
 end
 
 
---Placeholder to save query until I'm sure this is what we want
-function aggregateStatsTable:getAllKillCounts()
+--[[
+Gets all combat-based kills and adds them to the in-memory table of recalculated rows.
+PARAM playerTables:Table[Int -> Table[String -> Int] ] - A table of player ids containing a table of rows to be inserted to AggregateStats
+RETURN A new playerTables that increments the selfrole_opponentrole_kills columns by the number of combat kills found.
+]]
+function aggregateStatsTable:getAllCombatKillCounts(playerTables)
+  local newTables = table.Copy(playerTables)
   local query = [[
                  SELECT COUNT(kill.id) AS count,
                  kill.attacker_id,
@@ -229,6 +272,59 @@ function aggregateStatsTable:getAllKillCounts()
                  WHERE kill.victim_id != kill.attacker_id
       		       GROUP BY kill.attacker_id, victim_role, attacker_role
                 ]]
+
+   local rows = sql.Query(query)
+
+   if (rows != nil) then
+     for id, columns in pairs(rows) do
+       local playerId = columns["attacker_id"]
+       local playerRole = roleIdToRole[tonumber(columns["attacker_role"])]
+       local victimRole = roleIdToRole[tonumber(columns["victim_role"])]
+       local columnName = playerRole .. "_" .. victimRole .. "_kills"
+       newTables[playerId][columnName] = newTables[playerId][columnName] + tonumber(columns["count"])
+     end
+  end
+
+   return newTables
+end
+
+--[[
+Gets all combat-based deaths and adds them to the in-memory table of recalculated rows.
+PARAM playerTables:Table[Int -> Table[String -> Int] ] - A table of player ids containing a table of rows to be inserted to AggregateStats
+RETURN A new playerTables that increments the selfrole_opponentrole_deaths columns by the number of combat deaths found.
+]]
+function aggregateStatsTable:getAllCombatDeathCounts(playerTables)
+  local newTables = table.Copy(playerTables)
+
+  local query = [[
+                 SELECT COUNT(kill.id) AS count,
+                 kill.victim_id,
+                 victim_roles.role_id as victim_role,
+                 attacker_roles.role_id as attacker_role
+                 FROM ]] .. self.tables.PlayerKill.tableName .. [[ AS kill
+                 LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
+                 ON kill.round_id == victim_roles.round_id
+                 AND kill.victim_id == victim_roles.player_id
+                 LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
+                 ON kill.round_id == attacker_roles.round_id
+                 AND kill.attacker_id == attacker_roles.player_id
+                 WHERE kill.victim_id != kill.attacker_id
+      		       GROUP BY kill.victim_id, victim_role, attacker_role
+                ]]
+
+  local rows = sql.Query(query)
+
+  if (rows != nil) then
+    for id, columns in pairs(rows) do
+      local playerId = columns["victim_id"]
+      local playerRole = roleIdToRole[tonumber(columns["victim_role"])]
+      local attackerRole = roleIdToRole[tonumber(columns["attacker_role"])]
+      local columnName = playerRole .. "_" .. attackerRole .. "_deaths"
+      newTables[playerId][columnName] = newTables[playerId][columnName] + tonumber(columns["count"])
+    end
+  end
+
+  return newTables
 end
 
 
@@ -492,6 +588,7 @@ end
 --[[
 Destroys and re-creates the entire table, running queries to find every statistic.
 ]]
+--[[
 function aggregateStatsTable:recalculate()
   self:drop()
   self:create()
@@ -500,6 +597,31 @@ function aggregateStatsTable:recalculate()
   for rowId, playerId in pairs(players) do
     local playerStatsLuaTable = self:recalculateSinglePlayer(playerId)
     self:insertTable(playerStatsLuaTable)
+  end
+end
+]]
+
+function aggregateStatsTable:recalculate()
+  self:drop()
+  self:create()
+  local players = self.tables.PlayerId:getPlayerIdList()
+  local playerTables = {}
+
+  for rowId, playerId in pairs(players) do
+    playerTables[playerId] = {}
+
+    for columnName, columnSqlType in pairs(self.columns) do
+      playerTables[playerId][columnName] = 0
+    end
+
+    playerTables[playerId]["player_id"] = playerId
+  end
+
+  playerTables = self:getAllCombatKillCounts(playerTables)
+  playerTables = self:getAllCombatDeathCounts(playerTables)
+
+  for playerId, newRow in pairs(playerTables) do
+    self:insertTable(newRow)
   end
 end
 
