@@ -118,135 +118,39 @@ function aggregateStatsTable:deleteBadRows(badRows, tableName)
   end
 end
 
+function aggregateStatsTable:cleanupAll()
+  --Finish this later, but basically it cleans up everything that needs to be cleaned up
+  --by passing in the player_id name from that particular table.
+  local t = self.tables
 
---Removes all kills where either the victim_id or attacker_id is null.
---Likely happens due to a missed bug or hot-updating DDD.
-function aggregateStatsTable:cleanupKills()
-  local selectQuery = [[
-           SELECT kill.id,
-           kill.round_id,
-           kill.attacker_id,
-           kill.victim_id,
-           victim_roles.role_id as victim_role,
-           attacker_roles.role_id as attacker_role
-           FROM ]] .. self.tables.PlayerKill.tableName .. [[ AS kill
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
-           ON kill.round_id == victim_roles.round_id
-           AND kill.victim_id == victim_roles.player_id
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
-           ON kill.round_id == attacker_roles.round_id
-           AND kill.attacker_id == attacker_roles.player_id
-           WHERE kill.victim_id != kill.attacker_id
-		       AND (victim_role is null or attacker_role is null)
-       ]]
+  local cleanableTables = {}
+  cleanableTables["player_id"] = {t.Purchases, t.ShotsFired, t.RadioCommandUsed}
+  cleanableTables["victim_id"] = {t.CombatDamage, t.PlayerKill, t.WorldKill, t.WorldDamage, t.PlayerPushKill}
+  cleanableTables["attacker_id"] = {t.CombatDamage, t.PlayerKill, t.PlayerPushKill}
+  cleanableTables["finder_id"] = {t.CorpseIdentified, t.Dna}
+  cleanableTables["corpse_owner_id"] = {t.CorpseIdentified}
+  cleanableTables["dna_owner_id"] = {t.Dna}
+  cleanableTables["deployer_id"] = {t.Healing}
+  cleanableTables["user_id"] = {t.Healing}
 
-  local badRows = sql.Query(selectQuery)
+  for columnName, tableToClean in pairs(cleanableTables) do
+    print(tableToClean.tableName)
+    local selectQuery = [[
+             SELECT t.id,
+             t.round_id,
+             t.]] .. columnName .. [[,
+             player_role.role_id as player_role
+             FROM ]] .. tableToClean.tableName .. [[ AS t
+             LEFT JOIN ]] .. t.RoundRoles.tableName .. [[ AS player_role
+             ON t.round_id == player_role.round_id
+             AND t.]] .. columnName .. [[ == player_role.player_id
+             WHERE (player_role is null)
+         ]]
 
-  self:deleteBadRows(badRows, self.tables.PlayerKill.tableName)
-end
+    local badRows = sql.Query(selectQuery)
 
-function aggregateStatsTable:cleanupPushKills()
-  local selectQuery = [[
-           SELECT kill.id,
-           kill.round_id,
-           kill.attacker_id,
-           kill.victim_id,
-           victim_roles.role_id as victim_role,
-           attacker_roles.role_id as attacker_role
-           FROM ]] .. self.tables.PlayerPushKill.tableName .. [[ AS kill
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
-           ON kill.round_id == victim_roles.round_id
-           AND kill.victim_id == victim_roles.player_id
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
-           ON kill.round_id == attacker_roles.round_id
-           AND kill.attacker_id == attacker_roles.player_id
-           WHERE kill.victim_id != kill.attacker_id
-		       AND (victim_role is null or attacker_role is null)
-       ]]
-
-  local badRows = sql.Query(selectQuery)
-
-  self:deleteBadRows(badRows, self.tables.PlayerPushKill.tableName)
-end
-
-
---Removes all damage logs where either the victim_id or attacker_id is null.
---Likely happens due to a missed bug or hot-updating DDD.
-function aggregateStatsTable:cleanupCombatDamage()
-  local selectQuery = [[
-           SELECT dmg.id,
-           dmg.round_id,
-           dmg.attacker_id,
-           dmg.victim_id,
-           victim_roles.role_id as victim_role,
-           attacker_roles.role_id as attacker_role
-           FROM ]] .. self.tables.CombatDamage.tableName .. [[ AS dmg
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
-           ON dmg.round_id == victim_roles.round_id
-           AND dmg.victim_id == victim_roles.player_id
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
-           ON dmg.round_id == attacker_roles.round_id
-           AND dmg.attacker_id == attacker_roles.player_id
-           WHERE dmg.victim_id != dmg.attacker_id
-		       AND (victim_role is null or attacker_role is null)
-       ]]
-
-  local badRows = sql.Query(selectQuery)
-
-  self:deleteBadRows(badRows, self.tables.CombatDamage.tableName)
-end
-
---Removes all damage logs where either the victim_id or attacker_id is null.
---Likely happens due to a missed bug or hot-updating DDD.
-function aggregateStatsTable:cleanupWorldDamage()
-  local selectQuery = [[
-           SELECT dmg.id,
-           dmg.round_id,
-           dmg.victim_id,
-           victim_roles.role_id as victim_role,
-           FROM ]] .. self.tables.WorldDamage.tableName .. [[ AS dmg
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
-           ON dmg.round_id == victim_roles.round_id
-           AND dmg.victim_id == victim_roles.player_id
-           WHERE (victim_role is null)
-       ]]
-
-  local badRows = sql.Query(selectQuery)
-
-  self:deleteBadRows(badRows, self.tables.WorldDamage.tableName)
-end
-
-function aggregateStatsTable:cleanupWorldKills()
-  local selectQuery = [[
-           SELECT kill.id,
-           kill.round_id,
-           kill.victim_id,
-           victim_roles.role_id as victim_role,
-           FROM ]] .. self.tables.WorldKill.tableName .. [[ AS kill
-           LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
-           ON kill.round_id == victim_roles.round_id
-           AND kill.victim_id == victim_roles.player_id
-		       WHERE victim_role is null
-       ]]
-
-  local badRows = sql.Query(selectQuery)
-
-  self:deleteBadRows(badRows, self.tables.WorldKill.tableName)
-end
-
-function aggregateStatsTable:cleanupPurchases()
-      local selectQuery = [[SELECT purchases.id, purchases.shop_item_id, purchases.round_id, roles.player_id, roles.role_id, items.name
-                            FROM ]] .. self.tables.Purchases.tableName .. [[ as purchases
-                            LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roles
-                            ON purchases.round_id == roles.round_id
-                            AND purchases.player_id == roles.player_id
-                            LEFT JOIN ]] .. self.tables.ShopItem.tableName .. [[ as items
-                        	  ON purchases.shop_item_id == items.id
-                        	  WHERE roles.role_id is null;
-                          ]]
-
-      local badRows = sql.Query(selectQuery)
-      self:deleteBadRows(badRows, self.tables.Purchases.tableName)
+    self:deleteBadRows(badRows, tableToClean.tableName)
+  end
 end
 
 
@@ -519,7 +423,7 @@ end
 function aggregateStatsTable:getRoleWins(playerId, roleId)
   local expectedResult = ""
 
-  if roleId == 1 then
+  if roleId == 1 then --traitor
     expectedResult = "== 2"
   else
     expectedResult = "> 2"

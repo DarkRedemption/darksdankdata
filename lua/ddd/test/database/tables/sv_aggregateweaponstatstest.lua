@@ -14,13 +14,24 @@ local function afterEach()
   DDD.Logging:enable()
 end
 
+--TODO: Put this in a helper singleton because there's a duplicate function in AggregateWeaponStats
+local function filterContains(weaponClass)
+  for key, value in pairs(DDD.Config.AggregateWeaponStatsFilter) do
+    if (value == weaponClass) then
+      return true
+    end
+  end
+
+  return false
+end
+
 local function addWeaponColumnsTest()
   local columns = { player_id = "INTEGER NOT NULL" }
   local weapons = weapons.GetList()
 
-  for key, value in pairs(weapons) do
-    if (value.ClassName and !filterContains(value.ClassName)) then
-      columns[value.ClassName] = "INTEGER NOT NULL DEFAULT 0"
+  for key, weaponInfo in pairs(weapons) do
+    if (weaponInfo.ClassName and !filterContains(weaponInfo.ClassName)) then
+      columns[weaponInfo.ClassName] = "INTEGER NOT NULL DEFAULT 0"
     end
   end
 
@@ -40,7 +51,7 @@ local function recalculateWeaponKillsSpec()
   end
 
   for index, weaponInfo in pairs(weaponList) do
-    if (weaponInfo.ClassName) then
+    if (weaponInfo.ClassName and !filterContains(weaponInfo.ClassName)) then
       local weaponId = tables.WeaponId:addWeapon(weaponInfo.ClassName)
       weaponSqlIds[weaponId] = weaponInfo.ClassName
     end
@@ -62,7 +73,8 @@ local function recalculateWeaponKillsSpec()
     tables.PlayerKill:addKill(victim.tableId, attacker.tableId, weaponId)
     tables.AggregateWeaponStats:incrementKillColumn(
                         weaponClass, attacker.tableId, attacker:GetRole(), victim:GetRole())
-    tables.AggregateWeaponStats:incrementDeathColumn(weaponSqlIds[weaponId], victim.tableId, attacker:GetRole(), victim:GetRole())
+    tables.AggregateWeaponStats:incrementDeathColumn(
+                        weaponSqlIds[weaponId], victim.tableId, attacker:GetRole(), victim:GetRole())
   end
 
   for i = 1, #fakePlayerList do
