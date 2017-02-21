@@ -273,7 +273,7 @@ local function recalculateKillsSpec()
   confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList)
 end
 
-local function recalculateRoundsWonSpec()
+local function recalculateRoundResultsSpec()
   local oldRows = {}
   local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
 
@@ -282,58 +282,26 @@ local function recalculateRoundsWonSpec()
   end
 
   for i = 1, 100 do
-    local ply = fakePlayerList[math.random(1, #fakePlayerList)]
-
     tables.RoundId:addRound()
 
-    local role = math.random(0, 2)
-    ply:SetRole(role)
-    tables.RoundRoles:addRole(ply)
-
-    local result = 0
-    if role == 1 then
-      result = WIN_TRAITOR -- 2
-    else
-      result = math.random(WIN_INNOCENT, WIN_TIMELIMIT) -- 3, 4
-    end
+    local result = math.random(WIN_TRAITOR, WIN_INNOCENT, WIN_TIMELIMIT)
 
     tables.RoundResult:addResult(result)
 
-    tables.AggregateStats:incrementRounds(ply.tableId, ply:GetRole())
-    tables.AggregateStats:incrementRoundsWon(ply.tableId, ply:GetRole())
-  end
+    for plyId, ply in pairs(fakePlayerList) do
+      local role = math.random(0, 2)
 
-  confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList)
-end
+      ply:SetRole(role)
+      tables.RoundRoles:addRole(ply)
 
-local function recalculateRoundsLostSpec()
-  local oldRows = {}
-  local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
-
-  for index, fakePlayer in pairs(fakePlayerList) do
-    tables.AggregateStats:addPlayer(fakePlayer.tableId)
-  end
-
-  for i = 1, 100 do
-    local ply = fakePlayerList[math.random(1, #fakePlayerList)]
-
-    tables.RoundId:addRound()
-
-    local role = math.random(0, 2)
-    ply:SetRole(role)
-    tables.RoundRoles:addRole(ply)
-
-    local result = 0
-    if role != 1 then
-      result = WIN_TRAITOR -- 2
-    else
-      result = math.random(WIN_INNOCENT, WIN_TIMELIMIT) -- 3, 4
+      tables.AggregateStats:incrementRounds(ply.tableId, ply:GetRole())
+      if (role == 1 && result == WIN_TRAITOR) || (role != 1 && result > 2) then
+        tables.AggregateStats:incrementRoundsWon(ply.tableId, ply:GetRole())
+      else
+        tables.AggregateStats:incrementRoundsLost(ply.tableId, ply:GetRole())
+      end
     end
 
-    tables.RoundResult:addResult(result)
-
-    tables.AggregateStats:incrementRounds(ply.tableId, ply:GetRole())
-    tables.AggregateStats:incrementRoundsLost(ply.tableId, ply:GetRole())
   end
 
   confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList)
@@ -532,8 +500,8 @@ end
 aggregateStatsTest:beforeEach(beforeEach)
 aggregateStatsTest:afterEach(afterEach)
 
---[[
 aggregateStatsTest:addSpec("add a player with no stats", addPlayerSpec)
+
 aggregateStatsTest:addSpec("increment rounds properly", incrementRoundsSpec)
 aggregateStatsTest:addSpec("increment rounds won properly", incrementRoundsWonSpec)
 aggregateStatsTest:addSpec("increment rounds lost properly", incrementRoundsLostSpec)
@@ -544,13 +512,12 @@ aggregateStatsTest:addSpec("increment world deaths properly", incrementWorldDeat
 aggregateStatsTest:addSpec("increment item purchases properly", incrementPurchasesSpec)
 aggregateStatsTest:addSpec("increment c4 kills properly", incrementC4KillsSpec)
 aggregateStatsTest:addSpec("increment healing properly", incrementSelfHealingSpec)
-]]
+
 
 aggregateStatsTest:addSpec("calculate a player's kills accurately", recalculateKillsSpec)
 aggregateStatsTest:addSpec("recalculate every player's stats who actually has no data", recalculateWithNoDataSpec)
+aggregateStatsTest:addSpec("recalculate a player's round results", recalculateRoundResultsSpec)
 --[[
-aggregateStatsTest:addSpec("recalculate a player's rounds won", recalculateRoundsWonSpec)
-aggregateStatsTest:addSpec("recalculate a player's rounds lost", recalculateRoundsLostSpec)
 aggregateStatsTest:addSpec("recalculate every player's combat stats with data", recalculateCombatDataSpec)
 aggregateStatsTest:addSpec("recalculate every player's suicides with data", recalculateSuicideDataSpec)
 aggregateStatsTest:addSpec("recalculate every player's world deaths with data", recalculateWorldDeathsSpec)

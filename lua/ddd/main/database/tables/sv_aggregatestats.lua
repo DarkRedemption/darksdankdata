@@ -32,26 +32,6 @@ itemColumnSuffix["weapon_ttt_health_station"] = "healthstation_purchases"
 --All kills/deaths are in the format of <thisplayerrole>_<opponentrole>_<kills/deaths>
 local columns = { player_id = "INTEGER PRIMARY KEY",
 
-                  innocent_rounds = "INTEGER NOT NULL DEFAULT 0",
-                  detective_rounds = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_rounds = "INTEGER NOT NULL DEFAULT 0",
-
-                  innocent_rounds_won = "INTEGER NOT NULL DEFAULT 0",
-                  detective_rounds_won = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_rounds_won = "INTEGER NOT NULL DEFAULT 0",
-
-                  innocent_rounds_lost = "INTEGER NOT NULL DEFAULT 0",
-                  detective_rounds_lost = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_rounds_lost = "INTEGER NOT NULL DEFAULT 0",
-
-                  innocent_suicides = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_suicides = "INTEGER NOT NULL DEFAULT 0",
-                  detective_suicides = "INTEGER NOT NULL DEFAULT 0",
-
-                  innocent_world_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_world_deaths = "INTEGER NOT NULL DEFAULT 0",
-                  detective_world_deaths = "INTEGER NOT NULL DEFAULT 0",
-
                   traitor_armor_purchases = "INTEGER NOT NULL DEFAULT 0",
                   traitor_radar_purchases = "INTEGER NOT NULL DEFAULT 0",
                   traitor_disguiser_purchases = "INTEGER NOT NULL DEFAULT 0",
@@ -86,10 +66,23 @@ local function createColumnsForAllRoleCombinations(suffix)
   end
 end
 
+local function createColumnsForSingleRole(suffix)
+  for rolename, rolevalue in pairs(roleToRoleId) do
+    local keyname = string.lower(rolename) .. "_" .. suffix
+    columns[keyname] = "INTEGER NOT NULL DEFAULT 0"
+  end
+end
+
 createColumnsForAllRoleCombinations("kills")
 createColumnsForAllRoleCombinations("deaths")
 createColumnsForAllRoleCombinations("ttt_c4_kills")
 createColumnsForAllRoleCombinations("ttt_c4_deaths")
+
+createColumnsForSingleRole("rounds")
+createColumnsForSingleRole("rounds_won")
+createColumnsForSingleRole("rounds_lost")
+createColumnsForSingleRole("suicides")
+createColumnsForSingleRole("world_deaths")
 
 local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
 foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
@@ -119,7 +112,7 @@ function aggregateStatsTable:deleteBadRows(badRows, tableName)
 end
 
 function aggregateStatsTable:cleanupAll()
-  --Finish this later, but basically it cleans up everything that needs to be cleaned up
+  --Basically it cleans up everything that needs to be cleaned up
   --by passing in the player_id name from that particular table.
   local t = self.tables
 
@@ -229,6 +222,53 @@ function aggregateStatsTable:getAllCombatDeathCounts(playerTables)
   end
 
   return newTables
+end
+
+function aggregateStatsTable:getAllRoundCounts(playerTables)
+  local function isWin(roleId, result)
+    if roleId == 1 then --traitor
+      return result == 2
+    else
+      return result > 2
+    end
+  end
+
+  local newTables = table.Copy(playerTables)
+  local query = [[
+                SELECT roundroles.player_id,
+                roundroles.role_id,
+                roundresults.`result`,
+                COUNT(*) AS count
+                FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults
+                LEFT JOIN ]] .. self.tables.RoundRoles.tableName  .. [[ AS roundroles
+                ON roundresults.round_id == roundroles.round_id
+                GROUP BY roundroles.player_id, roundroles.role_id, roundresults.`result`
+                ]]
+
+   local rows = sql.Query(query)
+
+   if (rows != nil) then
+     for id, columns in pairs(rows) do
+       local playerId = columns["player_id"]
+       local roleId = tonumber(columns["role_id"])
+       local role = roleIdToRole[roleId]
+       local result = tonumber(columns["result"])
+       local numResults = tonumber(columns["count"])
+       local suffix
+       if (isWin(roleId, result)) then
+         suffix = "rounds_won"
+       else
+         suffix = "rounds_lost"
+       end
+
+       local columnName = role .. "_" .. suffix
+       local totalColumnName = role .. "_rounds"
+       newTables[playerId][columnName] = newTables[playerId][columnName] + tonumber(columns["count"])
+       newTables[playerId][totalColumnName] = newTables[playerId][totalColumnName] + tonumber(columns["count"])
+     end
+  end
+
+   return newTables
 end
 
 
@@ -431,7 +471,7 @@ function aggregateStatsTable:getRoleWins(playerId, roleId)
 
   local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults
                   LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roundroles ON roundresults.round_id == roundroles.round_id
-                  WHERE player_id == ]] .. playerId .. [[ and role_id == ]] .. roleId .. [[ and `result` ]] .. expectedResult
+                  WHERE player_id == ]] .. playerId .. [[ AND role_id == ]] .. roleId .. [[ and `result` == ]] .. expectedResult
   local result = sql.Query(query)
   return countResult(result)
 end
@@ -456,7 +496,7 @@ function aggregateStatsTable:getRoleLosses(playerId, roleId)
 
   local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults
                   LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roundroles ON roundresults.round_id == roundroles.round_id
-                  WHERE player_id == ]] .. playerId .. [[ and role_id == ]] .. roleId .. [[ and `result` ]] .. expectedResult
+                  WHERE player_id == ]] .. playerId .. [[ AND role_id == ]] .. roleId .. [[ and `result` == ]] .. expectedResult
   local result = sql.Query(query)
   return countResult(result)
 end
@@ -523,6 +563,7 @@ function aggregateStatsTable:recalculate()
 
   playerTables = self:getAllCombatKillCounts(playerTables)
   playerTables = self:getAllCombatDeathCounts(playerTables)
+  playerTables = self:getAllRoundCounts(playerTables)
 
   for playerId, newRow in pairs(playerTables) do
     self:insertTable(newRow)
@@ -547,6 +588,10 @@ function aggregateStatsTable:updateColumn(playerId, columnName, newValue)
   local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. newValue .. " WHERE player_id == " .. playerId
   return self:query("aggregateStatsTable:updateColumn", query)
 end
+
+--
+-- Getters
+--
 
 function aggregateStatsTable:getRounds(playerId, playerRole)
   local columnName = roleIdToRole[playerRole] .. "_rounds"
@@ -608,6 +653,15 @@ function aggregateStatsTable:incrementRounds(playerId, playerRole)
   return self:updateColumn(playerId, columnName, rounds)
 end
 
+function aggregateStatsTable:getPlayerStats(playerId)
+  local query = "SELECT * from " .. self.tableName .. " WHERE player_id == " .. playerId
+  return self:query("aggregateStatsTable:getPlayerStats", query, 1)
+end
+
+--
+-- Incrementers
+--
+
 function aggregateStatsTable:incrementRoundsWon(playerId, playerRole)
   local rounds = self:getRoundsWon(playerId, playerRole) + 1
   local columnName = roleIdToRole[playerRole] .. "_rounds_won"
@@ -668,10 +722,6 @@ function aggregateStatsTable:incrementSelfHPHealed(playerId)
   return self:updateColumn(playerId, columnName, hpHealed)
 end
 
-function aggregateStatsTable:getPlayerStats(playerId)
-  local query = "SELECT * from " .. self.tableName .. " WHERE player_id == " .. playerId
-  return self:query("aggregateStatsTable:getPlayerStats", query, 1)
-end
 
 DDD.Database.Tables.AggregateStats = aggregateStatsTable
 aggregateStatsTable:create()
