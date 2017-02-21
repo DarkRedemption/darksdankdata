@@ -224,7 +224,36 @@ function aggregateStatsTable:getAllCombatDeathCounts(playerTables)
   return newTables
 end
 
-function aggregateStatsTable:getAllRoundCounts(playerTables)
+
+function aggregateStatsTable:getRoundsPlayed(playerTables)
+  local newTables = table.Copy(playerTables)
+  local query = [[
+                SELECT roundroles.player_id,
+                roundroles.role_id,
+                COUNT(*) AS count
+                FROM ]] .. self.tables.RoundRoles.tableName .. [[ AS roundroles
+                GROUP BY roundroles.player_id, roundroles.role_id
+                ]]
+
+   local rows = sql.Query(query)
+
+   if (rows != nil) then
+     for id, columns in pairs(rows) do
+       local playerId = columns["player_id"]
+       local roleId = tonumber(columns["role_id"])
+       local role = roleIdToRole[roleId]
+       local numResults = tonumber(columns["count"])
+
+       local columnName = role .. "_rounds"
+       newTables[playerId][columnName] = newTables[playerId][columnName] + tonumber(columns["count"])
+     end
+  end
+
+   return newTables
+end
+
+
+function aggregateStatsTable:getRoundsWonAndLost(playerTables)
   local function isWin(roleId, result)
     if roleId == 1 then --traitor
       return result == 2
@@ -262,9 +291,7 @@ function aggregateStatsTable:getAllRoundCounts(playerTables)
        end
 
        local columnName = role .. "_" .. suffix
-       local totalColumnName = role .. "_rounds"
        newTables[playerId][columnName] = newTables[playerId][columnName] + tonumber(columns["count"])
-       newTables[playerId][totalColumnName] = newTables[playerId][totalColumnName] + tonumber(columns["count"])
      end
   end
 
@@ -529,22 +556,6 @@ function aggregateStatsTable:recalculateSinglePlayer(playerId)
   return playerStatsLuaTable
 end
 
---[[
-Destroys and re-creates the entire table, running queries to find every statistic.
-]]
---[[
-function aggregateStatsTable:recalculate()
-  self:drop()
-  self:create()
-  local players = self.tables.PlayerId:getPlayerIdList()
-
-  for rowId, playerId in pairs(players) do
-    local playerStatsLuaTable = self:recalculateSinglePlayer(playerId)
-    self:insertTable(playerStatsLuaTable)
-  end
-end
-]]
-
 function aggregateStatsTable:recalculate()
   self:drop()
   self:create()
@@ -563,7 +574,8 @@ function aggregateStatsTable:recalculate()
 
   playerTables = self:getAllCombatKillCounts(playerTables)
   playerTables = self:getAllCombatDeathCounts(playerTables)
-  playerTables = self:getAllRoundCounts(playerTables)
+  playerTables = self:getRoundsPlayed(playerTables)
+  playerTables = self:getRoundsWonAndLost(playerTables)
 
   for playerId, newRow in pairs(playerTables) do
     self:insertTable(newRow)

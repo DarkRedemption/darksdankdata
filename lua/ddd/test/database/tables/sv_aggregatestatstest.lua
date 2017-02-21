@@ -84,6 +84,7 @@ local function confirmRecalculatedValuesMatchOriginal(tables, playerList)
     local newRow = tables.AggregateStats:getPlayerStats(i)
 
     for columnName, columnValue in pairs(newRow) do
+      --print("Now checking: " .. columnName)
       GUnit.assert(oldRows[i][columnName]):shouldEqual(columnValue)
     end
   end
@@ -517,8 +518,8 @@ aggregateStatsTest:addSpec("increment healing properly", incrementSelfHealingSpe
 aggregateStatsTest:addSpec("calculate a player's kills accurately", recalculateKillsSpec)
 aggregateStatsTest:addSpec("recalculate every player's stats who actually has no data", recalculateWithNoDataSpec)
 aggregateStatsTest:addSpec("recalculate a player's round results", recalculateRoundResultsSpec)
---[[
 aggregateStatsTest:addSpec("recalculate every player's combat stats with data", recalculateCombatDataSpec)
+--[[
 aggregateStatsTest:addSpec("recalculate every player's suicides with data", recalculateSuicideDataSpec)
 aggregateStatsTest:addSpec("recalculate every player's world deaths with data", recalculateWorldDeathsSpec)
 aggregateStatsTest:addSpec("recalculate every player's purchases with data", recalculatePurchasesSpec)
