@@ -105,9 +105,11 @@ else
 end
 
 function aggregateStatsTable:deleteBadRows(badRows, tableName)
-  for key, value in pairs(badRows) do
-    local deleteQuery = "DELETE FROM " .. tableName .. " WHERE id == " .. value["id"]
-    sql.Query(deleteQuery)
+  if (badRows) then
+    for key, value in pairs(badRows) do
+      local deleteQuery = "DELETE FROM " .. tableName .. " WHERE id == " .. value["id"]
+      sql.Query(deleteQuery)
+    end
   end
 end
 
@@ -126,24 +128,28 @@ function aggregateStatsTable:cleanupAll()
   cleanableTables["deployer_id"] = {t.Healing}
   cleanableTables["user_id"] = {t.Healing}
 
-  for columnName, tableToClean in pairs(cleanableTables) do
-    print(tableToClean.tableName)
-    local selectQuery = [[
-             SELECT t.id,
-             t.round_id,
-             t.]] .. columnName .. [[,
-             player_role.role_id as player_role
-             FROM ]] .. tableToClean.tableName .. [[ AS t
-             LEFT JOIN ]] .. t.RoundRoles.tableName .. [[ AS player_role
-             ON t.round_id == player_role.round_id
-             AND t.]] .. columnName .. [[ == player_role.player_id
-             WHERE (player_role is null)
-         ]]
+  for columnName, tablesToClean in pairs(cleanableTables) do
+    for index, tableToClean in pairs(tablesToClean) do
 
-    local badRows = sql.Query(selectQuery)
+      local selectQuery = [[
+               SELECT t.id,
+               t.round_id,
+               t.]] .. columnName .. [[,
+               player_role.role_id as player_role
+               FROM ]] .. tableToClean.tableName .. [[ AS t
+               LEFT JOIN ]] .. t.RoundRoles.tableName .. [[ AS player_role
+               ON t.round_id == player_role.round_id
+               AND t.]] .. columnName .. [[ == player_role.player_id
+               WHERE (player_role is null)
+           ]]
 
-    self:deleteBadRows(badRows, tableToClean.tableName)
+      local badRows = sql.Query(selectQuery)
+
+      self:deleteBadRows(badRows, tableToClean.tableName)
+
+    end
   end
+
 end
 
 
@@ -217,6 +223,39 @@ function aggregateStatsTable:getAllCombatDeathCounts(playerTables)
       local playerRole = roleIdToRole[tonumber(columns["victim_role"])]
       local attackerRole = roleIdToRole[tonumber(columns["attacker_role"])]
       local columnName = playerRole .. "_" .. attackerRole .. "_deaths"
+      newTables[playerId][columnName] = newTables[playerId][columnName] + tonumber(columns["count"])
+    end
+  end
+
+  return newTables
+end
+
+
+function aggregateStatsTable:getAllSuicides(playerTables)
+  local newTables = table.Copy(playerTables)
+
+  local query = [[
+                 SELECT COUNT(kill.id) AS count,
+                 kill.victim_id,
+                 victim_roles.role_id as victim_role
+                 FROM ]] .. self.tables.PlayerKill.tableName .. [[ AS kill
+                 LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
+                 ON kill.round_id == victim_roles.round_id
+                 AND kill.victim_id == victim_roles.player_id
+                 LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS attacker_roles
+                 ON kill.round_id == attacker_roles.round_id
+                 AND kill.attacker_id == attacker_roles.player_id
+                 WHERE kill.victim_id == kill.attacker_id
+      		       GROUP BY kill.victim_id, victim_role
+                ]]
+
+  local rows = sql.Query(query)
+
+  if (rows != nil) then
+    for id, columns in pairs(rows) do
+      local playerId = columns["victim_id"]
+      local playerRole = roleIdToRole[tonumber(columns["victim_role"])]
+      local columnName = playerRole .. "_suicides"
       newTables[playerId][columnName] = newTables[playerId][columnName] + tonumber(columns["count"])
     end
   end
@@ -574,6 +613,7 @@ function aggregateStatsTable:recalculate()
 
   playerTables = self:getAllCombatKillCounts(playerTables)
   playerTables = self:getAllCombatDeathCounts(playerTables)
+  playerTables = self:getAllSuicides(playerTables)
   playerTables = self:getRoundsPlayed(playerTables)
   playerTables = self:getRoundsWonAndLost(playerTables)
 

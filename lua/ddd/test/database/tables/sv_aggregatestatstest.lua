@@ -84,7 +84,7 @@ local function confirmRecalculatedValuesMatchOriginal(tables, playerList)
     local newRow = tables.AggregateStats:getPlayerStats(i)
 
     for columnName, columnValue in pairs(newRow) do
-      --print("Now checking: " .. columnName)
+      print("Now checking: " .. columnName)
       GUnit.assert(oldRows[i][columnName]):shouldEqual(columnValue)
     end
   end
@@ -369,7 +369,7 @@ local function recalculateSuicideDataSpec()
 
     tables.PlayerKill:addKill(suicider.tableId, suicider.tableId, weaponId)
     tables.AggregateStats:incrementSuicides(suicider.tableId, suicider:GetRole())
-    tables.AggregateStats:incrementDeaths(suicider.tableId, suicider:GetRole(), suicider:GetRole())
+    --tables.AggregateStats:incrementDeaths(suicider.tableId, suicider:GetRole(), suicider:GetRole())
     tables.AggregateStats:incrementRounds(suicider.tableId, suicider:GetRole())
   end
 
@@ -519,9 +519,9 @@ aggregateStatsTest:addSpec("calculate a player's kills accurately", recalculateK
 aggregateStatsTest:addSpec("recalculate every player's stats who actually has no data", recalculateWithNoDataSpec)
 aggregateStatsTest:addSpec("recalculate a player's round results", recalculateRoundResultsSpec)
 aggregateStatsTest:addSpec("recalculate every player's combat stats with data", recalculateCombatDataSpec)
---[[
 aggregateStatsTest:addSpec("recalculate every player's suicides with data", recalculateSuicideDataSpec)
 aggregateStatsTest:addSpec("recalculate every player's world deaths with data", recalculateWorldDeathsSpec)
+--[[
 aggregateStatsTest:addSpec("recalculate every player's purchases with data", recalculatePurchasesSpec)
 aggregateStatsTest:addSpec("recalculate every player's c4 kills with data", recalculateC4KillsSpec)
 aggregateStatsTest:addSpec("recalculate every player's healing stats with data", recalculateSelfHPHealedSpec)
