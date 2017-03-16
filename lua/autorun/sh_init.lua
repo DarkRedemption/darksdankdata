@@ -45,6 +45,7 @@ if SERVER then
 
   include("ddd/main/misc/sh_inheritsfrom.lua")
   include("ddd/main/misc/sv_enums.lua")
+  include("ddd/main/misc/sv_common.lua")
   include("ddd/main/overrides/sv_corpse.lua")
   include("ddd/main/overrides/sv_health_station.lua")
   include("ddd/main/overrides/sv_c4.lua")

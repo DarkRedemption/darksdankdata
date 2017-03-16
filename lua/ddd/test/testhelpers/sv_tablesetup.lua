@@ -30,7 +30,8 @@ function DDDTest.Helpers.makeTables()
     RadioCommandTarget = tables.RadioCommandTarget,
     CreditsLooted = tables.CreditsLooted,
     AggregateStats = tables.AggregateStats,
-    AggregateWeaponStats = tables.AggregateWeaponStats
+    AggregateWeaponStats = tables.AggregateWeaponStats,
+    AggregatePurchaseStats = tables.AggregatePurchaseStats
     }
   local convertedTables = {}
 
@@ -49,6 +50,7 @@ end
 function DDDTest.Helpers.dropAll(tables)
   --Needed until I add sorted tables.
   local dropOrder = {
+                     "AggregatePurchaseStats",
                      "AggregateWeaponStats",
                      "AggregateStats",
                      "CreditsLooted",

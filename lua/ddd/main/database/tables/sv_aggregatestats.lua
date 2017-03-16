@@ -9,50 +9,9 @@ local lightBlue = Color(0, 255, 255, 255)
 local red = Color(255, 0, 0, 255)
 
 local tables = DDD.Database.Tables
-local itemColumnSuffix = {}
-
-itemColumnSuffix["1"] = "armor_purchases"
-itemColumnSuffix["2"] = "radar_purchases"
-itemColumnSuffix["4"] = "disguiser_purchases"
-itemColumnSuffix["weapon_ttt_flaregun"] = "flaregun_purchases"
-itemColumnSuffix["weapon_ttt_knife"] = "knife_purchases"
-itemColumnSuffix["weapon_ttt_teleport"] = "teleporter_purchases"
-itemColumnSuffix["weapon_ttt_radio"] = "radio_purchases"
-itemColumnSuffix["weapon_ttt_push"] = "newtonlauncher_purchases"
-itemColumnSuffix["weapon_ttt_sipistol"] = "silentpistol_purchases"
-itemColumnSuffix["weapon_ttt_decoy"] = "decoy_purchases"
-itemColumnSuffix["weapon_ttt_phammer"] = "poltergeist_purchases"
-itemColumnSuffix["weapon_ttt_c4"] = "c4_purchases"
-itemColumnSuffix["weapon_ttt_cse"] = "visualizer_purchases"
-itemColumnSuffix["weapon_ttt_defuser"] = "defuser_purchases"
-itemColumnSuffix["weapon_ttt_binoculars"] = "binoculars_purchases"
-itemColumnSuffix["weapon_ttt_stungun"] = "ump_purchases"
-itemColumnSuffix["weapon_ttt_health_station"] = "healthstation_purchases"
 
 --All kills/deaths are in the format of <thisplayerrole>_<opponentrole>_<kills/deaths>
 local columns = { player_id = "INTEGER PRIMARY KEY",
-
-                  traitor_armor_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_radar_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_disguiser_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_flaregun_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_knife_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_teleporter_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_radio_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_newtonlauncher_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_silentpistol_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_decoy_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_poltergeist_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  traitor_c4_purchases = "INTEGER NOT NULL DEFAULT 0",
-
-                  detective_radar_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  detective_visualizer_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  detective_defuser_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  detective_teleporter_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  detective_binoculars_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  detective_ump_purchases = "INTEGER NOT NULL DEFAULT 0",
-                  detective_healthstation_purchases = "INTEGER NOT NULL DEFAULT 0",
-
                   self_hp_healed = "INTEGER NOT NULL DEFAULT 0",
                   others_hp_healed = "INTEGER NOT NULL DEFAULT 0"
                 }
