@@ -83,9 +83,11 @@ local function incrementSpec()
     if (playerRole == ROLE_TRAITOR) then
       local index = math.random(1, #traitorItemNames)
       randomItemName = traitorItemNames[index]
-    else
+    elseif (playerRole == ROLE_DETECTIVE) then
       local index = math.random(1, #detectiveItemNames)
       randomItemName = detectiveItemNames[index]
+    else
+      assert(false, "Somehow got an inno role.")
     end
 
     local originalValue = tables.AggregatePurchaseStats:getPurchases(id, playerRole, randomItemName)
@@ -96,7 +98,27 @@ local function incrementSpec()
 end
 
 local function recalculateSpec()
-  GUnit.pending()
+  local ply, id = genAndAddPlayer()
+  local traitorItemNames = getTraitorPurchasableItemNames()
+  local detectiveItemNames = getDetectivePurchasableItemNames()
+
+  for i = 1, 100 do
+    local playerRole = math.random(1, 2)
+    local randomItemName
+
+    if (playerRole == ROLE_TRAITOR) then
+      local index = math.random(1, #traitorItemNames)
+      randomItemName = traitorItemNames[index]
+    else
+      local index = math.random(1, #detectiveItemNames)
+      randomItemName = detectiveItemNames[index]
+    end
+
+    local originalValue = tables.AggregatePurchaseStats:getPurchases(id, playerRole, randomItemName)
+    tables.AggregatePurchaseStats:incrementPurchases(id, playerRole, randomItemName)
+    local newValue = tables.AggregatePurchaseStats:getPurchases(id, playerRole, randomItemName)
+    GUnit.assert(newValue):shouldEqual(originalValue + 1)
+  end
 end
 
 aggregatePurchaseStatsTest:beforeEach(beforeEach)

@@ -36,7 +36,7 @@ local function generateColumns()
       columns[columnName] = "INTEGER NOT NULL DEFAULT 0"
     end
 
-    if (detectiveCanBuy(wep)) then
+    if detectiveCanBuy(wep) then
       local columnName = "detective_" .. wep.ClassName .. "_purchases"
       columns[columnName] = "INTEGER NOT NULL DEFAULT 0"
     end
