@@ -1,26 +1,6 @@
 local aggregateStatsTest = GUnit.Test:new("AggregateStatsTable")
 local tables = {}
 
-local traitorValidPurchases = { "1",
-                                "2",
-                                "weapon_ttt_flaregun",
-                                "weapon_ttt_knife",
-                                "weapon_ttt_teleport",
-                                "weapon_ttt_radio",
-                                "weapon_ttt_push",
-                                "weapon_ttt_sipistol",
-                                "weapon_ttt_decoy",
-                                "weapon_ttt_phammer",
-                                "weapon_ttt_c4"}
-
-  local detectiveValidPurchases = { "2", --Forget the body armor since you start with it
-                                "weapon_ttt_cse",
-                                "weapon_ttt_defuser",
-                                "weapon_ttt_teleport",
-                                "weapon_ttt_binoculars",
-                                "weapon_ttt_stungun",
-                                "weapon_ttt_health_station"}
-
 local function beforeEach()
   tables = DDDTest.Helpers.makeTables()
   tables.AggregateStats.tables = tables
@@ -84,6 +64,9 @@ local function confirmRecalculatedValuesMatchOriginal(tables, playerList)
     local newRow = tables.AggregateStats:getPlayerStats(i)
 
     for columnName, columnValue in pairs(newRow) do
+      if (oldRows[i][columnName] != columnValue) then
+        print("Mismatch on " .. columnName)
+      end
       GUnit.assert(oldRows[i][columnName]):shouldEqual(columnValue)
     end
   end
@@ -182,27 +165,6 @@ local function incrementWorldDeathsSpec()
 
     local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getWorldDeaths, tables.AggregateStats.incrementWorldDeaths)
     testFunc(id, playerRole)
-  end
-end
-
-local function incrementPurchasesSpec()
-  local ply, id = genAndAddPlayer()
-
-  for i = 1, 100 do
-    local playerRole = math.random(1, 2)
-    ply:SetRole(playerRole)
-
-    local thisRoundsPurchase
-    if (playerRole == 1) then
-      thisRoundsPurchase = traitorValidPurchases[math.random(1, #traitorValidPurchases)]
-    else
-      thisRoundsPurchase = detectiveValidPurchases[math.random(1, #detectiveValidPurchases)]
-    end
-
-    local testFunc = buildIncrementingFunctionTest(tables,
-                                                   tables.AggregateStats.getItemPurchases,
-                                                   tables.AggregateStats.incrementItemPurchases)
-    testFunc(id, playerRole, thisRoundsPurchase)
   end
 end
 
@@ -385,45 +347,15 @@ local function recalculateWorldDeathsSpec()
   for i = 1, 100 do
     local victim = fakePlayerList[math.random(1, #fakePlayerList)]
 
+    local roleId = math.random(0, 2)
+    victim:SetRole(roleId)
+
     tables.RoundId:addRound()
     tables.RoundRoles:addRole(victim)
 
     tables.WorldKill:addPlayerKill(victim.tableId)
     tables.AggregateStats:incrementWorldDeaths(victim.tableId, victim:GetRole())
     tables.AggregateStats:incrementRounds(victim.tableId, victim:GetRole())
-  end
-
-  confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList)
-end
-
-local function recalculatePurchasesSpec()
-  local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
-
-  for index, fakePlayer in pairs(fakePlayerList) do
-    tables.AggregateStats:addPlayer(fakePlayer.tableId)
-  end
-
-  for i = 1, 100 do
-    local player = fakePlayerList[math.random(1, #fakePlayerList)]
-    local playerRole = math.random(1, 2)
-
-    player:SetRole(playerRole)
-    tables.RoundId:addRound()
-    tables.RoundRoles:addRole(player)
-
-    local thisRoundsPurchase
-    if (playerRole == 1) then
-      thisRoundsPurchase = traitorValidPurchases[math.random(1, #traitorValidPurchases)]
-    else
-      thisRoundsPurchase = detectiveValidPurchases[math.random(1, #detectiveValidPurchases)]
-    end
-
-    local shopItemId = tables.ShopItem:getOrAddItemId(thisRoundsPurchase)
-    local purchaseId = tables.Purchases:addPurchase(player.tableId, shopItemId)
-    GUnit.assert(purchaseId):shouldEqual(i)
-
-    tables.AggregateStats:incrementItemPurchases(player.tableId, playerRole, thisRoundsPurchase)
-    tables.AggregateStats:incrementRounds(player.tableId, player:GetRole())
   end
 
   confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList)
@@ -509,7 +441,6 @@ aggregateStatsTest:addSpec("increment kills properly", incrementKillsSpec)
 aggregateStatsTest:addSpec("increment deaths properly", incrementDeathsSpec)
 aggregateStatsTest:addSpec("increment suicides properly", incrementSuicidesSpec)
 aggregateStatsTest:addSpec("increment world deaths properly", incrementWorldDeathsSpec)
-aggregateStatsTest:addSpec("increment item purchases properly", incrementPurchasesSpec)
 aggregateStatsTest:addSpec("increment c4 kills properly", incrementC4KillsSpec)
 aggregateStatsTest:addSpec("increment healing properly", incrementSelfHealingSpec)
 
@@ -521,7 +452,6 @@ aggregateStatsTest:addSpec("recalculate every player's combat stats with data", 
 aggregateStatsTest:addSpec("recalculate every player's suicides with data", recalculateSuicideDataSpec)
 aggregateStatsTest:addSpec("recalculate every player's world deaths with data", recalculateWorldDeathsSpec)
 --[[
-aggregateStatsTest:addSpec("recalculate every player's purchases with data", recalculatePurchasesSpec)
 aggregateStatsTest:addSpec("recalculate every player's c4 kills with data", recalculateC4KillsSpec)
 aggregateStatsTest:addSpec("recalculate every player's healing stats with data", recalculateSelfHPHealedSpec)
 ]]

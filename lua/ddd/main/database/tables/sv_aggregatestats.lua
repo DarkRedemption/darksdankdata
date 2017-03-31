@@ -1,8 +1,4 @@
-local roleIdToRole = {} -- The reverse of the main roles table, this is roleValue -> roleName instead.
-roleIdToRole[0] = "innocent"
-roleIdToRole[1] = "traitor"
-roleIdToRole[2] = "detective"
-
+local roleIdToRole = DDD.roleIdToRole
 local roleToRoleId = DDD.Database.Roles
 
 local lightBlue = Color(0, 255, 255, 255)
@@ -357,18 +353,15 @@ function aggregateStatsTable:calculateRoleWeaponDeaths(playerStatsLuaTable, play
   return self:runKillCountQuery(whereStatement)
 end
 
-function aggregateStatsTable:makeWorldDeathCountQuery(playerId, playerRole)
-  return [[SELECT COUNT(*) AS count
+function aggregateStatsTable:calculateWorldDeaths(playerId, roleId)
+  local query = [[SELECT COUNT(*) AS count
            FROM ]] .. self.tables.WorldKill.tableName .. [[ AS kill
            LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
            ON kill.round_id == victim_roles.round_id
            AND kill.victim_id == victim_roles.player_id
            WHERE kill.victim_id == ]] .. tostring(playerId) .. [[
-           AND victim_roles.role_id == ]] .. tostring(playerRole)
-end
+           AND victim_roles.role_id == ]] .. tostring(roleId)
 
-function aggregateStatsTable:calculateWorldDeaths(playerId, playerRole)
-  local query = self:makeWorldDeathCountQuery(playerId, playerRole)
   local result = sql.Query(query)
   return countResult(result)
 end
@@ -404,26 +397,12 @@ end
 function aggregateStatsTable:getAllWorldDeaths(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
 
-  for playerRole, playerRoleName in pairs(roleIdToRole) do
-    local deathColumnName = playerRoleName .. "_world_deaths"
-    playerStatsLuaTable[deathColumnName] = self:calculateWorldDeaths(playerId, playerRole)
+  for roleId, roleName in pairs(roleIdToRole) do
+    local deathColumnName = roleName .. "_world_deaths"
+    playerStatsLuaTable[deathColumnName] = self:calculateWorldDeaths(playerId, roleId)
   end
 
   return self
-end
-
-function aggregateStatsTable:getPurchasesAsRole(playerId, itemName, roleId)
-  local itemId = self.tables.ShopItem:getItemId(itemName)
-  if (itemId > 0) then
-    local query =
-    "SELECT COUNT(*) AS count FROM " .. self.tables.Purchases.tableName .. " as purchases " ..
-    "LEFT JOIN " .. self.tables.RoundRoles.tableName .. " as roles " ..
-    "ON purchases.round_id == roles.round_id " ..
-    "WHERE purchases.player_id == " .. playerId .. " AND purchases.shop_item_id == " .. itemId .. " AND roles.role_id == " .. roleId
-    return DDD.SqlTable:query("purchasesTable:getPurchases", query, 1, "count")
-  else
-    return 0
-  end
 end
 
 function aggregateStatsTable:getSuicideData(playerStatsLuaTable)
@@ -431,44 +410,6 @@ function aggregateStatsTable:getSuicideData(playerStatsLuaTable)
   playerStatsLuaTable["innocent_suicides"] = self:calculateRoleSuicides(playerId, 0)
   playerStatsLuaTable["traitor_suicides"] = self:calculateRoleSuicides(playerId, 1)
   playerStatsLuaTable["detective_suicides"] = self:calculateRoleSuicides(playerId, 2)
-end
-
--- TODO: Finish this and make the cleanup for purchases
-function aggregateStatsTable:getAllPurchases(playerStatsLuaTable)
-    local query = [[SELECT COUNT(purchases.shop_item_id) AS count, roles.player_id, roles.role_id, items.name
-                    FROM ]] .. self.tables.Purchases.tableName .. [[ as purchases
-                    LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roles
-                    ON purchases.round_id == roles.round_id
-                    AND purchases.player_id == roles.player_id
-                    LEFT JOIN ddd_shop_item as items
-                	  ON purchases.shop_item_id == items.id
-                	  GROUP BY purchases.shop_item_id, purchases.player_id, roles.role_id
-                  ]]
-end
-
-function aggregateStatsTable:getPurchases(playerStatsLuaTable)
-  local playerId = playerStatsLuaTable.player_id
-
-  playerStatsLuaTable["traitor_armor_purchases"] = self:getPurchasesAsRole(playerId, "1", roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_radar_purchases"] = self:getPurchasesAsRole(playerId, "2",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_disguiser_purchases"] = self:getPurchasesAsRole(playerId, "4",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_flaregun_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_flaregun",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_knife_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_knife",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_teleporter_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_teleport",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_radio_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_radio",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_newtonlauncher_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_push",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_silentpistol_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_sipistol",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_decoy_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_decoy",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_poltergeist_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_phammer",  roleToRoleId["Traitor"])
-  playerStatsLuaTable["traitor_c4_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_c4",  roleToRoleId["Traitor"])
-
-  playerStatsLuaTable["detective_radar_purchases"] = self:getPurchasesAsRole(playerId, "2",  roleToRoleId["Detective"])
-  playerStatsLuaTable["detective_visualizer_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_cse",  roleToRoleId["Detective"])
-  playerStatsLuaTable["detective_defuser_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_defuser",  roleToRoleId["Detective"])
-  playerStatsLuaTable["detective_teleporter_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_teleport",  roleToRoleId["Detective"])
-  playerStatsLuaTable["detective_binoculars_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_binoculars",  roleToRoleId["Detective"])
-  playerStatsLuaTable["detective_ump_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_stungun",  roleToRoleId["Detective"])
-  playerStatsLuaTable["detective_healthstation_purchases"] = self:getPurchasesAsRole(playerId, "weapon_ttt_health_station",  roleToRoleId["Detective"])
 end
 
 function aggregateStatsTable:calculateSelfHPHealed(playerStatsLuaTable)
@@ -543,7 +484,6 @@ function aggregateStatsTable:recalculateSinglePlayer(playerId)
   playerStatsLuaTable["player_id"] = playerId
   self:getAllCombatKillsAndDeaths(playerStatsLuaTable)
   self:getAllWorldDeaths(playerStatsLuaTable)
-  self:getPurchases(playerStatsLuaTable)
   self:getSuicideData(playerStatsLuaTable)
   self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_kills", self.calculateRoleWeaponKills, {"ttt_c4"})
   self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_deaths", self.calculateRoleWeaponDeaths, {"ttt_c4"})
@@ -552,6 +492,29 @@ function aggregateStatsTable:recalculateSinglePlayer(playerId)
   self:calculateRoleLosses(playerStatsLuaTable)
   self:calculateSelfHPHealed(playerStatsLuaTable)
   return playerStatsLuaTable
+end
+
+function aggregateStatsTable:getAllWorldDeathCounts(newTables)
+  local query = [[SELECT kill.victim_id, victim_roles.role_id, COUNT(*) AS count
+                  FROM ]] .. self.tables.WorldKill.tableName .. [[ AS kill
+                  LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ AS victim_roles
+                  ON kill.round_id == victim_roles.round_id
+                  AND kill.victim_id == victim_roles.player_id
+                  GROUP BY kill.victim_id, victim_roles.role_id
+                  ORDER BY kill.victim_id, victim_roles.role_id]]
+
+  local result = self:query("aggregateStatsTable:getAllWorldDeathCounts", query)
+
+  if (result != nil && result != 0) then
+     for id, columns in pairs(result) do
+       local role = roleIdToRole[tonumber(columns["role_id"])]
+       local playerId = columns["victim_id"]
+       local columnName = role .. "_world_deaths"
+       newTables[playerId][columnName] = tonumber(columns["count"])
+     end
+  end
+
+  return newTables
 end
 
 function aggregateStatsTable:recalculate()
@@ -573,6 +536,7 @@ function aggregateStatsTable:recalculate()
   playerTables = self:getAllCombatKillCounts(playerTables)
   playerTables = self:getAllCombatDeathCounts(playerTables)
   playerTables = self:getAllSuicides(playerTables)
+  playerTables = self:getAllWorldDeathCounts(playerTables)
   playerTables = self:getRoundsPlayed(playerTables)
   playerTables = self:getRoundsWonAndLost(playerTables)
 
@@ -649,11 +613,6 @@ function aggregateStatsTable:getWorldDeaths(playerId, playerRole)
   return self:selectColumn(playerId, columnName)
 end
 
-function aggregateStatsTable:getItemPurchases(playerId, playerRole, item)
-  local columnName = roleIdToRole[playerRole] .. "_" .. itemColumnSuffix[tostring(item)]
-  return self:selectColumn(playerId, columnName)
-end
-
 function aggregateStatsTable:getSelfHPHealed(playerId)
   return self:selectColumn(playerId, "self_hp_healed")
 end
@@ -719,12 +678,6 @@ function aggregateStatsTable:incrementWorldDeaths(playerId, playerRole)
   local deaths = self:getWorldDeaths(playerId, playerRole) + 1
   local columnName = roleIdToRole[playerRole] .. "_world_deaths"
   return self:updateColumn(playerId, columnName, deaths)
-end
-
-function aggregateStatsTable:incrementItemPurchases(playerId, playerRole, item)
-  local purchases = self:getItemPurchases(playerId, playerRole, item) + 1
-  local columnName = roleIdToRole[playerRole] .. "_" .. itemColumnSuffix[tostring(item)]
-  return self:updateColumn(playerId, columnName, purchases)
 end
 
 function aggregateStatsTable:incrementSelfHPHealed(playerId)
