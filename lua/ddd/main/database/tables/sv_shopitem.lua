@@ -1,7 +1,7 @@
 local columns = {id = "INTEGER PRIMARY KEY",
                  name = "STRING UNIQUE NOT NULL"
                  }
-                        
+
 local shopItemTable = DDD.SqlTable:new("ddd_shop_item", columns)
 
 --[[
@@ -12,7 +12,7 @@ function shopItemTable:addItem(equipment)
   local queryTable = {
     name = tostring(equipment)
   }
-  
+
   return self:insertTable(queryTable)
 end
 

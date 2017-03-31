@@ -84,7 +84,6 @@ local function confirmRecalculatedValuesMatchOriginal(tables, playerList)
     local newRow = tables.AggregateStats:getPlayerStats(i)
 
     for columnName, columnValue in pairs(newRow) do
-      print("Now checking: " .. columnName)
       GUnit.assert(oldRows[i][columnName]):shouldEqual(columnValue)
     end
   end
