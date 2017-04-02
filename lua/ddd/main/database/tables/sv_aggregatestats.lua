@@ -366,21 +366,6 @@ function aggregateStatsTable:calculateWorldDeaths(playerId, roleId)
   return countResult(result)
 end
 
-function aggregateStatsTable:getAllCombatKillsAndDeaths(playerStatsLuaTable)
-  local playerId = playerStatsLuaTable.player_id
-
-  for playerRole, playerRoleName in pairs(roleIdToRole) do
-    for opponentRole, opponentRoleName in pairs(roleIdToRole) do
-      local killColumnName = playerRoleName .. "_" .. opponentRoleName .. "_kills"
-      local deathColumnName = playerRoleName .. "_" .. opponentRoleName .. "_deaths"
-      playerStatsLuaTable[killColumnName] = self:calculateRoleKills(playerId, playerRole, opponentRole)
-      playerStatsLuaTable[deathColumnName] = self:calculateRoleDeaths(playerId, playerRole, opponentRole)
-    end
-  end
-
-  return self
-end
-
 function aggregateStatsTable:getDataForAllRoles(playerStatsLuaTable, suffix, func, args)
   for rolename, rolevalue in pairs(roleToRoleId) do
     for secondrolename, secondrolevalue in pairs(roleToRoleId) do
@@ -394,102 +379,24 @@ function aggregateStatsTable:getDataForAllRoles(playerStatsLuaTable, suffix, fun
   end
 end
 
-function aggregateStatsTable:getAllWorldDeaths(playerStatsLuaTable)
-  local playerId = playerStatsLuaTable.player_id
-
-  for roleId, roleName in pairs(roleIdToRole) do
-    local deathColumnName = roleName .. "_world_deaths"
-    playerStatsLuaTable[deathColumnName] = self:calculateWorldDeaths(playerId, roleId)
-  end
-
-  return self
-end
-
-function aggregateStatsTable:getSuicideData(playerStatsLuaTable)
-  local playerId = playerStatsLuaTable.player_id
-  playerStatsLuaTable["innocent_suicides"] = self:calculateRoleSuicides(playerId, 0)
-  playerStatsLuaTable["traitor_suicides"] = self:calculateRoleSuicides(playerId, 1)
-  playerStatsLuaTable["detective_suicides"] = self:calculateRoleSuicides(playerId, 2)
-end
-
 function aggregateStatsTable:calculateSelfHPHealed(playerStatsLuaTable)
   local playerId = playerStatsLuaTable.player_id
   playerStatsLuaTable["self_hp_healed"] = self.tables.Healing:getTotalHPYouHealed(playerId)
 end
-
-function aggregateStatsTable:calculateRoleData(playerStatsLuaTable)
-  local playerId = playerStatsLuaTable.player_id
-
-  for rolename, rolevalue in pairs(roleToRoleId) do
-    local keyname = rolename .. "_rounds"
-    playerStatsLuaTable[keyname] = self.tables.RoundRoles:getRoundsAsRole(playerId, rolevalue)
-  end
-end
-
-function aggregateStatsTable:getRoleWins(playerId, roleId)
-  local expectedResult = ""
-
-  if roleId == 1 then --traitor
-    expectedResult = "== 2"
-  else
-    expectedResult = "> 2"
-  end
-
-  local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults
-                  LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roundroles ON roundresults.round_id == roundroles.round_id
-                  WHERE player_id == ]] .. playerId .. [[ AND role_id == ]] .. roleId .. [[ and `result` == ]] .. expectedResult
-  local result = sql.Query(query)
-  return countResult(result)
-end
-
-function aggregateStatsTable:calculateRoleWins(playerStatsLuaTable)
-  local playerId = playerStatsLuaTable.player_id
-
-  for rolename, rolevalue in pairs(roleToRoleId) do
-    local keyname = rolename .. "_rounds_won"
-    playerStatsLuaTable[keyname] = self:getRoleWins(playerId, rolevalue)
-  end
-end
-
-function aggregateStatsTable:getRoleLosses(playerId, roleId)
-  local expectedResult = ""
-
-  if roleId == 1 then
-    expectedResult = "> 2"
-  else
-    expectedResult = "== 2"
-  end
-
-  local query = [[SELECT COUNT(*) AS count FROM ]] .. self.tables.RoundResult.tableName .. [[ AS roundresults
-                  LEFT JOIN ]] .. self.tables.RoundRoles.tableName .. [[ as roundroles ON roundresults.round_id == roundroles.round_id
-                  WHERE player_id == ]] .. playerId .. [[ AND role_id == ]] .. roleId .. [[ and `result` == ]] .. expectedResult
-  local result = sql.Query(query)
-  return countResult(result)
-end
-
-function aggregateStatsTable:calculateRoleLosses(playerStatsLuaTable)
-  local playerId = playerStatsLuaTable.player_id
-
-  for rolename, rolevalue in pairs(roleToRoleId) do
-    local keyname = rolename .. "_rounds_lost"
-    playerStatsLuaTable[keyname] = self:getRoleLosses(playerId, rolevalue)
-  end
-end
-
 --[[
 Recalculates a single player's stats.
 --]]
 function aggregateStatsTable:recalculateSinglePlayer(playerId)
   local playerStatsLuaTable = {}
   playerStatsLuaTable["player_id"] = playerId
-  self:getAllCombatKillsAndDeaths(playerStatsLuaTable)
-  self:getAllWorldDeaths(playerStatsLuaTable)
-  self:getSuicideData(playerStatsLuaTable)
+  --self:getAllCombatKillsAndDeaths(playerStatsLuaTable)
+  --self:getAllWorldDeaths(playerStatsLuaTable)
+  --self:getSuicideData(playerStatsLuaTable)
   self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_kills", self.calculateRoleWeaponKills, {"ttt_c4"})
   self:getDataForAllRoles(playerStatsLuaTable, "ttt_c4_deaths", self.calculateRoleWeaponDeaths, {"ttt_c4"})
-  self:calculateRoleData(playerStatsLuaTable)
-  self:calculateRoleWins(playerStatsLuaTable)
-  self:calculateRoleLosses(playerStatsLuaTable)
+  --self:calculateRoleData(playerStatsLuaTable)
+  --self:calculateRoleWins(playerStatsLuaTable)
+  --self:calculateRoleLosses(playerStatsLuaTable)
   self:calculateSelfHPHealed(playerStatsLuaTable)
   return playerStatsLuaTable
 end

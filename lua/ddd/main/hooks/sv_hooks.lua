@@ -21,7 +21,7 @@ function DDD.Hooks.trackPurchases(tables, ply, equipment)
   local playerId = tables.PlayerId:getPlayerId(ply)
   local purchaseResult = tables.Purchases:addPurchase(playerId, itemId)
   if (purchaseResult != nil and purchaseResult != false) then
-    tables.AggregateStats:incrementItemPurchases(playerId, ply:GetRole(), equipment)
+    tables.AggregatePurchaseStats:incrementPurchases(playerId, ply:GetRole(), equipment)
   end
 
     --Return the id for testing purposes.

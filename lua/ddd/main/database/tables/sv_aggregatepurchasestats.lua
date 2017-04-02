@@ -25,7 +25,7 @@ end
 
 local function generateColumns()
   local columns = {
-    player_id = "INTEGER PRIMARY KEY"
+    player_id = "INTEGER PRIMARY KEY NOT NULL"
   }
   local sweps = weapons.GetList()
 
@@ -73,15 +73,18 @@ function aggregatePurchaseStatsTable:getPurchases(playerId, playerRole, itemName
   return tonumber(currentValue)
 end
 
-function aggregatePurchaseStatsTable:incrementPurchases(playerId, playerRole, itemName)
-    assert(playerRole != 0, "Innocents can't purchase items!")
-    local newPurchases = self:getPurchases(playerId, playerRole, itemName) + 1
-    local columnName = DDD.roleIdToRole[playerRole] .. "_" .. itemName .. "_purchases"
+function aggregatePurchaseStatsTable:incrementPurchases(playerId, roleId, itemName)
+    assert(roleId != 0, "Innocents can't purchase items!")
+    local newPurchases = self:getPurchases(playerId, roleId, itemName) + 1
+    local columnName = DDD.roleIdToRole[roleId] .. "_" .. itemName .. "_purchases"
     local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. newPurchases .. " WHERE player_id == " .. playerId
     return self:query("aggregatePurchaseStatsTable:incrementPurchases", query)
 end
 
 function aggregatePurchaseStatsTable:recalculate()
+  sql.Query("DROP TABLE " .. self.tableName)
+  self:create()
+
   local query = [[SELECT purchases.player_id, roundroles.role_id, purchases.shop_item_id, shopitem.name, count(purchases.shop_item_id) AS times_purchased
                   FROM ]] .. self.tables.Purchases.tableName .. [[ AS purchases
                   LEFT JOIN ]] .. self.tables.ShopItem.tableName .. [[ AS shopitem ON purchases.shop_item_id = shopitem.id,
@@ -113,22 +116,12 @@ function aggregatePurchaseStatsTable:recalculate()
 
   for playerId, columns in pairs(rowsToInsert) do
     local numColumns = 0
-    local timesIterated = 0
-    local columnList = " ("
-    local valueList = " ("
+    local columnList = " (player_id"
+    local valueList = " (" .. tostring(playerId)
 
     for column, value in pairs(columns) do
-      numColumns = numColumns + 1
-    end
-
-    for column, value in pairs(columns) do
-      timesIterated = timesIterated + 1
-      columnList = columnList .. column
-      valueList = valueList .. value
-      if timesIterated < numColumns then
-        columnList = columnList .. ", "
-        valueList = valueList .. ", "
-      end
+      columnList = columnList .. ", " .. column
+      valueList = valueList .. ", " .. value
     end
 
     columnList = columnList .. ")"

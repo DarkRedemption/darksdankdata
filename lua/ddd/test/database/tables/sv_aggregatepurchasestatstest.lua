@@ -1,26 +1,6 @@
 local aggregatePurchaseStatsTest = GUnit.Test:new("AggregatePurchaseStatsTable")
 local tables = {}
 
-local traitorValidPurchases = { "1",
-                                "2",
-                                "weapon_ttt_flaregun",
-                                "weapon_ttt_knife",
-                                "weapon_ttt_teleport",
-                                "weapon_ttt_radio",
-                                "weapon_ttt_push",
-                                "weapon_ttt_sipistol",
-                                "weapon_ttt_decoy",
-                                "weapon_ttt_phammer",
-                                "weapon_ttt_c4"}
-
-  local detectiveValidPurchases = { "2", --Forget the body armor since you start with it
-                                "weapon_ttt_cse",
-                                "weapon_ttt_defuser",
-                                "weapon_ttt_teleport",
-                                "weapon_ttt_binoculars",
-                                "weapon_ttt_stungun",
-                                "weapon_ttt_health_station"}
-
 local function beforeEach()
   tables = DDDTest.Helpers.makeTables()
   tables.AggregatePurchaseStats.tables = tables
@@ -38,36 +18,6 @@ local function allColumnsZero(row)
       GUnit.assert(value):shouldEqual("0")
     end
   end
-end
-
-local function genAndAddPlayer()
-  local ply = GUnit.Generators.FakePlayer:new()
-  local id = tables.PlayerId:addPlayer(ply)
-  local result = tables.AggregatePurchaseStats:addPlayer(id)
-  GUnit.assert(result):shouldEqual(id)
-
-  return ply, id
-end
-
-local function getRolePurchasableItemNames(roleCanPurchaseFunction)
-  local sweps = weapons.GetList()
-  local result = {}
-
-  for index, wep in pairs(sweps) do
-    if (roleCanPurchaseFunction(wep)) then
-      table.insert(result, wep.ClassName)
-    end
-  end
-
-  return result
-end
-
-local function getTraitorPurchasableItemNames()
-  return getRolePurchasableItemNames(tables.AggregatePurchaseStats.traitorCanBuy)
-end
-
-local function getDetectivePurchasableItemNames()
-  return getRolePurchasableItemNames(tables.AggregatePurchaseStats.detectiveCanBuy)
 end
 
 local function confirmRecalculatedValuesMatchOriginal(tables, playerList)
@@ -89,9 +39,11 @@ local function confirmRecalculatedValuesMatchOriginal(tables, playerList)
 end
 
 local function incrementSpec()
-  local ply, id = genAndAddPlayer()
-  local traitorItemNames = getTraitorPurchasableItemNames()
-  local detectiveItemNames = getDetectivePurchasableItemNames()
+  local ply, id = DDDTest.Helpers.genAndAddPlayer(tables)
+  local traitorItemNames = DDDTest.Helpers.getTraitorPurchasableItemNames()
+  local detectiveItemNames = DDDTest.Helpers.getDetectivePurchasableItemNames()
+
+  tables.AggregatePurchaseStats:addPlayer(id)
 
   for i = 1, 100 do
     local playerRole = math.random(1, 2)
@@ -115,8 +67,8 @@ local function incrementSpec()
 end
 
 local function recalculateSpec()
-  local traitorItemNames = getTraitorPurchasableItemNames()
-  local detectiveItemNames = getDetectivePurchasableItemNames()
+  local traitorItemNames = DDDTest.Helpers.getTraitorPurchasableItemNames()
+  local detectiveItemNames = DDDTest.Helpers.getDetectivePurchasableItemNames()
   local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
 
   for index, fakePlayer in pairs(fakePlayerList) do

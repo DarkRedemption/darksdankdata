@@ -24,3 +24,27 @@ function DDDTest.Helpers.genAndAddPlayer(tables)
 
   return ply, id
 end
+
+local function getRolePurchasableItemNames(roleCanPurchaseItemFunc)
+  local sweps = weapons.GetList()
+  local result = {}
+
+  for index, wep in pairs(sweps) do
+    if (roleCanPurchaseItemFunc(wep)) then
+      table.insert(result, wep.ClassName)
+    end
+  end
+
+  return result
+end
+
+local function getTraitorPurchasableItemNames()
+  return getRolePurchasableItemNames(DDD.Database.Tables.AggregatePurchaseStats.traitorCanBuy)
+end
+
+local function getDetectivePurchasableItemNames()
+  return getRolePurchasableItemNames(DDD.Database.Tables.AggregatePurchaseStats.detectiveCanBuy)
+end
+
+DDDTest.Helpers.getTraitorPurchasableItemNames = getTraitorPurchasableItemNames
+DDDTest.Helpers.getDetectivePurchasableItemNames = getDetectivePurchasableItemNames
