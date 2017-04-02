@@ -101,7 +101,58 @@ local function recalculateSpec()
   confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList) --Need to make fakeplayerlist
 end
 
+--[[
+Body armor, disguisers, and radars are phantom items. They don't actually go
+into your inventory. In essence, they are flags set on your character.
+This means they aren't pulled in via an SWEP list, so these specs
+are to ensure they are being pulled in in some way.
+]]
+local function bodyArmorColumnSpec()
+  local hasTraitorColumn = false --We don't care about Detectives as much since they always spawn with it
+
+  for key, value in pairs(tables.AggregatePurchaseStats.columns) do
+    if (key == "traitor_item_armor_purchases" ) then
+      hasTraitorColumn = true
+      break
+    end
+  end
+
+  GUnit.assert(hasTraitorColumn):isTrue()
+end
+
+local function disguiserColumnSpec()
+  local hasTraitorColumn = false --We don't care about Detectives as much since they always spawn with it
+
+  for key, value in pairs(tables.AggregatePurchaseStats.columns) do
+    if (key == "traitor_item_disg_purchases" ) then
+      hasTraitorColumn = true
+      break
+    end
+  end
+
+  GUnit.assert(hasTraitorColumn):isTrue()
+end
+
+local function radarColumnSpec()
+  local hasTraitorColumn = false --We don't care about Detectives as much since they always spawn with it
+  local hasDetectiveColumn = false
+  for key, value in pairs(tables.AggregatePurchaseStats.columns) do
+    if (key == "traitor_item_armor_purchases") then
+      hasTraitorColumn = true
+    elseif (key == "traitor_item_radar_purchases") then
+      hasDetectiveColumn = true
+    end
+    if (hasTraitorColumn && hasDetectiveColumn) then break end
+  end
+
+  GUnit.assert(hasTraitorColumn):isTrue()
+  GUnit.assert(hasDetectiveColumn):isTrue()
+end
+
 aggregatePurchaseStatsTest:beforeEach(beforeEach)
 aggregatePurchaseStatsTest:afterEach(afterEach)
 aggregatePurchaseStatsTest:addSpec("increment items purchased", incrementSpec)
 aggregatePurchaseStatsTest:addSpec("recalculate properly", recalculateSpec)
+aggregatePurchaseStatsTest:addSpec("contain a column for body armor for traitors at least", bodyArmorColumnSpec)
+aggregatePurchaseStatsTest:addSpec("contain a column for the disguiser for traitors at least", disguiserColumnSpec)
+aggregatePurchaseStatsTest:addSpec("contain a column for a radar for both non-inno roles", radarColumnSpec)

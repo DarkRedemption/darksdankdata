@@ -29,18 +29,38 @@ local function generateColumns()
   }
   local sweps = weapons.GetList()
 
-  for index, wep in pairs(sweps) do
+  local function addColumn(roleId, itemName)
+    local roleName
 
+    if roleId == ROLE_TRAITOR then
+      roleName = "traitor"
+    elseif roleId == ROLE_DETECTIVE then
+      roleName = "detective"
+    else
+      assert(false, "AggregatePurchaseStats: Invalid role. Innocents cannot purchase items.")
+    end
+
+    local columnName = roleName .. "_" .. itemName .. "_purchases"
+    columns[columnName] = "INTEGER NOT NULL DEFAULT 0"
+  end
+
+  for index, wep in pairs(sweps) do
     if traitorCanBuy(wep) then
-      local columnName = "traitor_" .. wep.ClassName .. "_purchases"
-      columns[columnName] = "INTEGER NOT NULL DEFAULT 0"
+      addColumn(ROLE_TRAITOR, wep.ClassName)
     end
 
     if detectiveCanBuy(wep) then
-      local columnName = "detective_" .. wep.ClassName .. "_purchases"
-      columns[columnName] = "INTEGER NOT NULL DEFAULT 0"
+      addColumn(ROLE_DETECTIVE, wep.ClassName)
     end
+  end
 
+  --EquipmentItems is a Global TTT variable
+  for index, item in pairs(EquipmentItems[ROLE_TRAITOR]) do
+    addColumn(ROLE_TRAITOR, item.name)
+  end
+
+  for index, item in pairs(EquipmentItems[ROLE_DETECTIVE]) do
+    addColumn(ROLE_DETECTIVE, item.name)
   end
 
   return columns
