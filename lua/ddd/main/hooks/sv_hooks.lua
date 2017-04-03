@@ -15,13 +15,21 @@ end)
 --
 -- Purchase Tracking Hooks
 --
+local function getEquipmentName(equipment)
+  if (type(equipment) == "number") then
+    return EquipmentItems[ply:GetRole()][equipment].name
+  end
+
+  return equipment
+end
 
 function DDD.Hooks.trackPurchases(tables, ply, equipment)
-  local itemId = tables.ShopItem:getOrAddItemId(equipment)
+  local equipmentName = getEquipmentName(equipment)
+  local itemId = tables.ShopItem:getOrAddItemId(equipmentName)
   local playerId = tables.PlayerId:getPlayerId(ply)
   local purchaseResult = tables.Purchases:addPurchase(playerId, itemId)
   if (purchaseResult != nil and purchaseResult != false) then
-    tables.AggregatePurchaseStats:incrementPurchases(playerId, ply:GetRole(), equipment)
+    tables.AggregatePurchaseStats:incrementPurchases(playerId, ply:GetRole(), equipmentName)
   end
 
     --Return the id for testing purposes.

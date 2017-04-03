@@ -11,7 +11,7 @@ DDD.Rank = {}
 DDD.Misc = {}
 DDD.version = "v0.2.0-SNAPSHOT"
 
-if SERVER then
+local function serverInit()
   local roles = {
     Innocent = 0,
     Traitor = 1,
@@ -60,7 +60,16 @@ if SERVER then
   include("ddd/main/database/sv_recalculate.lua")
   include("ddd/main/misc/sv_votedisableddd.lua")
   include("ddd/test/sv_testinit.lua")
+end
 
+if SERVER then
+  --Check to see if certain necessary gamemode variables are loaded.
+  --If they are, load. Otherwise, wait.
+  if (EquipmentItems) then
+    serverInit()
+  else
+    hook.Add("Initialize", "DDDInitializeOnGamemodeLoad", function() serverInit() end)
+  end
 end
 
 if CLIENT then

@@ -39,11 +39,19 @@ local function getRolePurchasableItemNames(roleCanPurchaseItemFunc)
 end
 
 local function getTraitorPurchasableItemNames()
-  return getRolePurchasableItemNames(DDD.Database.Tables.AggregatePurchaseStats.traitorCanBuy)
+  local result = getRolePurchasableItemNames(DDD.Database.Tables.AggregatePurchaseStats.traitorCanBuy)
+  for index, item in pairs(EquipmentItems[ROLE_TRAITOR]) do
+    table.insert(result, item.name)
+  end
+  return result
 end
 
 local function getDetectivePurchasableItemNames()
-  return getRolePurchasableItemNames(DDD.Database.Tables.AggregatePurchaseStats.detectiveCanBuy)
+  local result = getRolePurchasableItemNames(DDD.Database.Tables.AggregatePurchaseStats.detectiveCanBuy)
+  for index, item in pairs(EquipmentItems[ROLE_DETECTIVE]) do
+    table.insert(result, item.name)
+  end
+  return result
 end
 
 DDDTest.Helpers.getTraitorPurchasableItemNames = getTraitorPurchasableItemNames
