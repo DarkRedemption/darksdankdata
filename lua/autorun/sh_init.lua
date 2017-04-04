@@ -98,10 +98,10 @@ if CLIENT then
     chat.AddText(red, "To see your rank, type ", yellow, "!dank")
   end)
 
-    DDD.Misc.createDelayedTimer("DDDDisableCommandPSA", 25, 3600, 0, function()
-      chat.AddText(red, "Want to disable Dark's Dank Data to mess around without ruining your stats?")
-      chat.AddText(red, "Type ", yellow, "!votedisableddd <rounds>", red, " or use in console ", yellow, "ulx votedisableddd <rounds>" )
-    end)
+  DDD.Misc.createDelayedTimer("DDDDisableCommandPSA", 25, 3600, 0, function()
+    chat.AddText(red, "Want to disable Dark's Dank Data to mess around without ruining your stats?")
+    chat.AddText(red, "Type ", yellow, "!votedisableddd <rounds>", red, " or use in console ", yellow, "ulx votedisableddd <rounds>" )
+  end)
 end
 
 include("ddd/main/cl_command.lua")
