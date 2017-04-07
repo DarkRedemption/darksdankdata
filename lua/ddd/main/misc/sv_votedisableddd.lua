@@ -99,7 +99,7 @@ end
 
 local function addDisableVote()
   local votedisable = ulx.command( "Voting", "ulx votedisableddd", voteDisableDDD, "!votedisableddd" )
-  votedisable:addParam{ type=ULib.cmds.NumArg, min=0, default=1, hint="rounds" }
+  votedisable:addParam{ type=ULib.cmds.NumArg, min=0, default=1, hint="rounds; 0 = until map change" }
   votedisable:defaultAccess( ULib.ACCESS_ALL )
   votedisable:help( "Disable Dark's Dank Data tracking for x rounds, starting next round. 0 disables DDD for the rest of the map." )
 end
