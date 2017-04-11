@@ -375,6 +375,39 @@ function aggregateStatsTable:getAllWorldDeathCounts(newTables)
   return newTables
 end
 
+function aggregateStatsTable:getAllSelfHealing(newTables)
+  local query = [[SELECT user_id, SUM(heal_amount) as total_hp_healed FROM ]] .. self.tables.Healing.tableName .. [[
+                  GROUP BY user_id]]
+  local result = self:query("aggregateStatsTable:getAllSelfHealing", query)
+
+  if (result != nil && result != 0) then
+     for id, columns in pairs(result) do
+       local playerId = columns["user_id"]
+       local columnName = "self_hp_healed"
+       newTables[playerId][columnName] = tonumber(columns["total_hp_healed"])
+     end
+  end
+
+  return newTables
+end
+
+function aggregateStatsTable:getAllOtherHealing(newTables)
+  local query = [[SELECT deployer_id, SUM(heal_amount) as total_hp_healed FROM ]] .. self.tables.Healing.tableName .. [[
+                  WHERE user_id != deployer_id
+                  GROUP BY deployer_id]]
+  local result = self:query("aggregateStatsTable:getAllSelfHealing", query)
+
+  if (result != nil && result != 0) then
+     for id, columns in pairs(result) do
+       local playerId = columns["deployer_id"]
+       local columnName = "others_hp_healed"
+       newTables[playerId][columnName] = tonumber(columns["total_hp_healed"])
+     end
+  end
+
+  return newTables
+end
+
 function aggregateStatsTable:recalculate()
   self:drop()
   self:create()
@@ -397,6 +430,8 @@ function aggregateStatsTable:recalculate()
   playerTables = self:getAllWorldDeathCounts(playerTables)
   playerTables = self:getRoundsPlayed(playerTables)
   playerTables = self:getRoundsWonAndLost(playerTables)
+  playerTables = self:getAllSelfHealing(playerTables)
+  playerTables = self:getAllOtherHealing(playerTables)
 
   for playerId, newRow in pairs(playerTables) do
     self:insertTable(newRow)
@@ -475,6 +510,10 @@ function aggregateStatsTable:getSelfHPHealed(playerId)
   return self:selectColumn(playerId, "self_hp_healed")
 end
 
+function aggregateStatsTable:getOthersHPHealed(playerId)
+  return self:selectColumn(playerId, "others_hp_healed")
+end
+
 function aggregateStatsTable:incrementRounds(playerId, playerRole)
   local rounds = self:getRounds(playerId, playerRole) + 1
   local columnName = roleIdToRole[playerRole] .. "_rounds"
@@ -541,6 +580,12 @@ end
 function aggregateStatsTable:incrementSelfHPHealed(playerId)
   local hpHealed = self:getSelfHPHealed(playerId) + 1
   local columnName = "self_hp_healed"
+  return self:updateColumn(playerId, columnName, hpHealed)
+end
+
+function aggregateStatsTable:incrementOthersHPHealed(playerId)
+  local hpHealed = self:getOthersHPHealed(playerId) + 1
+  local columnName = "others_hp_healed"
   return self:updateColumn(playerId, columnName, hpHealed)
 end
 

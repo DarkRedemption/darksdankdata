@@ -429,6 +429,38 @@ local function recalculateSelfHPHealedSpec()
   confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList)
 end
 
+local function recalculateOthersHPHealedSpec()
+  local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
+
+  for index, fakePlayer in pairs(fakePlayerList) do
+    tables.AggregateStats:addPlayer(fakePlayer.tableId)
+  end
+
+  for i = 1, 100 do
+    healer, deployer = DDDTest.Helpers.getRandomPair(fakePlayerList)
+    deployer:SetRole(ROLE_DETECTIVE)
+
+    local healerId = healer.tableId
+    local deployerId = deployer.tableId
+
+    tables.RoundId:addRound()
+    tables.RoundRoles:addRole(healer)
+     --Should always be a detective
+    tables.RoundRoles:addRole(deployer)
+
+    for x = 1, math.random(1, 10) do
+      tables.Healing:addHeal(deployerId, healerId, 1)
+      tables.AggregateStats:incrementSelfHPHealed(healerId)
+      tables.AggregateStats:incrementOthersHPHealed(deployerId)
+    end
+
+    tables.AggregateStats:incrementRounds(healerId, healer:GetRole())
+    tables.AggregateStats:incrementRounds(deployerId, deployer:GetRole())
+  end
+
+  confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList)
+end
+
 aggregateStatsTest:beforeEach(beforeEach)
 aggregateStatsTest:afterEach(afterEach)
 
@@ -444,14 +476,11 @@ aggregateStatsTest:addSpec("increment world deaths properly", incrementWorldDeat
 aggregateStatsTest:addSpec("increment c4 kills properly", incrementC4KillsSpec)
 aggregateStatsTest:addSpec("increment healing properly", incrementSelfHealingSpec)
 
-
 aggregateStatsTest:addSpec("calculate a player's kills accurately", recalculateKillsSpec)
 aggregateStatsTest:addSpec("recalculate every player's stats who actually has no data", recalculateWithNoDataSpec)
 aggregateStatsTest:addSpec("recalculate a player's round results", recalculateRoundResultsSpec)
 aggregateStatsTest:addSpec("recalculate every player's combat stats with data", recalculateCombatDataSpec)
 aggregateStatsTest:addSpec("recalculate every player's suicides with data", recalculateSuicideDataSpec)
 aggregateStatsTest:addSpec("recalculate every player's world deaths with data", recalculateWorldDeathsSpec)
---[[
-aggregateStatsTest:addSpec("recalculate every player's c4 kills with data", recalculateC4KillsSpec)
-aggregateStatsTest:addSpec("recalculate every player's healing stats with data", recalculateSelfHPHealedSpec)
-]]
+aggregateStatsTest:addSpec("recalculate every player's self healing stats with data", recalculateSelfHPHealedSpec)
+aggregateStatsTest:addSpec("recalculate every player's other healing stats with data", recalculateOthersHPHealedSpec)
