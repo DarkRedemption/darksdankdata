@@ -397,7 +397,7 @@ function aggregateStatsTable:getAllOtherHealing(newTables)
                   GROUP BY deployer_id]]
   local result = self:query("aggregateStatsTable:getAllSelfHealing", query)
 
-  if (result != nil && result != 0) then
+  if (result != nil && type(result) == "table") then
      for id, columns in pairs(result) do
        local playerId = columns["deployer_id"]
        local columnName = "others_hp_healed"
@@ -414,27 +414,29 @@ function aggregateStatsTable:recalculate()
   local players = self.tables.PlayerId:getPlayerIdList()
   local playerTables = {}
 
-  for rowId, playerId in pairs(players) do
-    playerTables[playerId] = {}
+  if players != nil && type(players) == "table" then
+    for rowId, playerId in pairs(players) do
+      playerTables[playerId] = {}
 
-    for columnName, columnSqlType in pairs(self.columns) do
-      playerTables[playerId][columnName] = 0
+      for columnName, columnSqlType in pairs(self.columns) do
+        playerTables[playerId][columnName] = 0
+      end
+
+      playerTables[playerId]["player_id"] = playerId
     end
 
-    playerTables[playerId]["player_id"] = playerId
-  end
+    playerTables = self:getAllCombatKillCounts(playerTables)
+    playerTables = self:getAllCombatDeathCounts(playerTables)
+    playerTables = self:getAllSuicides(playerTables)
+    playerTables = self:getAllWorldDeathCounts(playerTables)
+    playerTables = self:getRoundsPlayed(playerTables)
+    playerTables = self:getRoundsWonAndLost(playerTables)
+    playerTables = self:getAllSelfHealing(playerTables)
+    playerTables = self:getAllOtherHealing(playerTables)
 
-  playerTables = self:getAllCombatKillCounts(playerTables)
-  playerTables = self:getAllCombatDeathCounts(playerTables)
-  playerTables = self:getAllSuicides(playerTables)
-  playerTables = self:getAllWorldDeathCounts(playerTables)
-  playerTables = self:getRoundsPlayed(playerTables)
-  playerTables = self:getRoundsWonAndLost(playerTables)
-  playerTables = self:getAllSelfHealing(playerTables)
-  playerTables = self:getAllOtherHealing(playerTables)
-
-  for playerId, newRow in pairs(playerTables) do
-    self:insertTable(newRow)
+    for playerId, newRow in pairs(playerTables) do
+      self:insertTable(newRow)
+    end
   end
 end
 

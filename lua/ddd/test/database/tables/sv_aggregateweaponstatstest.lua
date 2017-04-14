@@ -25,22 +25,7 @@ local function filterContains(weaponClass)
   return false
 end
 
-local function addWeaponColumnsTest()
-  local columns = { player_id = "INTEGER NOT NULL" }
-  local weapons = weapons.GetList()
-
-  for key, weaponInfo in pairs(weapons) do
-    if (weaponInfo.ClassName and !filterContains(weaponInfo.ClassName)) then
-      columns[weaponInfo.ClassName] = "INTEGER NOT NULL DEFAULT 0"
-    end
-  end
-
-end
-
-local function addWeaponsToTableSpec()
-end
-
-local function recalculateWeaponKillsSpec()
+local function recalculateWeaponDataSpec()
   local oldRows = {}
   local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
   local weaponList = weapons.GetList()
@@ -75,6 +60,7 @@ local function recalculateWeaponKillsSpec()
                         weaponClass, attacker.tableId, attacker:GetRole(), victim:GetRole())
     tables.AggregateWeaponStats:incrementDeathColumn(
                         weaponSqlIds[weaponId], victim.tableId, attacker:GetRole(), victim:GetRole())
+
   end
 
   for i = 1, #fakePlayerList do
@@ -96,5 +82,4 @@ end
 aggregateWeaponStatsTest:beforeEach(beforeEach)
 aggregateWeaponStatsTest:afterEach(afterEach)
 
---aggregateWeaponStatsTest:addSpec("add columns based on available SWEPs", addWeaponColumnsTest)
-aggregateWeaponStatsTest:addSpec("recalculate every player's kills from the raw data", recalculateWeaponKillsSpec)
+aggregateWeaponStatsTest:addSpec("recalculate every player's kills, deaths, and shots fired from the raw data", recalculateWeaponDataSpec)

@@ -114,42 +114,46 @@ function aggregatePurchaseStatsTable:recalculate()
 
   local result = self:query("aggregatePurchaseStatsTable:recalculate", query)
 
-  local rowsToInsert = {}
+  if (result != nil and type(result) == "table") then
+    local rowsToInsert = {}
 
-  for index, row in pairs(result) do
-    local playerId = row["player_id"]
+    for index, row in pairs(result) do
+      local playerId = row["player_id"]
 
-    if rowsToInsert[playerId] == nil then
-      rowsToInsert[playerId] = {}
+      if rowsToInsert[playerId] == nil then
+        rowsToInsert[playerId] = {}
+      end
+
+      local columnName = ""
+
+      if tonumber(row["role_id"]) == ROLE_TRAITOR then
+        columnName = "traitor_" .. row["name"] .. "_purchases"
+      else
+        columnName = "detective_" .. row["name"] .. "_purchases"
+      end
+
+      rowsToInsert[playerId][columnName] = row["times_purchased"]
     end
 
-    local columnName = ""
+    for playerId, columns in pairs(rowsToInsert) do
+      local numColumns = 0
+      local columnList = " (player_id"
+      local valueList = " (" .. tostring(playerId)
 
-    if tonumber(row["role_id"]) == ROLE_TRAITOR then
-      columnName = "traitor_" .. row["name"] .. "_purchases"
-    else
-      columnName = "detective_" .. row["name"] .. "_purchases"
+      for column, value in pairs(columns) do
+        columnList = columnList .. ", " .. column
+        valueList = valueList .. ", " .. value
+      end
+
+      columnList = columnList .. ")"
+      valueList = valueList .. ")"
+
+      local insertQuery = "INSERT INTO " .. self.tableName .. columnList .. " VALUES " .. valueList
+      self:query("aggregatePurchaseStatsTable:recalculate insert step", insertQuery)
     end
 
-    rowsToInsert[playerId][columnName] = row["times_purchased"]
   end
 
-  for playerId, columns in pairs(rowsToInsert) do
-    local numColumns = 0
-    local columnList = " (player_id"
-    local valueList = " (" .. tostring(playerId)
-
-    for column, value in pairs(columns) do
-      columnList = columnList .. ", " .. column
-      valueList = valueList .. ", " .. value
-    end
-
-    columnList = columnList .. ")"
-    valueList = valueList .. ")"
-
-    local insertQuery = "INSERT INTO " .. self.tableName .. columnList .. " VALUES " .. valueList
-    self:query("aggregatePurchaseStatsTable:recalculate insert step", insertQuery)
-  end
 end
 
 aggregatePurchaseStatsTable.traitorCanBuy = traitorCanBuy

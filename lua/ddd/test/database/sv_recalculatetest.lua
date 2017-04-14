@@ -3,6 +3,9 @@ local tables = {}
 
 local function beforeEach()
   tables = DDDTest.Helpers.makeTables()
+  tables.AggregateStats.tables = tables
+  tables.AggregateWeaponStats.tables = tables
+  tables.AggregatePurchaseStats.tables = tables
 end
 
 local function afterEach()

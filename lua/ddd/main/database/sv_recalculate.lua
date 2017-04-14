@@ -65,11 +65,15 @@ end
 
 local function recalculate(tables)
     MsgC(lightBlue, "Purging potential data anomalies and recalculating aggregate data. This may take a long time.\n")
+    MsgC(lightBlue, "Fixing data anomalies...\n")
     cleanupAll(tables)
     fixShopItem(tables)
-    --DDD.Database.Tables.AggregateStats:recalculate()
-    MsgC(lightBlue, "Aggregate Stats Recalculated. Now recalculated Aggregate Weapon Stats.\n")
-    --DDD.Database.Tables.AggregateWeaponStats:recalculate()
+    MsgC(lightBlue, "Recalculating General Data...\n")
+    tables.AggregateStats:recalculate()
+    MsgC(lightBlue, "Recalculating Weapon Data...\n")
+    tables.AggregateWeaponStats:recalculate()
+    MsgC(lightBlue, "Recalculating Purchase Data...\n")
+    tables.AggregatePurchaseStats:recalculate()
     MsgC(lightBlue, "All aggregate data recalculated.\n")
 end
 

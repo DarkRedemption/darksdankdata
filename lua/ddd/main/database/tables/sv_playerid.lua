@@ -37,15 +37,15 @@ Used in aggregation tables.
 function playerIdTable:getPlayerIdList()
   local query = "SELECT id FROM " .. self.tableName
   local result = self:query("getPlayerIdBySteamId", query)
-  
-  if (result != nil and result != false) then
+
+  if (result != nil and result != false and type(result) != "number") then
     local list = {}
     for row, columns in pairs(result) do
       table.insert(list, columns["id"])
     end
     return list
   end
-  
+
   return result
 end
 
