@@ -40,7 +40,14 @@ local function calculateWinRate(table)
   return table["traitor_rounds_won"] / table["traitor_rounds"]
 end
 
-local function populateListView(list, table)
+local function displayPurchases(list, table, itemNameList)
+  for index, itemName in pairs(itemNameList) do
+    local adjustedItemName = DDD.Config.ShopItemNames[itemName] or itemName
+    list:AddLine("Times " .. adjustedItemName .. " Purchased", table["traitor_" .. itemName .. "_purchases"])
+  end
+end
+
+local function populateListView(list, table, itemNameList)
   list:AddLine("Total T Rounds", table["traitor_rounds"])
   list:AddLine("T Rounds Won", table["traitor_rounds_won"])
   list:AddLine("T Rounds Lost", table["traitor_rounds_lost"])
@@ -69,26 +76,15 @@ local function populateListView(list, table)
                             table["traitor_traitor_ttt_c4_deaths"])
   --list:AddLine("Enemy Kill Assists", "Not Yet Implemented")
 
-  list:AddLine("Times Body Armor Purchased", table["traitor_armor_purchases"])
-  list:AddLine("Times Radar Purchased", table["traitor_radar_purchases"])
-  list:AddLine("Times Disguiser Purchased", table["traitor_disguiser_purchases"])
-  list:AddLine("Times Flare Gun Purchased", table["traitor_flaregun_purchases"])
-  list:AddLine("Times Knife Purchased", table["traitor_knife_purchases"])
-  list:AddLine("Times Teleporter Purchased", table["traitor_teleporter_purchases"])
-  list:AddLine("Times Radio Purchased", table["traitor_radio_purchases"])
-  list:AddLine("Times Newton Launcher Purchased", table["traitor_newtonlauncher_purchases"])
-  list:AddLine("Times Silent Pistol Purchased", table["traitor_silentpistol_purchases"])
-  list:AddLine("Times Decoy Purchased", table["traitor_decoy_purchases"])
-  list:AddLine("Times Poltergeist Purchased", table["traitor_poltergeist_purchases"])
-  list:AddLine("Times C4 Purchased", table["traitor_c4_purchases"])
+  displayPurchases(list, table, itemNameList)
 end
 
-function DDD.Gui.createTraitorTab(mainPropertySheet, statsTable)
+function DDD.Gui.createTraitorTab(mainPropertySheet, statsTable, itemNameList)
   local traitorPanel = vgui.Create( "DPanel", mainPropertySheet )
   traitorPanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 0, 0) ) end
   DDD.Gui.setSizeToParent(traitorPanel)
   createTraitorText(traitorPanel)
   local list = createListView(traitorPanel)
   mainPropertySheet:AddSheet( "Traitor", traitorPanel, "materials/ddd/icons/t.png")
-  populateListView(list, statsTable)
+  populateListView(list, statsTable, itemNameList)
 end

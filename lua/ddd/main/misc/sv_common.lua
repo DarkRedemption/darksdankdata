@@ -4,8 +4,6 @@ roleIdToRole[1] = "traitor"
 roleIdToRole[2] = "detective"
 
 local sweps
-local traitorItems
-local detectiveItems
 
 --[[
 Checks to see if something exists in an array.
@@ -53,23 +51,35 @@ local function getRoleItems(role)
   end
 
   for index, equipmentItem in pairs(EquipmentItems[role]) do
-    if (roleCanBuy(equipmentItem, role)) then
-      table.insert(items, equipmentItem)
-    end
+    table.insert(items, equipmentItem)
   end
 
   return items
+end
+
+local function getItemNames(swepList)
+  local itemNames = {}
+
+  for index, swep in pairs(swepList) do
+    if (swep.ClassName) then
+      table.insert(itemNames, swep.ClassName)
+    elseif (swep.name) then
+      table.insert(itemNames, swep.name)
+    end
+  end
+
+  return itemNames
 end
 
 DDD.roleIdToRole = roleIdToRole
 DDD.arrayContains = arrayContains
 DDD.traitorCanBuy = traitorCanBuy
 DDD.detectiveCanBuy = roleCanBuy
-DDD.detectiveItems = detectiveItems
-DDD.traitorItems = traitorItems
 
 hook.Add("Initialize", "DDDGetWeaponListForCommon", function()
   sweps = weapons.GetList()
-  traitorItems = getRoleItems(ROLE_TRAITOR)
-  detectiveItems = getRoleItems(ROLE_DETECTIVE)
+  DDD.traitorItems = getRoleItems(ROLE_TRAITOR)
+  DDD.detectiveItems = getRoleItems(ROLE_DETECTIVE)
+  DDD.traitorItemNames = getItemNames(DDD.traitorItems)
+  DDD.detectiveItemNames = getItemNames(DDD.detectiveItems)
 end)

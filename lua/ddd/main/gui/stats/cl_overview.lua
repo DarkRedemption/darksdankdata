@@ -134,12 +134,8 @@ local function populateListView(list, table)
   --list:AddLine("Incendiaries Used", "Not Yet Implemented")
   --list:AddLine("Smokes Used", "Not Yet Implemented")
 
-  --list:AddLine("Total Innocent Deaths", table["InnocentD"])
-  --list:AddLine("Times Killed By Another Innocent",
-
-  list:AddLine("Total HP You Healed", tonumber(table["self_hp_healed"]))
-  --SetValue example. Parameters: Column Number (Starts at 1), Value
-  --kd:SetValue(2, "Infinite")
+  list:AddLine("Total HP Self-Healed", tonumber(table["self_hp_healed"]))
+  list:AddLine("Total HP Others Have Been Healed By You", tonumber(table["others_hp_healed"]))
 end
 
 function DDD.Gui.createOverviewTab(mainPropertySheet, statsTable)
