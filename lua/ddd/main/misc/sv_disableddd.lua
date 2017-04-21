@@ -31,7 +31,6 @@ local function addDisableCommand()
     votedisable:addParam{ type=ULib.cmds.NumArg, min=0, default=1, hint="rounds; 0 = until map change" }
     votedisable:defaultAccess( ULib.ACCESS_ALL )
     votedisable:help( "Force disable Dark's Dank Data tracking for x rounds, starting next round. 0 disables DDD for the rest of the map." )
-
   end
 end
 

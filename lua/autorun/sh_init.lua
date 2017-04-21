@@ -11,17 +11,27 @@ DDD.Rank = {}
 DDD.Misc = {}
 DDD.version = "v0.2.0-SNAPSHOT"
 
-local function serverInit()
-  local roles = {
-    Innocent = 0,
-    Traitor = 1,
-    Detective = 2
-  }
-  DDD.Database.Roles = roles
+local roles = {
+  Innocent = 0,
+  Traitor = 1,
+  Detective = 2
+}
+DDD.Database.Roles = roles
 
-  include("ddd/main/misc/sv_logging.lua")
-  include("ddd/main/config/sv_config.lua")
+local function serverOnInit()
+  include("ddd/main/overrides/sv_corpse.lua")
+  include("ddd/main/overrides/sv_health_station.lua")
+  include("ddd/main/overrides/sv_c4.lua")
+  include("ddd/main/database/sv_sqlitedb.lua")
+  include("ddd/main/hooks/sv_hooks.lua")
+  include("ddd/main/hooks/sv_combathooks.lua")
+  include("ddd/main/database/sv_recalculate.lua")
 
+  include("ddd/main/gui/rank/sv_ranktable.lua")
+  include("ddd/test/sv_testinit.lua")
+end
+
+if SERVER then
   AddCSLuaFile("ddd/main/misc/sh_inheritsfrom.lua")
 
   AddCSLuaFile("ddd/main/gui/cl_shared.lua")
@@ -43,33 +53,21 @@ local function serverInit()
   resource.AddFile("materials/ddd/icons/d.png")
   resource.AddFile("materials/ddd/icons/i.png")
 
+  include("ddd/main/misc/sv_logging.lua")
+  include("ddd/main/config/sv_config.lua")
+  include("ddd/main/misc/sv_common.lua")
+
   include("ddd/main/misc/sh_inheritsfrom.lua")
   include("ddd/main/misc/sv_enums.lua")
-  include("ddd/main/misc/sv_common.lua")
-  include("ddd/main/overrides/sv_corpse.lua")
-  include("ddd/main/overrides/sv_health_station.lua")
-  include("ddd/main/overrides/sv_c4.lua")
-  include("ddd/main/database/sv_sqlitedb.lua")
-  include("ddd/main/hooks/sv_hooks.lua")
-  include("ddd/main/hooks/sv_combathooks.lua")
-  include("ddd/main/hooks/sv_overridehooks.lua")
 
-  include("ddd/main/gui/rank/sv_ranktable.lua")
+  include("ddd/main/hooks/sv_overridehooks.lua")
   include("ddd/main/gui/stats/sv_overview.lua")
   include("ddd/main/sv_active.lua")
-  include("ddd/main/database/sv_recalculate.lua")
-  include("ddd/main/misc/sv_votedisableddd.lua")
-  include("ddd/test/sv_testinit.lua")
-end
 
-if SERVER then
-  --Check to see if certain necessary gamemode variables are loaded.
-  --If they are, load. Otherwise, wait.
-  if (EquipmentItems) then
-    serverInit()
-  else
-    hook.Add("Initialize", "DDDInitializeOnGamemodeLoad", function() serverInit() end)
-  end
+  include("ddd/main/misc/sv_votedisableddd.lua")
+
+  --load files that MUST be loaded only at init-time
+  hook.Add("Initialize", "DDDInitializeOnGamemodeLoad", serverOnInit)
 end
 
 if CLIENT then
@@ -94,7 +92,6 @@ if CLIENT then
 
   DDD.Misc.createDelayedTimer("DDDCommandPSA", 15, 3600, 0, function()
     chat.AddText(red, "This server is running Dark's Dank Data " .. DDD.version .. ".")
-    chat.AddText(red, "DDD is currently in beta. Stats will be cleared when a stable version is released.")
     chat.AddText(red, "To see your rank, type ", yellow, "!dank")
   end)
 

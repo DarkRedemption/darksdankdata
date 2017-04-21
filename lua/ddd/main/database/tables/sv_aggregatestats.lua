@@ -30,8 +30,6 @@ end
 
 createColumnsForAllRoleCombinations("kills")
 createColumnsForAllRoleCombinations("deaths")
-createColumnsForAllRoleCombinations("ttt_c4_kills")
-createColumnsForAllRoleCombinations("ttt_c4_deaths")
 
 createColumnsForSingleRole("rounds")
 createColumnsForSingleRole("rounds_won")

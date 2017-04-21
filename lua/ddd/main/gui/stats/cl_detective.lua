@@ -2,10 +2,10 @@ local function calculateDetectiveTotalKD(table)
   local kd = (table["detective_traitor_kills"] +
               table["detective_innocent_kills"] +
               table["detective_detective_kills"]) /
-          (table["detective_traitor_deaths"] +
-          table["detective_detective_deaths"] +
-          table["detective_innocent_deaths"] +
-          table["detective_world_deaths"])
+              (table["detective_traitor_deaths"] +
+              table["detective_detective_deaths"] +
+              table["detective_innocent_deaths"] +
+              table["detective_world_deaths"])
 
   return DDD.Gui.formatKD(kd)
 end
@@ -47,6 +47,10 @@ local function calculateWinRate(table)
   return table["detective_rounds_won"] / table["detective_rounds"]
 end
 
+
+local displayPurchases(list, table)
+
+end
 
 local function populateListView(list, table)
   list:AddLine("Total D Rounds", table["detective_rounds"])

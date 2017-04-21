@@ -168,19 +168,6 @@ local function incrementWorldDeathsSpec()
   end
 end
 
-local function incrementC4KillsSpec()
-  local ply, id = genAndAddPlayer()
-
-  for i = 1, 100 do
-    local playerRole = math.random(0, 2)
-    local victimRole = math.random(0, 2)
-    local weaponName = "ttt_c4"
-
-    local testFunc = buildIncrementingFunctionTest(tables, tables.AggregateStats.getWeaponKills, tables.AggregateStats.incrementWeaponKills)
-    testFunc(id, playerRole, victimRole, weaponName)
-  end
-end
-
 local function incrementSelfHealingSpec()
   local ply, id = genAndAddPlayer()
 
@@ -361,49 +348,6 @@ local function recalculateWorldDeathsSpec()
   confirmRecalculatedValuesMatchOriginal(tables, fakePlayerList)
 end
 
-local function recalculateC4KillsSpec()
-  --The rows before recalculating should equal the recalculated rows
-  local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
-
-  for index, fakePlayer in pairs(fakePlayerList) do
-    tables.AggregateStats:addPlayer(fakePlayer.tableId)
-  end
-
-  local attacker = fakePlayerList[1]
-  GUnit.assert(attacker.tableId):shouldEqual(1)
-
-  for i = 1, 100 do
-    local victim = fakePlayerList[math.random(2, #fakePlayerList)]
-    local weaponName = "ttt_c4"
-    local weaponId = tables.WeaponId:getOrAddWeaponId(weaponName)
-
-    tables.RoundId:addRound()
-    tables.RoundRoles:addRole(attacker)
-    tables.RoundRoles:addRole(victim)
-
-    tables.PlayerKill:addKill(victim.tableId, attacker.tableId, weaponId)
-    tables.AggregateStats:incrementKills(attacker.tableId, attacker:GetRole(), victim:GetRole())
-    tables.AggregateStats:incrementWeaponKills(attacker.tableId, attacker:GetRole(), victim:GetRole(), weaponName)
-    tables.AggregateStats:incrementRounds(attacker.tableId, attacker:GetRole())
-    tables.AggregateStats:incrementRounds(victim.tableId, victim:GetRole())
-  end
-
-  local oldRows = {}
-
-  for i = 1, #fakePlayerList do
-    table.insert(oldRows, tables.AggregateStats:getPlayerStats(i))
-  end
-
-  tables.AggregateStats:recalculate()
-
-  local newRow = tables.AggregateStats:getPlayerStats(1)
-
-  --Needs to only check kills
-  for columnName, columnValue in pairs(newRow) do
-    GUnit.assert(oldRows[1][columnName]):shouldEqual(columnValue)
-  end
-end
-
 local function recalculateSelfHPHealedSpec()
   local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
 
@@ -473,7 +417,6 @@ aggregateStatsTest:addSpec("increment kills properly", incrementKillsSpec)
 aggregateStatsTest:addSpec("increment deaths properly", incrementDeathsSpec)
 aggregateStatsTest:addSpec("increment suicides properly", incrementSuicidesSpec)
 aggregateStatsTest:addSpec("increment world deaths properly", incrementWorldDeathsSpec)
-aggregateStatsTest:addSpec("increment c4 kills properly", incrementC4KillsSpec)
 aggregateStatsTest:addSpec("increment healing properly", incrementSelfHealingSpec)
 
 aggregateStatsTest:addSpec("calculate a player's kills accurately", recalculateKillsSpec)

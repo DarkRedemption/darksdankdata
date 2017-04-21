@@ -1,28 +1,6 @@
 local itemColumnSuffix = {}
 local tables = DDD.Database.Tables
 
-local function roleCanBuy(swep, role)
-  if (!swep.CanBuy) then
-    return false
-  end
-
-  for index, roleId in pairs(swep.CanBuy) do
-    if (roleId == role) then
-      return true
-    end
-  end
-
-  return false
-end
-
-local function traitorCanBuy(swep)
-  return roleCanBuy(swep, ROLE_TRAITOR)
-end
-
-local function detectiveCanBuy(swep)
-  return roleCanBuy(swep, ROLE_DETECTIVE)
-end
-
 local function generateColumns()
   local columns = {
     player_id = "INTEGER PRIMARY KEY NOT NULL"
@@ -45,11 +23,11 @@ local function generateColumns()
   end
 
   for index, wep in pairs(sweps) do
-    if traitorCanBuy(wep) then
+    if DDD.traitorCanBuy(wep) then
       addColumn(ROLE_TRAITOR, wep.ClassName)
     end
 
-    if detectiveCanBuy(wep) then
+    if DDD.detectiveCanBuy(wep) then
       addColumn(ROLE_DETECTIVE, wep.ClassName)
     end
   end

@@ -63,6 +63,25 @@ local function fixShopItem(tables)
   sql.Query(disguiserQuery)
 end
 
+local function fixWeaponNames(tables)
+  local t = tables
+  local tableName = t.WeaponId.tableName
+  local changes = {
+    ttt_c4 = "weapon_ttt_c4",
+  }
+
+  --Some old names have spaces, which must be defined here.
+  changes["an explosion"] = "explosive_barrel"
+
+  local armorQuery = "UPDATE " .. tableName .. " SET name = 'ttt_c4' WHERE name == 'weapon_ttt_c4'"
+  local radarQuery = "UPDATE " .. tableName .. " SET name = 'item_radar' WHERE name == '2'"
+  local disguiserQuery = "UPDATE " .. tableName .. " SET name = 'item_disg' WHERE name == '4'"
+
+  sql.Query(armorQuery)
+  sql.Query(radarQuery)
+  sql.Query(disguiserQuery)
+end
+
 local function recalculate(tables)
     MsgC(lightBlue, "Purging potential data anomalies and recalculating aggregate data. This may take a long time.\n")
     MsgC(lightBlue, "Fixing data anomalies...\n")

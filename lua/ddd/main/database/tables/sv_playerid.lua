@@ -51,10 +51,13 @@ end
 
 function playerIdTable:updatePlayerName(ply)
   local id = self:getPlayerId(ply)
+
   if (id > 0) then
     local query = "UPDATE " .. self.tableName .. " SET 'last_known_name' = '" .. ply:GetName() .. "' WHERE id == " .. id
     self:query("updatePlayerName", query)
   end
+
+  return id
 end
 
 function playerIdTable:getPlayerRow(ply)
@@ -69,11 +72,15 @@ function playerIdTable:playerExists(ply)
 end
 
 function playerIdTable:addOrUpdatePlayer(ply)
+  local id
+
   if self:playerExists(ply) then
-    self:updatePlayerName(ply)
+    id = self:updatePlayerName(ply)
   else
-    self:addPlayer(ply)
+    id = self:addPlayer(ply)
   end
+
+  return id
 end
 
 DDD.Database.Tables.PlayerId = playerIdTable

@@ -2,14 +2,13 @@
 DDD.Hooks = {}
 
 local tables = DDD.Database.Tables
-
-hook.Add("Initialize", "DDDAddNewMap", function(ply)
-  tables.MapId:addMap()
-end)
+tables.MapId:addMap()
 
 hook.Add("PlayerInitialSpawn", "DDDAddOrUpdatePlayer", function(ply)
-  tables.PlayerId:addOrUpdatePlayer(ply)
-  tables.AggregateStats:addPlayer(tables.PlayerId:getPlayerId(ply))
+  local id = tables.PlayerId:addOrUpdatePlayer(ply)
+  tables.AggregateStats:addPlayer(id)
+  tables.AggregatePurchaseStats:addPlayer(id)
+  tables.AggregateWeaponStats:addPlayer(id)
 end)
 
 --

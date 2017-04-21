@@ -39,7 +39,7 @@ local function getRolePurchasableItemNames(roleCanPurchaseItemFunc)
 end
 
 local function getTraitorPurchasableItemNames()
-  local result = getRolePurchasableItemNames(DDD.Database.Tables.AggregatePurchaseStats.traitorCanBuy)
+  local result = getRolePurchasableItemNames(DDD.traitorCanBuy)
   for index, item in pairs(EquipmentItems[ROLE_TRAITOR]) do
     table.insert(result, item.name)
   end
@@ -47,7 +47,7 @@ local function getTraitorPurchasableItemNames()
 end
 
 local function getDetectivePurchasableItemNames()
-  local result = getRolePurchasableItemNames(DDD.Database.Tables.AggregatePurchaseStats.detectiveCanBuy)
+  local result = getRolePurchasableItemNames(DDD.detectiveCanBuy)
   for index, item in pairs(EquipmentItems[ROLE_DETECTIVE]) do
     table.insert(result, item.name)
   end
