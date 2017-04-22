@@ -49,3 +49,15 @@ A dictionary of weaponClass -> in-game name.
 DDD.Config.AggregateWeaponStatsTranslation = {
   weapon_zm_shotgun = "Shotgun"
 }
+
+--[[
+A list of weapons whose ClassName/filename differs from the entity
+that deals the damage. Consider things like C4, which has the ClassName
+weapon_ttt_c4, but it is deployed, a new entity is created called ttt_c4.
+This deployed entity is the one that does the damage.
+Since DDD autodetects weapons by ClassName, this list is to
+convert items that it detects to their damage-dealing equivalent.
+]]
+DDD.Config.DeployedWeaponTranslation = {
+  weapon_ttt_c4 = "ttt_c4"
+}

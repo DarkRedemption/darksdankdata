@@ -37,8 +37,9 @@ local function recalculateWeaponDataSpec()
 
   for index, weaponInfo in pairs(weaponList) do
     if (weaponInfo.ClassName and !filterContains(weaponInfo.ClassName)) then
-      local weaponId = tables.WeaponId:addWeapon(weaponInfo.ClassName)
-      weaponSqlIds[weaponId] = weaponInfo.ClassName
+      local weaponName = DDD.Config.DeployedWeaponTranslation[weaponInfo.ClassName] or weaponInfo.ClassName
+      local weaponId = tables.WeaponId:addWeapon(weaponName)
+      weaponSqlIds[weaponId] = weaponName
     end
   end
 

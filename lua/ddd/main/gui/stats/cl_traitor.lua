@@ -69,11 +69,11 @@ local function populateListView(list, table, itemNameList)
   --list:AddLine("Times DNA Scanning Didn't Help The Innocent Kill You", "Not Yet Implemented")
   --list:AddLine("Rounds DNA Scanner Stolen", "Not Yet Implemented")
 
-  list:AddLine("C4 Kills", table["traitor_innocent_ttt_c4_kills"] + table["traitor_detective_ttt_c4_kills"] + table["traitor_traitor_ttt_c4_kills"])
-  list:AddLine("C4 Enemy Kills", table["traitor_innocent_ttt_c4_kills"] + table["traitor_detective_ttt_c4_kills"])
-  list:AddLine("C4 Ally Kills", table["traitor_traitor_ttt_c4_kills"])
-  list:AddLine("C4 Deaths", table["traitor_innocent_ttt_c4_deaths"] + table["traitor_detective_ttt_c4_deaths"] +
-                            table["traitor_traitor_ttt_c4_deaths"])
+  list:AddLine("C4 Kills", table["ttt_c4_traitor_innocent_kills"] + table["ttt_c4_traitor_detective_kills"] + table["ttt_c4_traitor_traitor_kills"])
+  list:AddLine("C4 Enemy Kills", table["ttt_c4_traitor_innocent_kills"] + table["ttt_c4_traitor_detective_kills"])
+  list:AddLine("C4 Ally Kills", table["ttt_c4_traitor_traitor_kills"])
+  list:AddLine("C4 Deaths", table["ttt_c4_traitor_innocent_deaths"] + table["ttt_c4_traitor_detective_deaths"] +
+                            table["ttt_c4_traitor_traitor_deaths"])
   --list:AddLine("Enemy Kill Assists", "Not Yet Implemented")
 
   displayPurchases(list, table, itemNameList)

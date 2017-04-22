@@ -31,17 +31,19 @@ local function generateWeaponColumns()
 
   for key, weaponInfo in pairs(weaponList) do
     if weaponInfo.ClassName and !filterContains(weaponInfo.ClassName) then
+      local weaponName = DDD.Config.DeployedWeaponTranslation[weaponInfo.ClassName] or weaponInfo.ClassName
 
       for playerRoleKey, playerRoleName in pairs(roleIdToRole) do
 
         for opponentRoleKey, opponentRoleName in pairs(roleIdToRole) do
-            local killColumnName = makeKillColumnName(weaponInfo.ClassName, playerRoleKey, opponentRoleKey)
-            local deathColumnName = makeDeathColumnName(weaponInfo.ClassName, playerRoleKey, opponentRoleKey)
+
+            local killColumnName = makeKillColumnName(weaponName, playerRoleKey, opponentRoleKey)
+            local deathColumnName = makeDeathColumnName(weaponName, playerRoleKey, opponentRoleKey)
             columns[killColumnName] = "INTEGER NOT NULL DEFAULT 0"
             columns[deathColumnName] = "INTEGER NOT NULL DEFAULT 0"
         end
 
-        local shotsColumnName = weaponInfo.ClassName .. "_" .. playerRoleName .. "_shots_fired"
+        local shotsColumnName = weaponName .. "_" .. playerRoleName .. "_shots_fired"
         columns[shotsColumnName] = "INTEGER NOT NULL DEFAULT 0"
 
       end

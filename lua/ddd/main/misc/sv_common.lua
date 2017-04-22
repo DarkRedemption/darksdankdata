@@ -74,7 +74,7 @@ end
 DDD.roleIdToRole = roleIdToRole
 DDD.arrayContains = arrayContains
 DDD.traitorCanBuy = traitorCanBuy
-DDD.detectiveCanBuy = roleCanBuy
+DDD.detectiveCanBuy = detectiveCanBuy
 
 hook.Add("Initialize", "DDDGetWeaponListForCommon", function()
   sweps = weapons.GetList()
