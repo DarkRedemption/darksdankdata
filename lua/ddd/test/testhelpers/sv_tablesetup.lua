@@ -44,6 +44,10 @@ function DDDTest.Helpers.makeTables()
     sqlTable:create()
   end
 
+  if convertedTables["PlayerId"] then
+    convertedTables["PlayerId"].recentIds = {}
+  end
+  
   return convertedTables
 end
 

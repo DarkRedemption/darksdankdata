@@ -43,8 +43,9 @@ local function noDuplicatePlayersSpec()
 
   for i = 1, 100 do
     local ply = players[i]
-    tables.PlayerId:addPlayer(ply)
     local id = tables.PlayerId:addPlayer(ply)
+    GUnit.assert(id):shouldEqual(i)
+    id = tables.PlayerId:addPlayer(ply)
     GUnit.assert(id):shouldEqual(false)
   end
 end
