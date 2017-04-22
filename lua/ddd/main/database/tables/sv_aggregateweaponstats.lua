@@ -26,7 +26,7 @@ local function makeDeathColumnName(weaponClass, attackerRoleId, victimRoleId)
 end
 
 local function generateWeaponColumns()
-  local columns = { player_id = "INTEGER NOT NULL" }
+  local columns = { player_id = "INTEGER NOT NULL PRIMARY KEY" }
   local weaponList = weapons.GetList()
 
   for key, weaponInfo in pairs(weaponList) do
@@ -41,6 +41,7 @@ local function generateWeaponColumns()
             local deathColumnName = makeDeathColumnName(weaponName, playerRoleKey, opponentRoleKey)
             columns[killColumnName] = "INTEGER NOT NULL DEFAULT 0"
             columns[deathColumnName] = "INTEGER NOT NULL DEFAULT 0"
+
         end
 
         local shotsColumnName = weaponName .. "_" .. playerRoleName .. "_shots_fired"
@@ -173,13 +174,17 @@ function aggregateWeaponStatsTable:recalculate()
     for rowId, columns in pairs(killRows) do
       local playerId = tonumber(columns["attacker_id"])
       local columnName = makeKillColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
-      playerStatsLuaTable[playerId][columnName] = columns["count"]
+      if self.columns[columnName] != nil then
+        playerStatsLuaTable[playerId][columnName] = columns["count"]
+      end
     end
 
     for rowId, columns in pairs(deathRows) do
       local playerId = tonumber(columns["victim_id"])
       local columnName = makeDeathColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
-      playerStatsLuaTable[playerId][columnName] = columns["count"]
+      if self.columns[columnName] != nil then
+        playerStatsLuaTable[playerId][columnName] = columns["count"]
+      end
     end
 
     addRecalculatedPlayerStats(self, playerStatsLuaTable)
