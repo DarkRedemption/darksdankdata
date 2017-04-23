@@ -47,7 +47,7 @@ local function displayPurchases(list, table, itemNameList)
   end
 end
 
-local function populateListView(list, table, itemNameList)
+local function populateListView(list, table, weaponNameList, itemNameList)
   list:AddLine("Total T Rounds", table["traitor_rounds"])
   list:AddLine("T Rounds Won", table["traitor_rounds_won"])
   list:AddLine("T Rounds Lost", table["traitor_rounds_lost"])
@@ -65,23 +65,18 @@ local function populateListView(list, table, itemNameList)
   list:AddLine("Suicides", table["traitor_suicides"])
   --list:AddLine("Times DNA Scanning Didn't Help The Innocent Kill You", "Not Yet Implemented")
   --list:AddLine("Rounds DNA Scanner Stolen", "Not Yet Implemented")
-
-  list:AddLine("C4 Kills", table["ttt_c4_traitor_innocent_kills"] + table["ttt_c4_traitor_detective_kills"] + table["ttt_c4_traitor_traitor_kills"])
-  list:AddLine("C4 Enemy Kills", table["ttt_c4_traitor_innocent_kills"] + table["ttt_c4_traitor_detective_kills"])
-  list:AddLine("C4 Ally Kills", table["ttt_c4_traitor_traitor_kills"])
-  list:AddLine("C4 Deaths", table["ttt_c4_traitor_innocent_deaths"] + table["ttt_c4_traitor_detective_deaths"] +
-                            table["ttt_c4_traitor_traitor_deaths"])
   --list:AddLine("Enemy Kill Assists", "Not Yet Implemented")
 
   displayPurchases(list, table, itemNameList)
+  DDD.Gui.displayWeaponStats(list, table, weaponNameList, ROLE_TRAITOR)
 end
 
-function DDD.Gui.createTraitorTab(mainPropertySheet, statsTable, itemNameList)
+function DDD.Gui.createTraitorTab(mainPropertySheet, statsTable, weaponNameList, itemNameList)
   local traitorPanel = vgui.Create( "DPanel", mainPropertySheet )
   traitorPanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 0, 0) ) end
   DDD.Gui.setSizeToParent(traitorPanel)
   createTraitorText(traitorPanel)
   local list = createListView(traitorPanel)
   mainPropertySheet:AddSheet( "Traitor", traitorPanel, "materials/ddd/icons/t.png")
-  populateListView(list, statsTable, itemNameList)
+  populateListView(list, statsTable, weaponNameList, itemNameList)
 end

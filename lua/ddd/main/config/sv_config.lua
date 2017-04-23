@@ -23,7 +23,7 @@ aggregate weapon stats table out of efficiency.
 ]]
 DDD.Config.AggregateWeaponStatsFilter = {
   "weapon_base",
-  "weapon_ttt_base",
+  "weapon_tttbase",
   "weapon_ttt_unarmed",
   "weapon_ttt_wtester",
   "weapon_ttt_decoy",
@@ -32,7 +32,7 @@ DDD.Config.AggregateWeaponStatsFilter = {
   "weapon_ttt_smokegrenade",
   "weapon_ttt_radio",
   "weapon_ttt_binoculars",
-  "weapon_ttt_basegrenade",
+  "weapon_tttbasegrenade",
   "weapon_ttt_defuser",
   "weapon_ttt_cse",
   "weapon_zm_carry",
@@ -40,14 +40,8 @@ DDD.Config.AggregateWeaponStatsFilter = {
   --These items have been known to be re-enabled in mods,
   --and are placed here for convenience.
   "weapon_fists",
-  "weapon_medkit"
-}
-
---[[
-A dictionary of weaponClass -> in-game name.
-]]
-DDD.Config.AggregateWeaponStatsTranslation = {
-  weapon_zm_shotgun = "Shotgun"
+  "weapon_medkit",
+  "weapon_flechettegun"
 }
 
 --[[

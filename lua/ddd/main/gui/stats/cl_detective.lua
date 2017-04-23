@@ -55,7 +55,7 @@ local function displayPurchases(list, table, itemNameList)
   end
 end
 
-local function populateListView(list, table, itemNameList)
+local function populateListView(list, table, weaponNameList, itemNameList)
   list:AddLine("Total D Rounds", table["detective_rounds"])
   list:AddLine("D Rounds Won", table["detective_rounds_won"])
   list:AddLine("D Rounds Lost", table["detective_rounds_lost"])
@@ -86,14 +86,15 @@ local function populateListView(list, table, itemNameList)
   ]]
 
   displayPurchases(list, table, itemNameList)
+  DDD.Gui.displayWeaponStats(list, table, weaponNameList, ROLE_DETECTIVE)
 end
 
-function DDD.Gui.createDetectiveTab(mainPropertySheet, statsTable, itemNameList)
+function DDD.Gui.createDetectiveTab(mainPropertySheet, statsTable, weaponNameList, itemNameList)
   local detectivePanel = vgui.Create( "DPanel", mainPropertySheet )
   detectivePanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 0, 255 ) ) end
   DDD.Gui.setSizeToParent(detectivePanel)
   createDetectiveText(detectivePanel)
   local list = createListView(detectivePanel)
   mainPropertySheet:AddSheet( "Detective", detectivePanel, "materials/ddd/icons/d.png")
-  populateListView(list, statsTable, itemNameList)
+  populateListView(list, statsTable, weaponNameList, itemNameList)
 end

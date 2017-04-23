@@ -1,9 +1,5 @@
-local roleIdToRole = {} -- The reverse of the main roles table, this is roleValue -> roleName instead.
-roleIdToRole[0] = "innocent"
-roleIdToRole[1] = "traitor"
-roleIdToRole[2] = "detective"
-
 local sweps
+local swepNames
 
 --[[
 Checks to see if something exists in an array.
@@ -71,13 +67,24 @@ local function getItemNames(swepList)
   return itemNames
 end
 
-DDD.roleIdToRole = roleIdToRole
+local function getSwepNames(swepList)
+  local swepNames = {}
+
+  for index, swep in pairs(swepList) do
+    local name = DDD.Config.DeployedWeaponTranslation[swep.ClassName] or swep.ClassName
+    table.insert(swepNames, name)
+  end
+
+  return swepNames
+end
+
 DDD.arrayContains = arrayContains
 DDD.traitorCanBuy = traitorCanBuy
 DDD.detectiveCanBuy = detectiveCanBuy
 
 hook.Add("Initialize", "DDDGetWeaponListForCommon", function()
   sweps = weapons.GetList()
+  DDD.swepNames = getSwepNames(sweps)
   DDD.traitorItems = getRoleItems(ROLE_TRAITOR)
   DDD.detectiveItems = getRoleItems(ROLE_DETECTIVE)
   DDD.traitorItemNames = getItemNames(DDD.traitorItems)

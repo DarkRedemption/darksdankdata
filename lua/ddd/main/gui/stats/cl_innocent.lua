@@ -50,7 +50,7 @@ local function calculateWinRate(table)
   return table["innocent_rounds_won"] / table["innocent_rounds"]
 end
 
-local function populateListView(list, table)
+local function populateListView(list, table, weaponNameList)
   list:AddLine("Total Inno Rounds", table["innocent_rounds"])
   list:AddLine("Inno Rounds Won", table["innocent_rounds_won"])
   list:AddLine("Inno Rounds Lost", table["innocent_rounds_lost"])
@@ -72,15 +72,16 @@ local function populateListView(list, table)
   --list:AddLine("Traitor Killstreaks Stopped", "0")
   --list:AddLine("Times You Soloed the Traitors When There Were 3+ of Them", "0")
   --list:AddLine("Mass RDMers killed", "0")
+  DDD.Gui.displayWeaponStats(list, table, weaponNameList, ROLE_INNOCENT)
 end
 
 
-function DDD.Gui.createInnocentTab(mainPropertySheet, statsTable)
+function DDD.Gui.createInnocentTab(mainPropertySheet, statsTable, weaponNameList)
   local innocentPanel = vgui.Create( "DPanel", mainPropertySheet )
   innocentPanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 255, 0 ) ) end
   DDD.Gui.setSizeToParent(innocentPanel)
   createInnocentText(innocentPanel)
   local list = createListView(innocentPanel)
   mainPropertySheet:AddSheet( "Innocent", innocentPanel, "materials/ddd/icons/i.png")
-  populateListView(list, statsTable)
+  populateListView(list, statsTable, weaponNameList)
 end

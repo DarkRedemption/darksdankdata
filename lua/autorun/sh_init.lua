@@ -34,6 +34,7 @@ end
 if SERVER then
   AddCSLuaFile("ddd/main/misc/sh_inheritsfrom.lua")
   AddCSLuaFile("ddd/main/config/sh_config.lua")
+  AddCSLuaFile("ddd/main/misc/sh_common.lua")
 
   AddCSLuaFile("ddd/main/gui/cl_shared.lua")
   AddCSLuaFile("ddd/main/gui/cl_mainpanel.lua")
@@ -50,13 +51,13 @@ if SERVER then
   AddCSLuaFile("ddd/main/misc/sh_delayedtimer.lua")
   AddCSLuaFile("ddd/main/misc/sv_votedisableddd.lua")
 
-
   resource.AddFile("materials/ddd/icons/t.png")
   resource.AddFile("materials/ddd/icons/d.png")
   resource.AddFile("materials/ddd/icons/i.png")
 
   include("ddd/main/misc/sv_logging.lua")
   include("ddd/main/config/sv_config.lua")
+  include("ddd/main/misc/sh_common.lua")
   include("ddd/main/misc/sv_common.lua")
 
   include("ddd/main/misc/sh_inheritsfrom.lua")
@@ -74,6 +75,7 @@ end
 
 if CLIENT then
   include("ddd/main/config/sh_config.lua")
+  include("ddd/main/misc/sh_common.lua")
 
   include("ddd/main/misc/sh_inheritsfrom.lua")
   include("ddd/main/misc/sh_delayedtimer.lua")
