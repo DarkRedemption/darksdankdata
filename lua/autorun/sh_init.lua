@@ -9,7 +9,7 @@ DDD.Gui.Rank = {}
 DDD.Gui.Stats = {}
 DDD.Rank = {}
 DDD.Misc = {}
-DDD.version = "v0.2.0-SNAPSHOT"
+DDD.version = "v0.2.0-M1"
 
 local roles = {
   Innocent = 0,

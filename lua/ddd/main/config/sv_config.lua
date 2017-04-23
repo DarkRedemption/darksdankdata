@@ -8,7 +8,7 @@ DDD.Logging.LogLevel = DDD.Logging.LogLevels.Warning
 The minimum number of players before stats are tracked.
 Default is 8 as that is when a Detective spawns and it becomes a "real" TTT game.
 ]]
-DDD.Config.MinPlayers = 2
+DDD.Config.MinPlayers = 8
 
 --[[
 Got some fun but very unbalanced maps that could ruin someone's stats?
