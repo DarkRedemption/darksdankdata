@@ -14,7 +14,7 @@ end)
 --
 -- Purchase Tracking Hooks
 --
-local function getEquipmentName(equipment)
+local function getEquipmentName(equipment, ply)
   if (type(equipment) == "number") then
     return EquipmentItems[ply:GetRole()][equipment].name
   end
@@ -23,7 +23,7 @@ local function getEquipmentName(equipment)
 end
 
 function DDD.Hooks.trackPurchases(tables, ply, equipment)
-  local equipmentName = getEquipmentName(equipment)
+  local equipmentName = getEquipmentName(equipment, ply)
   local itemId = tables.ShopItem:getOrAddItemId(equipmentName)
   local playerId = tables.PlayerId:getPlayerId(ply)
   local purchaseResult = tables.Purchases:addPurchase(playerId, itemId)
