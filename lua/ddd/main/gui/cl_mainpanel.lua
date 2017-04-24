@@ -23,6 +23,7 @@ local function addStatsPropertySheet(mainPropertySheet)
       DDD.Gui.createTraitorTab(statsPropertySheet, statsTable, weaponClassNames, traitorItemNames)
       DDD.Gui.createInnocentTab(statsPropertySheet, statsTable, weaponClassNames)
       DDD.Gui.createDetectiveTab(statsPropertySheet, statsTable, weaponClassNames, detectiveItemNames)
+      DDD.Gui.createWeaponsTab(statsPropertySheet, statsTable, weaponClassNames)
       mainPropertySheet:AddSheet("Stats", statsPropertySheet, "icon16/chart_bar.png")
     end)
 end
@@ -40,7 +41,7 @@ local function addRankPropertySheet(mainPropertySheet)
     DDD.Gui.Rank.createTraitorTab(rankPropertySheet, rankTable)
     rankPropertySheet:Dock(FILL)
     DDD.Gui.setSizeToParent(rankPropertySheet)
-    mainPropertySheet:AddSheet("Rank", rankPropertySheet, "icon16/chart_bar.png")
+    mainPropertySheet:AddSheet("Rank", rankPropertySheet, "icon16/award_star_gold_2.png")
   end)
 end
 

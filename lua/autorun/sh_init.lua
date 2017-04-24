@@ -46,6 +46,7 @@ if SERVER then
   AddCSLuaFile("ddd/main/gui/stats/cl_traitor.lua")
   AddCSLuaFile("ddd/main/gui/stats/cl_innocent.lua")
   AddCSLuaFile("ddd/main/gui/stats/cl_detective.lua")
+  AddCSLuaFile("ddd/main/gui/stats/cl_weapons.lua")
 
   AddCSLuaFile("ddd/main/cl_command.lua")
   AddCSLuaFile("ddd/main/misc/sh_delayedtimer.lua")
@@ -86,6 +87,7 @@ if CLIENT then
   include("ddd/main/gui/stats/cl_traitor.lua")
   include("ddd/main/gui/stats/cl_innocent.lua")
   include("ddd/main/gui/stats/cl_detective.lua")
+  include("ddd/main/gui/stats/cl_weapons.lua")
   include("ddd/main/gui/rank/cl_overall.lua")
   include("ddd/main/gui/rank/cl_detectiverank.lua")
   include("ddd/main/gui/rank/cl_innocentrank.lua")
