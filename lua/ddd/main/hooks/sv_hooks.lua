@@ -2,28 +2,43 @@
 DDD.Hooks = {}
 
 local tables = DDD.Database.Tables
-
-hook.Add("Initialize", "DDDAddNewMap", function(ply)
-  tables.MapId:addMap()
-end)
+tables.MapId:addMap()
 
 hook.Add("PlayerInitialSpawn", "DDDAddOrUpdatePlayer", function(ply)
-  tables.PlayerId:addOrUpdatePlayer(ply)
-  tables.AggregateStats:addPlayer(tables.PlayerId:getPlayerId(ply))
+  local id = tables.PlayerId:addOrUpdatePlayer(ply)
+  tables.AggregateStats:addPlayer(id)
+  tables.AggregatePurchaseStats:addPlayer(id)
+  tables.AggregateWeaponStats:addPlayer(id)
 end)
 
 --
 -- Purchase Tracking Hooks
 --
+local function getEquipmentName(equipment, ply)
+
+  if (type(equipment) == "number") then
+    local roleItems = EquipmentItems[ply:GetRole()]
+
+    for index, roleItem in pairs(roleItems) do
+      if (roleItem.id == equipment) then
+        return roleItem.name
+      end
+    end
+  else
+    return equipment
+  end
+
+end
 
 function DDD.Hooks.trackPurchases(tables, ply, equipment)
-  local itemId = tables.ShopItem:getOrAddItemId(equipment)
+  local equipmentName = getEquipmentName(equipment, ply)
+  local itemId = tables.ShopItem:getOrAddItemId(equipmentName)
   local playerId = tables.PlayerId:getPlayerId(ply)
   local purchaseResult = tables.Purchases:addPurchase(playerId, itemId)
   if (purchaseResult != nil and purchaseResult != false) then
-    tables.AggregateStats:incrementItemPurchases(playerId, ply:GetRole(), equipment)
+    tables.AggregatePurchaseStats:incrementPurchases(playerId, ply:GetRole(), equipmentName)
   end
-  
+
     --Return the id for testing purposes.
   return purchaseResult
 end
@@ -58,7 +73,7 @@ end)
 
 function DDD.Hooks.trackPlayerRoles(tables)
   tables.RoundId:addRound()
-  
+
   for k, ply in pairs(player:GetAll()) do
     if ply:GetObserverMode() == 0 then
       tables.RoundRoles:addRole(ply)
@@ -78,11 +93,13 @@ end)
 
 function DDD.Hooks.addRoundResult(tables, roundResult)
   tables.RoundResult:addResult(roundResult)
-  
+
   for playerId, playerRole in pairs(DDD.CurrentRound.roundParticipantIds) do
-    if (playerRole == 1 and roundResult == 2) or 
+    if (playerRole == 1 and roundResult == 2) or
        (playerRole != 1 and roundResult > 2) then
       tables.AggregateStats:incrementRoundsWon(playerId, playerRole)
+    else
+      tables.AggregateStats:incrementRoundsLost(playerId, playerRole)
     end
   end
 end
@@ -141,4 +158,3 @@ hook.Add("DDDCreditsLooted", "DDDTrackCreditsLooted", function(ply, rag, credits
     DDD.Hooks.trackCreditsLooted(tables, ply, rag, credits)
   end
 end)
-

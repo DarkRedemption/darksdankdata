@@ -4,16 +4,17 @@ local tables = DDD.Database.Tables
 
 local columns = {id = "INTEGER PRIMARY KEY",
                 round_id = "INTEGER NOT NULL",
-                victim_id = "INTEGER NOT NULL", 
+                victim_id = "INTEGER NOT NULL",
                 round_time = "REAL NOT NULL",
                 damage_dealt = "INTEGER NOT NULL",
                 damage_type = "INTEGER NOT NULL"
               }
-                                      
+
 local worldDamageTable = DDD.SqlTable:new("ddd_world_damage", columns)
 
 worldDamageTable:addForeignConstraint("round_id", tables.RoundId, "id")
 worldDamageTable:addForeignConstraint("victim_id", tables.PlayerId, "id")
+worldDamageTable:addCompositeForeignConstraint("victimHasRole", {"round_id", "victim_id"}, tables.RoundRoles, {"round_id", "player_id"})
 
 worldDamageTable:addIndex("victimIndex", "victim_id")
 

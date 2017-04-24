@@ -6,7 +6,7 @@ hook.Add("Initialize", "DDDEditWeaponBase", function()
 	if !weaponBase then return end
 	weaponBase.DDDOldPrimaryAttack = weaponBase.PrimaryAttack
 	function weaponBase:PrimaryAttack(worldsnd)
-		self:DDDOldPrimaryAttack(worldsnd)  
+		self:DDDOldPrimaryAttack(worldsnd)
     hook.Call("TTT_PlayerShotWeapon", GAMEMODE, self.Owner, 1)
 	end
 end)
@@ -14,15 +14,15 @@ end)
 hook.Add("Initialize", "DDDEditKnifeBase", function()
 	local weaponBase = weapons.GetStored("weapon_ttt_knife")
 	if !weaponBase then return end
-  
+
 	weaponBase.DDDOldPrimaryAttack = weaponBase.PrimaryAttack
   weaponBase.DDDOldSecondaryAttack = weaponBase.SecondaryAttack
-  
+
 	function weaponBase:PrimaryAttack()
-		self:DDDOldPrimaryAttack()  
+		self:DDDOldPrimaryAttack()
     hook.Call("TTT_PlayerShotWeapon", GAMEMODE, self.Owner, 1)
 	end
-  
+
   function weaponBase:SecondaryAttack()
 		self:DDDOldSecondaryAttack()
     hook.Call("TTT_PlayerShotWeapon", GAMEMODE, self.Owner, 2)
@@ -34,7 +34,7 @@ hook.Add("Initialize", "DDDEditGrenadeBase", function()
 	if !weaponBase then return end
 	weaponBase.DDDOldPrimaryAttack = weaponBase.PrimaryAttack
 	function weaponBase:PrimaryAttack()
-		self:DDDOldPrimaryAttack()  
+		self:DDDOldPrimaryAttack()
     hook.Call("TTT_PlayerShotWeapon", GAMEMODE, self.Owner, 1)
 	end
 end)
@@ -47,7 +47,7 @@ hook.Add("Initialize", "DDDEditTeleporterBase", function()
 	if !weaponBase then return end
 	weaponBase.DDDOldPrimaryAttack = weaponBase.PrimaryAttack
 	function weaponBase:PrimaryAttack()
-		self:DDDOldPrimaryAttack()  
+		self:DDDOldPrimaryAttack()
     hook.Call("TTT_PlayerShotWeapon", GAMEMODE, self.Owner, 1)
 	end
 end)

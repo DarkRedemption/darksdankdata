@@ -13,12 +13,15 @@ end
 
 local function addDamageSpec()
   for i = 1, 100 do
-    tables.RoundId:addRound()
     local victim = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
+
+    tables.RoundId:addRound()
+    tables.RoundRoles:addRole(victim)
+
     local id = tables.WorldDamage:addDamage(victimId, damageInfo)
-    
+
     GUnit.assert(i):shouldEqual(id)
   end
 end
@@ -30,7 +33,7 @@ local function noRoundsConstraintSpec()
     local victimId = tables.PlayerId:addPlayer(victim)
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
     local id = tables.WorldDamage:addDamage(victimId, damageInfo)
-   
+
     GUnit.assert(id):shouldNotEqual(1)
   end
 end
@@ -42,7 +45,7 @@ local function playerMustExistSpec()
     local invalidVictimId = math.random(1, 10000)
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
     local id = tables.WorldDamage:addDamage(invalidVictimId, damageInfo)
-    
+
     GUnit.assert(invalidVictimId):shouldNotEqual(id)
   end
 end

@@ -8,8 +8,16 @@ local columns = {
 }
 
 local playerIdTable = DDD.SqlTable:new("ddd_player_id", columns)
-
 playerIdTable:addIndex("steamIdIndex", {"steam_id"})
+playerIdTable.recentIds = {}
+
+function playerIdTable:addToRecentIds(steamId, sqlResult)
+  if (type(sqlResult) == "string") then
+    self.recentIds[steamId] = tonumber(sqlResult)
+  else
+    self.recentIds[steamId] = sqlResult
+  end
+end
 
 function playerIdTable:addPlayer(ply)
   local row = {
@@ -17,13 +25,20 @@ function playerIdTable:addPlayer(ply)
     first_seen = os.time(),
     last_known_name = ply:GetName()
   }
-  return self:insertTable(row)
+  local result = self:insertTable(row)
+  self:addToRecentIds(ply:SteamID(), result)
+  return self.recentIds[ply:SteamID()]
 end
 
 function playerIdTable:getPlayerIdBySteamId(steamId)
-  local query = "SELECT id FROM " .. self.tableName .. " WHERE steam_id = '" .. steamId .. "'"
-  local result = self:query("getPlayerIdBySteamId", query, 1, "id")
-  return tonumber(result)
+  if (self.recentIds[steamId] != nil) then
+    return self.recentIds[steamId]
+  else
+    local query = "SELECT id FROM " .. self.tableName .. " WHERE steam_id = '" .. steamId .. "'"
+    local result = tonumber(self:query("getPlayerIdBySteamId", query, 1, "id"))
+    self:addToRecentIds(steamId, result)
+    return result
+  end
 end
 
 function playerIdTable:getPlayerId(ply)
@@ -37,24 +52,29 @@ Used in aggregation tables.
 function playerIdTable:getPlayerIdList()
   local query = "SELECT id FROM " .. self.tableName
   local result = self:query("getPlayerIdBySteamId", query)
-  
-  if (result != nil and result != false) then
+
+  if (result != nil and result != false and type(result) != "number") then
     local list = {}
+
     for row, columns in pairs(result) do
       table.insert(list, columns["id"])
     end
+
     return list
   end
-  
+
   return result
 end
 
 function playerIdTable:updatePlayerName(ply)
-  local id = self:getPlayerId(ply)
+  local id = self.recentIds[ply:SteamID()] or self:getPlayerId(ply)
+
   if (id > 0) then
     local query = "UPDATE " .. self.tableName .. " SET 'last_known_name' = '" .. ply:GetName() .. "' WHERE id == " .. id
     self:query("updatePlayerName", query)
   end
+
+  return id
 end
 
 function playerIdTable:getPlayerRow(ply)
@@ -64,17 +84,22 @@ function playerIdTable:getPlayerRow(ply)
 end
 
 function playerIdTable:playerExists(ply)
-  local id = self:getPlayerId(ply)
+  local id = self.recentIds[ply:SteamID()] or self:getPlayerId(ply)
   return (id > 0)
 end
 
 function playerIdTable:addOrUpdatePlayer(ply)
+  local id
+
   if self:playerExists(ply) then
-    self:updatePlayerName(ply)
+    id = self:updatePlayerName(ply)
   else
-    self:addPlayer(ply)
+    id = self:addPlayer(ply)
   end
+
+  return id
 end
+
 
 DDD.Database.Tables.PlayerId = playerIdTable
 playerIdTable:create()

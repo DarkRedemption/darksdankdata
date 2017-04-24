@@ -6,17 +6,16 @@ roleIdToRole[0] = "innocent"
 roleIdToRole[1] = "traitor"
 roleIdToRole[2] = "detective"
 
---[[
-A list of things that cannot be used to kill that still count as SWEPs.
-These are not added to the table.
-]]
-local weaponFilter = {
-  "weapon_ttt_radio",
-  "weapon_ttt_decoy",
-  "weapon_ttt_binoculars",
-  "weapon_ttt_defuser",
-  "weapon_ttt_cse"
-}
+
+local function filterContains(weaponClass)
+  for key, value in pairs(DDD.Config.AggregateWeaponStatsFilter) do
+    if (value == weaponClass) then
+      return true
+    end
+  end
+
+  return false
+end
 
 local function makeKillColumnName(weaponClass, attackerRoleId, victimRoleId)
   return weaponClass .. "_" .. roleIdToRole[tonumber(attackerRoleId)] .. "_" .. roleIdToRole[tonumber(victimRoleId)] .. "_kills"
@@ -27,22 +26,25 @@ local function makeDeathColumnName(weaponClass, attackerRoleId, victimRoleId)
 end
 
 local function generateWeaponColumns()
-  local columns = { player_id = "INTEGER NOT NULL" }
+  local columns = { player_id = "INTEGER NOT NULL PRIMARY KEY" }
   local weaponList = weapons.GetList()
 
   for key, weaponInfo in pairs(weaponList) do
-    if (weaponInfo.ClassName) then
+    if weaponInfo.ClassName and !filterContains(weaponInfo.ClassName) then
+      local weaponName = DDD.Config.DeployedWeaponTranslation[weaponInfo.ClassName] or weaponInfo.ClassName
 
       for playerRoleKey, playerRoleName in pairs(roleIdToRole) do
 
         for opponentRoleKey, opponentRoleName in pairs(roleIdToRole) do
-            local killColumnName = makeKillColumnName(weaponInfo.ClassName, playerRoleKey, opponentRoleKey)
-            local deathColumnName = makeDeathColumnName(weaponInfo.ClassName, playerRoleKey, opponentRoleKey)
+
+            local killColumnName = makeKillColumnName(weaponName, playerRoleKey, opponentRoleKey)
+            local deathColumnName = makeDeathColumnName(weaponName, playerRoleKey, opponentRoleKey)
             columns[killColumnName] = "INTEGER NOT NULL DEFAULT 0"
             columns[deathColumnName] = "INTEGER NOT NULL DEFAULT 0"
+
         end
 
-        local shotsColumnName = weaponInfo.ClassName .. "_" .. playerRoleName .. "_shots_fired"
+        local shotsColumnName = weaponName .. "_" .. playerRoleName .. "_shots_fired"
         columns[shotsColumnName] = "INTEGER NOT NULL DEFAULT 0"
 
       end
@@ -56,6 +58,7 @@ end
 local columns = generateWeaponColumns()
 
 local aggregateWeaponStatsTable = DDD.SqlTable:new("ddd_aggregate_weapon_stats", columns)
+aggregateWeaponStatsTable.tables = DDD.Database.Tables
 
 local function countResult(result)
   if (result == nil) then
@@ -159,26 +162,34 @@ function aggregateWeaponStatsTable:recalculate()
   local playerStatsLuaTable = {}
   local players = self.tables.PlayerId:getPlayerIdList()
 
-  for rowId, columns in pairs(players) do
-    addPlayerToLuaTable(playerStatsLuaTable, rowId)
+  if (players != nil && type(players) == "table") then
+
+    for rowId, columns in pairs(players) do
+      addPlayerToLuaTable(playerStatsLuaTable, rowId)
+    end
+
+    local killRows = self:getWeaponKillsFromRawData()
+    local deathRows = self:getWeaponDeathsFromRawData()
+
+    for rowId, columns in pairs(killRows) do
+      local playerId = tonumber(columns["attacker_id"])
+      local columnName = makeKillColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
+      if self.columns[columnName] != nil then
+        playerStatsLuaTable[playerId][columnName] = columns["count"]
+      end
+    end
+
+    for rowId, columns in pairs(deathRows) do
+      local playerId = tonumber(columns["victim_id"])
+      local columnName = makeDeathColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
+      if self.columns[columnName] != nil then
+        playerStatsLuaTable[playerId][columnName] = columns["count"]
+      end
+    end
+
+    addRecalculatedPlayerStats(self, playerStatsLuaTable)
   end
 
-  local killRows = self:getWeaponKillsFromRawData()
-  local deathRows = self:getWeaponDeathsFromRawData()
-
-  for rowId, columns in pairs(killRows) do
-    local playerId = tonumber(columns["attacker_id"])
-    local columnName = makeKillColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
-    playerStatsLuaTable[playerId][columnName] = columns["count"]
-  end
-
-  for rowId, columns in pairs(deathRows) do
-    local playerId = tonumber(columns["victim_id"])
-    local columnName = makeDeathColumnName(columns["weapon_class"], columns["attacker_role"], columns["victim_role"])
-    playerStatsLuaTable[playerId][columnName] = columns["count"]
-  end
-
-  addRecalculatedPlayerStats(self, playerStatsLuaTable)
 end
 
 function aggregateWeaponStatsTable:getPlayerStats(playerId)

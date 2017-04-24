@@ -3,6 +3,7 @@ Holds a table of columnName -> ForeignKeyRef(table, foreignColumn).
 ]]
 local foreignKeyTable = {}
 foreignKeyTable.foreignKeys = {}
+foreignKeyTable.compositeForeignKeys = {}
 foreignKeyTable.__index = foreignKeyTable
 
 --[[
@@ -15,13 +16,34 @@ function foreignKeyTable:addConstraint(columnName, foreignSqlTable, foreignColum
   self.foreignKeys[columnName] = DDD.Database.ForeignKeyRef:new(foreignSqlTable, foreignColumn)
 end
 
-function foreignKeyTable:getSize()
+--[[
+Adds a new composite (multi-key) foreign key constraint.
+PARAM constraintName: String - The name of the constraint. Used to get the foreign table in other functions.
+PARAM columnNames:Array[String] - The names of the column in the current table to constrain with foreign keys.
+PARAM foreignSqlTable: SqlTable - The SQL table to reference.
+PARAM foreignColumns: Array[String] - The columns in the foreignSqlTable to constrain the local column with.
+]]
+function foreignKeyTable:addCompositeConstraint(constraintName, columnNames, foreignSqlTable, foreignColumns)
+  self.compositeForeignKeys[constraintName] = DDD.Database.CompositeForeignKeyRef:new(columnNames, foreignSqlTable, foreignColumns)
+end
+
+function foreignKeyTable:getForeignKeySize()
   local numOfForeignKeys = 0
-  
+
   for key, value in pairs(self.foreignKeys) do
     numOfForeignKeys = numOfForeignKeys + 1
   end
-  
+
+  return numOfForeignKeys
+end
+
+function foreignKeyTable:getCompositeKeySize()
+  local numOfForeignKeys = 0
+
+  for key, value in pairs(self.compositeForeignKeys) do
+    numOfForeignKeys = numOfForeignKeys + 1
+  end
+
   return numOfForeignKeys
 end
 
@@ -32,24 +54,39 @@ RETURNS A string that should be appended to the create table query.
 function foreignKeyTable:generateConstraintQuery()
   local query = ""
   local keysConverted = 0
-  local numOfForeignKeys = self:getSize()
-  
+  local numOfForeignKeys = self:getForeignKeySize()
+  local numOfCompositeKeys = self:getCompositeKeySize()
+
   for columnName, foreignKeyRef in pairs(self.foreignKeys) do
     local tableName = foreignKeyRef.sqlTable.tableName
     query = query .. " FOREIGN KEY (" .. columnName .. ") REFERENCES " .. tableName .. " (" .. foreignKeyRef.foreignColumn ..")"
     keysConverted = keysConverted + 1
-    if keysConverted != numOfForeignKeys then
+    if keysConverted != numOfForeignKeys or numOfCompositeKeys > 0 then
       query = query .. ", "
     end
   end
-  
+
+  if numOfCompositeKeys > 0 then
+    keysConverted = 0
+
+    for constraintName, compositeRef in pairs(self.compositeForeignKeys) do
+      local tableName = compositeRef.sqlTable.tableName
+      query = compositeRef:makeQuery()
+      keysConverted = keysConverted + 1
+      if keysConverted != numOfCompositeKeys then
+        query = query .. ", "
+      end
+    end
+  end
+
   return query
 end
-  
+
 function foreignKeyTable:new()
   local newKeyTable = {}
   setmetatable(newKeyTable, self)
   newKeyTable.foreignKeys = {}
+  newKeyTable.compositeForeignKeys = {}
   return newKeyTable
 end
 

@@ -18,7 +18,7 @@ local function handlePushKill(tables, victim, damageInfo)
   if (addKillResult != nil and addKillResult != false) then
     incrementAggregateKillsAndDeaths(attacker, victim, attackerId, victimId)
   end
-  
+
   return addKillResult
 end
 
@@ -33,11 +33,11 @@ local function handleNilAttackerKill(tables, victim, damageInfo)
   else
     local victimId = tables.PlayerId:getPlayerId(victim)
     local addKillResult = tables.WorldKill:addPlayerKill(victimId, damageInfo)
-    
+
     if (addKillResult != nil and addKillResult != false) then
       tables.AggregateStats:incrementWorldDeaths(victimId, victim:GetRole())
     end
-    
+
     return addKillResult
   end
 end
@@ -51,15 +51,13 @@ function DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
       local weaponClass = DDD.determineWeapon(damageInfo)
       local weaponId = tables.WeaponId:getOrAddWeaponId(weaponClass)
       local addKillResult = tables.PlayerKill:addKill(victimId, attackerId, weaponId)
-      
+
       if (addKillResult != nil and addKillResult != false) then
         incrementAggregateKillsAndDeaths(attacker, victim, attackerId, victimId)
-        if (weaponClass == "ttt_c4") then
-          tables.AggregateStats:incrementWeaponKills(attackerId, attacker:GetRole(), victim:GetRole(), weaponClass)
-          tables.AggregateStats:incrementWeaponDeaths(victimId, victim:GetRole(), attacker:GetRole(), weaponClass)
-        end
+        tables.AggregateWeaponStats:incrementKillColumn(weaponClass, attackerId, attacker:GetRole(), victim:GetRole())
+        tables.AggregateWeaponStats:incrementDeathColumn(weaponClass, victimId, victim:GetRole(), attacker:GetRole())
       end
-      
+
       return addKillResult
     end
 end
@@ -68,13 +66,13 @@ end
 hook.Add("DoPlayerDeath", "DDDTrackPlayerDeath", function(victim, attacker, damageInfo)
     if (DDD:enabled()) then
       DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
-    end 
+    end
   end
 )
 
 local function handleNilAttackerDamage(tables, victim, damageInfo)
   local victimId = tables.PlayerId:getPlayerId(victim)
-  
+
   if (victim.was_pushed and IsValid(victim.was_pushed.att)) then
     local attackerId = tables.PlayerId:getPlayerId(victim.was_pushed.att)
     local weaponId = tables.WeaponId:getOrAddWeaponId(victim.was_pushed.wep)
@@ -96,7 +94,7 @@ function DDD.Hooks.trackDamage(tables, victim, damageInfo)
     local victimId = tables.PlayerId:getPlayerId(victim)
     local attackerId = tables.PlayerId:getPlayerId(attacker)
     local weaponId = tables.WeaponId:getOrAddWeaponId(weaponClass)
-    
+
     return tables.CombatDamage:addDamage(victimId, attackerId, weaponId, damageInfo)
   end
 end

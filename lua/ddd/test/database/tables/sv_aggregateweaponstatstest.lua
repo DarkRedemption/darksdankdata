@@ -14,23 +14,18 @@ local function afterEach()
   DDD.Logging:enable()
 end
 
-local function addWeaponColumnsTest()
-  local columns = { player_id = "INTEGER NOT NULL" }
-  local weapons = weapons.GetList()
-
-  for key, value in pairs(weapons) do
-    if (value.ClassName) then
-      columns[value.ClassName] = "INTEGER NOT NULL DEFAULT 0"
+--TODO: Put this in a helper singleton because there's a duplicate function in AggregateWeaponStats
+local function filterContains(weaponClass)
+  for key, value in pairs(DDD.Config.AggregateWeaponStatsFilter) do
+    if (value == weaponClass) then
+      return true
     end
   end
 
-  PrintTable(columns)
+  return false
 end
 
-local function addWeaponsToTableSpec()
-end
-
-local function recalculateWeaponKillsSpec()
+local function recalculateWeaponDataSpec()
   local oldRows = {}
   local fakePlayerList = DDDTest.Helpers.Generators.makePlayerIdList(tables, 2, 10)
   local weaponList = weapons.GetList()
@@ -41,15 +36,15 @@ local function recalculateWeaponKillsSpec()
   end
 
   for index, weaponInfo in pairs(weaponList) do
-    if (weaponInfo.ClassName) then
-      local weaponId = tables.WeaponId:addWeapon(weaponInfo.ClassName)
-      weaponSqlIds[weaponId] = weaponInfo.ClassName
+    if (weaponInfo.ClassName and !filterContains(weaponInfo.ClassName)) then
+      local weaponName = DDD.Config.DeployedWeaponTranslation[weaponInfo.ClassName] or weaponInfo.ClassName
+      local weaponId = tables.WeaponId:addWeapon(weaponName)
+      weaponSqlIds[weaponId] = weaponName
     end
   end
 
   local attacker = fakePlayerList[1]
   GUnit.assert(attacker.tableId):shouldEqual(1)
-
 
   for i = 1, 100 do
     local victim = fakePlayerList[math.random(2, #fakePlayerList)]
@@ -64,7 +59,9 @@ local function recalculateWeaponKillsSpec()
     tables.PlayerKill:addKill(victim.tableId, attacker.tableId, weaponId)
     tables.AggregateWeaponStats:incrementKillColumn(
                         weaponClass, attacker.tableId, attacker:GetRole(), victim:GetRole())
-    tables.AggregateWeaponStats:incrementDeathColumn(weaponSqlIds[weaponId], victim.tableId, attacker:GetRole(), victim:GetRole())
+    tables.AggregateWeaponStats:incrementDeathColumn(
+                        weaponSqlIds[weaponId], victim.tableId, attacker:GetRole(), victim:GetRole())
+
   end
 
   for i = 1, #fakePlayerList do
@@ -86,5 +83,4 @@ end
 aggregateWeaponStatsTest:beforeEach(beforeEach)
 aggregateWeaponStatsTest:afterEach(afterEach)
 
---aggregateWeaponStatsTest:addSpec("add columns based on available SWEPs", addWeaponColumnsTest)
-aggregateWeaponStatsTest:addSpec("recalculate every player's kills from the raw data", recalculateWeaponKillsSpec)
+aggregateWeaponStatsTest:addSpec("recalculate every player's kills, deaths, and shots fired from the raw data", recalculateWeaponDataSpec)

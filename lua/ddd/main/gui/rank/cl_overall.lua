@@ -1,8 +1,8 @@
-local enemyKd = "Overall Enemy K/D" 
---local serverTime = "Server Time" 
-local enemyKills = "Total Enemies Killed" 
+local enemyKd = "Overall Enemy K/D"
+--local serverTime = "Server Time"
+local enemyKills = "Total Enemies Killed"
 local roundsPlayed = "Total Rounds Played"
-
+local winRate = "Overall Win Rate (%)"
 local currentValue = ""
 
 local function createListView()
@@ -20,35 +20,22 @@ local function createListView()
   return list
 end
 
-local function populateWithOverallEnemyKd(list, rankTable)
-  list.thirdColumn:SetName(enemyKd)
-  print(rankTable["overall_enemy_kd"])
-  for key, value in pairs(rankTable["overall_enemy_kd"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithTotalEnemyKills(list, rankTable)
-  list.thirdColumn:SetName(enemyKills)
-  for key, value in pairs(rankTable["total_enemy_kills"]) do
-    list:AddLine(key, value["last_known_name"], value["value"])
-  end
-end
-
-local function populateWithRoundsPlayed(list, rankTable)
-  list.thirdColumn:SetName(roundsPlayed)
-  for key, value in pairs(rankTable["total_rounds_played"]) do
+local function populateList(list, rankTableEntry, columnName)
+  list.thirdColumn:SetName(columnName)
+  for key, value in pairs(rankTableEntry) do
     list:AddLine(key, value["last_known_name"], value["value"])
   end
 end
 
 local function updateListView(list, value, rankTable)
   if (value == enemyKd) then
-    populateWithOverallEnemyKd(list, rankTable)
+    populateList(list, rankTable["overall_enemy_kd"], enemyKd)
   elseif (value == enemyKills) then
-    populateWithTotalEnemyKills(list, rankTable)
+    populateList(list, rankTable["total_enemy_kills"], enemyKills)
   elseif (value == roundsPlayed) then
-    populateWithRoundsPlayed(list, rankTable)
+    populateList(list, rankTable["total_rounds_played"], roundsPlayed)
+  elseif (value == winRate) then
+    populateList(list, rankTable["overall_win_rate"], winRate)
   end
 end
 
@@ -61,24 +48,25 @@ local function createComboBox(panel)
   --comboBox:AddChoice(serverTime)
   comboBox:AddChoice(enemyKills)
   comboBox:AddChoice(roundsPlayed)
+  comboBox:AddChoice(winRate)
   return comboBox
 end
 
 function DDD.Gui.Rank.createOverallTab(rankPropertySheet, rankTable)
   local panel = vgui.Create( "DPanel", rankPropertySheet )
-  panel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 255, 255 ) ) end 
+  panel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 255, 255 ) ) end
   DDD.Gui.setSizeToParent(panel)
   local comboBox = createComboBox(panel)
   local list = createListView("Value")
   list:SetParent(panel)
-  
+
   comboBox.OnSelect = function(panel, index, value)
     if (currentValue != value) then
       list:Clear()
       updateListView(list, value, rankTable)
     end
   end
-  
+
   comboBox:ChooseOptionID(1)
   rankPropertySheet:AddSheet("Overall", panel, "icon16/chart_bar.png")
 end
