@@ -15,11 +15,19 @@ end)
 -- Purchase Tracking Hooks
 --
 local function getEquipmentName(equipment, ply)
+
   if (type(equipment) == "number") then
-    return EquipmentItems[ply:GetRole()][equipment].name
+    local roleItems = EquipmentItems[ply:GetRole()]
+
+    for index, roleItem in pairs(roleItems) do
+      if (roleItem.id == equipment) then
+        return roleItem.name
+      end
+    end
+  else
+    return equipment
   end
 
-  return equipment
 end
 
 function DDD.Hooks.trackPurchases(tables, ply, equipment)
