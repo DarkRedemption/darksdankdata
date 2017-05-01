@@ -5,14 +5,58 @@ local swepNames
 Checks to see if something exists in an array.
 ]]
 
-local function arrayContains(arr, v)
-  for key, value in pairs(arr) do
+local function arrayContains(array, v)
+  for key, value in pairs(array) do
     if (value == v) then
       return true
     end
   end
 
   return false
+end
+
+
+local function filter(table, f)
+  local filteredTable = {}
+
+  for key, value in pairs(array) do
+    if (f(key, value)) then
+      filteredTable[key] = value
+    end
+  end
+
+  return filteredTable
+end
+
+--[[
+Filters the given table with the function provided.
+Returns a new array with any item that matched the predicate function.
+]]
+local function filterValue(array, f)
+  local filteredArray = {}
+
+  for key, value in pairs(array) do
+    if (f(value)) then
+      table.insert(filteredArray, value)
+    end
+  end
+
+  return filteredArray
+end
+
+--[[
+Performs a map on a table.
+Maps are like a for each loop, but they return the mutated values.
+]]
+local function map(table, f)
+  local mutatedTable = {}
+
+  for key, value in pairs(table) do
+    local newKey, newValue = f(key, value)
+    mutatedTable[newKey] = newValue
+  end
+
+  return mutatedTable
 end
 
 local function roleCanBuy(swep, role)
@@ -81,6 +125,9 @@ end
 DDD.arrayContains = arrayContains
 DDD.traitorCanBuy = traitorCanBuy
 DDD.detectiveCanBuy = detectiveCanBuy
+DDD.filter = filter
+DDD.filterValue = filterValue
+DDD.map = map
 
 hook.Add("Initialize", "DDDGetWeaponListForCommon", function()
   sweps = weapons.GetList()

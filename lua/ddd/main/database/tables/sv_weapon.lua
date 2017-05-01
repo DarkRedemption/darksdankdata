@@ -31,13 +31,13 @@ local function determineFireWeapon(damageInfo, victim)
   local inflictor = damageInfo:GetInflictor()
   if (victim && victim.ignite_info) then
     --[[Flaregun is the only known weapon that sets ignite info in Vanilla.]]
-    return "weapon_ttt_flaregun" 
+    return "weapon_ttt_flaregun"
   elseif inflictor:GetClass() == "env_fire" then
     return "ttt_firegrenade_proj"
   else
     return "fire" --Unknown fire-based weapon
   end
-  
+
 end
 
 local function determineWeaponFromDamageInfo(damageInfo, victim)
@@ -74,7 +74,8 @@ local function determineWeaponFromDamageInfo(damageInfo, victim)
 end
 
 function DDD.determineWeapon(damageInfo, victim)
-	if IsValid(damageInfo:GetInflictor()) then
+  local inflictor = damageInfo:GetInflictor()
+	if IsValid(inflictor) then
     --return damageInfo:GetInflictor():GetClass()
 		return determineWeaponFromDamageInfo(damageInfo, victim)
 	else

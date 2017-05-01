@@ -49,3 +49,6 @@ DDD.Config.AggregateWeaponStatsTranslation = {
   weapon_ttt_stungun = "UMP",
   ttt_c4 = "C4"
 }
+
+--Since it's not complete, this should not be true in production.
+DDD.Config.showAchievementPanel = true

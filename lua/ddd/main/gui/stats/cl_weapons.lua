@@ -3,13 +3,22 @@ capitalRoles[0] = "Innocent"
 capitalRoles[1] = "Traitor"
 capitalRoles[2] = "Detective"
 
-local function displayWeaponStats(list, table, weaponNameList)
+local function displayWeaponStats(list, aggregateWeaponStatsRow, weaponNameList)
+  local function comparisonFunction(left, right)
+    local r = DDD.Config.AggregateWeaponStatsTranslation[right] or right
+    local l = DDD.Config.AggregateWeaponStatsTranslation[left] or left
+    return r > l
+  end
+
+  local sortedWeaponList = table.Copy(weaponNameList)
+  table.sort(sortedWeaponList, comparisonFunction)
+
   local displayInfo = {
     kills = "Kills",
     deaths = "Deaths"
   }
 
-  for index, itemName in pairs(weaponNameList) do
+  for index, itemName in ipairs(sortedWeaponList) do
 
     local adjustedItemName = DDD.Config.AggregateWeaponStatsTranslation[itemName] or itemName
 
@@ -22,15 +31,14 @@ local function displayWeaponStats(list, table, weaponNameList)
         for roleId, roleName in pairs(DDD.roleIdToRole) do
           local capitalRoleName = capitalRoles[roleId]
           local columnName = itemName .. "_" .. roleName .. "_" .. opponentRoleName .. "_" .. infoColumnNameSegment
-          if table[columnName] then
-            values[roleId] = table[columnName]
+          if aggregateWeaponStatsRow[columnName] then
+            values[roleId] = aggregateWeaponStatsRow[columnName]
           else
             columnNotFound = true
           end
         end
 
         if !columnNotFound then
-          PrintTable(values)
           list:AddLine(display, values[0] + values[1] + values[2], values[0], values[1], values[2])
         end
     end

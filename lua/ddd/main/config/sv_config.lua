@@ -36,6 +36,7 @@ DDD.Config.AggregateWeaponStatsFilter = {
   "weapon_ttt_defuser",
   "weapon_ttt_cse",
   "weapon_zm_carry",
+  "UnknownWeapon",
 
   --These items have been known to be re-enabled in mods,
   --and are placed here for convenience.

@@ -1,5 +1,16 @@
 local hookTest = GUnit.Test:new("CombatHooks")
 local tables = {}
+local sweps = DDD.filterValue(weapons.GetList(), function(value)
+  return !DDD.arrayContains(DDD.Config.AggregateWeaponStatsFilter, value.ClassName)
+end)
+
+sweps = DDD.map(sweps, function(key, value)
+  local fakeWeapon = GUnit.Generators.FakeEntity:new()
+  local className = value.ClassName
+  fakeWeapon:SetIsWeapon(true)
+  fakeWeapon.classname = DDD.Config.DeployedWeaponTranslation[className] or className
+  return key, fakeWeapon
+end)
 
 local function beforeEach()
   tables = DDDTest.Helpers.makeTables()
@@ -13,17 +24,15 @@ end
 local function trackPlayerCombatDeathSpec()
   for i = 1, 100 do
     local roundId = tables.RoundId:addRound()
-
     local victim = GUnit.Generators.FakePlayer:new()
     local attacker = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local attackerId = tables.PlayerId:addPlayer(attacker)
+    local randomWeaponId = math.random(1, #sweps)
+    local weapon = sweps[randomWeaponId]
+    local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
     tables.RoundRoles:addRole(victim)
     tables.RoundRoles:addRole(attacker)
-    local weapon = GUnit.Generators.FakeEntity:new()
-    local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
-
-    weapon:SetIsWeapon(true)
     damageInfo:SetInflictor(weapon)
 
     local id = DDD.Hooks.trackPlayerDeath(tables, victim, attacker, damageInfo)
@@ -44,11 +53,11 @@ local function trackPlayerPushDeathSpec()
     local attacker = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local attackerId = tables.PlayerId:addPlayer(attacker)
+    local randomWeaponId = math.random(1, #sweps)
+    local weapon = sweps[randomWeaponId]
+    local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
     tables.RoundRoles:addRole(victim)
     tables.RoundRoles:addRole(attacker)
-    local weapon = GUnit.Generators.FakeEntity:new()
-    local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
-
     damageInfo:SetDamageType(DMG_FALL)
 
     local wasPushed = {
@@ -73,14 +82,13 @@ local function trackPlayerWorldDeathSpec()
     local roundId = tables.RoundId:addRound()
     local victim = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
-    tables.RoundRoles:addRole(victim)
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
-    local id = DDD.Hooks.trackPlayerDeath(tables, victim, nil, damageInfo)
+    tables.RoundRoles:addRole(victim)
 
+    local id = DDD.Hooks.trackPlayerDeath(tables, victim, nil, damageInfo)
     GUnit.assert(id):shouldEqual(i)
 
     local killRow = tables.WorldKill:selectById(id)
-
     GUnit.assert(killRow):shouldNotEqual(0)
     GUnit.assert(tonumber(killRow["round_id"])):shouldEqual(roundId)
     GUnit.assert(tonumber(killRow["victim_id"])):shouldEqual(victimId)
@@ -95,12 +103,12 @@ local function trackPlayerCombatDamageSpec()
     local attacker = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
     local attackerId = tables.PlayerId:addPlayer(attacker)
+    local randomWeaponId = math.random(1, #sweps)
+    local weapon = sweps[randomWeaponId]
+    local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
     tables.RoundRoles:addRole(victim)
     tables.RoundRoles:addRole(attacker)
-    local weapon = GUnit.Generators.FakeEntity:new()
-    local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
 
-    weapon:SetIsWeapon(true)
     damageInfo:SetAttacker(attacker)
     damageInfo:SetInflictor(weapon)
 
@@ -123,10 +131,10 @@ local function trackPlayerWorldDamageSpec()
     local roundId = tables.RoundId:addRound()
     local victim = GUnit.Generators.FakePlayer:new()
     local victimId = tables.PlayerId:addPlayer(victim)
-    tables.RoundRoles:addRole(victim)
     local damageInfo = GUnit.Generators.CTakeDamageInfo:new()
-    local id = DDD.Hooks.trackDamage(tables, victim, damageInfo)
+    tables.RoundRoles:addRole(victim)
 
+    local id = DDD.Hooks.trackDamage(tables, victim, damageInfo)
     GUnit.assert(id):shouldEqual(i)
 
     local damageRow = tables.WorldDamage:selectById(id)
