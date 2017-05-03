@@ -1,0 +1,10 @@
+util.AddNetworkString("DDDGetWeaponStats")
+
+net.Receive("DDDGetWeaponStats", function(len, ply)
+    local playerStats = DDD.Database.PlayerStats:new(ply)
+    playerStats:updateStats()
+    net.Start("DDDGetWeaponStats")
+    net.WriteTable(DDD.swepNames)
+    net.WriteTable(playerStats.statsTable)
+    net.Send(ply)
+end)

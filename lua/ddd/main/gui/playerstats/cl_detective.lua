@@ -55,7 +55,7 @@ local function displayPurchases(list, table, itemNameList)
   end
 end
 
-local function populateListView(list, table, weaponNameList, itemNameList)
+local function populateListView(list, table, itemNameList)
   list:AddLine("Total D Rounds", table["detective_rounds"])
   list:AddLine("D Rounds Won", table["detective_rounds_won"])
   list:AddLine("D Rounds Lost", table["detective_rounds_lost"])
@@ -75,26 +75,15 @@ local function populateListView(list, table, weaponNameList, itemNameList)
   list:AddLine("Suicides", table["detective_suicides"])
   --list:AddLine("Total HP Others Healed Using Your Health Stations", tonumber(table["TotalHPOthersHealed"]))
 
-  --[[
-  list:AddLine("Times Radar Purchased", table["detective_radar_purchases"])
-  list:AddLine("Times Visualizer purchased", table["detective_visualizer_purchases"])
-  list:AddLine("Times Defuser purchased", table["detective_defuser_purchases"])
-  list:AddLine("Times Teleporter purchased", table["detective_teleporter_purchases"])
-  list:AddLine("Times Binoculars purchased", table["detective_binoculars_purchases"])
-  list:AddLine("Times UMP purchased", table["detective_ump_purchases"])
-  list:AddLine("Times Health Station purchased", table["detective_healthstation_purchases"])
-  ]]
-
   displayPurchases(list, table, itemNameList)
-  DDD.Gui.displayWeaponStats(list, table, weaponNameList, ROLE_DETECTIVE)
 end
 
-function DDD.Gui.createDetectiveTab(mainPropertySheet, statsTable, weaponNameList, itemNameList)
+function DDD.Gui.PlayerStats.createDetectiveTab(mainPropertySheet, statsTable, itemNameList)
   local detectivePanel = vgui.Create( "DPanel", mainPropertySheet )
   detectivePanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 0, 0, 255 ) ) end
   DDD.Gui.setSizeToParent(detectivePanel)
   createDetectiveText(detectivePanel)
   local list = createListView(detectivePanel)
   mainPropertySheet:AddSheet( "Detective", detectivePanel, "materials/ddd/icons/d.png")
-  populateListView(list, statsTable, weaponNameList, itemNameList)
+  populateListView(list, statsTable, itemNameList)
 end

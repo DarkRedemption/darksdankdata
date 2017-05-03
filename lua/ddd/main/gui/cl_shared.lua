@@ -3,6 +3,8 @@ capitalRoles[0] = "Innocent"
 capitalRoles[1] = "Traitor"
 capitalRoles[2] = "Detective"
 
+local map = DDD.map
+
 function DDD.Gui.setSizeToParent(panel)
   local parent = panel:GetParent()
   panel:SetSize(parent:GetSize())
@@ -31,12 +33,9 @@ function DDD.Gui.formatPercentage(percentage)
 end
 
 local function makeAdjustedWeaponNameList(weaponNameList)
-  local newList = {}
-
-  for index, weaponName in pairs(weaponNameList) do
-    local adjustedWeaponName = DDD.Config.AggregateWeaponStatsTranslation[itemName] or itemName
-    table.insert(newList, adjustedWeaponName)
-  end
+  local newList = map(weaponNameList, function(index, weaponName)
+    return index, (DDD.Config.AggregateWeaponStatsTranslation[itemName] or itemName)
+  end)
 
   table.sort(newList)
 

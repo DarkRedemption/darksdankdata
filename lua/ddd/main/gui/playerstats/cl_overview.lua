@@ -138,7 +138,7 @@ local function populateListView(list, table)
   list:AddLine("Total HP Others Have Been Healed By You", tonumber(table["others_hp_healed"]))
 end
 
-function DDD.Gui.createOverviewTab(mainPropertySheet, statsTable)
+function DDD.Gui.PlayerStats.createOverviewTab(mainPropertySheet, statsTable)
   local overviewPanel = vgui.Create( "DPanel", mainPropertySheet )
   overviewPanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 255, 255 ) ) end
   DDD.Gui.setSizeToParent(overviewPanel)

@@ -6,7 +6,8 @@ DDD.Database.Tables = {}
 DDD.Gui = {}
 DDD.Gui.Achievements = {}
 DDD.Gui.Rank = {}
-DDD.Gui.Stats = {}
+DDD.Gui.PlayerStats = {}
+DDD.Gui.WeaponStats = {}
 DDD.Rank = {}
 DDD.Misc = {}
 DDD.version = "v0.2.0-M1"
@@ -42,11 +43,11 @@ if SERVER then
   AddCSLuaFile("ddd/main/gui/rank/cl_detectiverank.lua")
   AddCSLuaFile("ddd/main/gui/rank/cl_innocentrank.lua")
   AddCSLuaFile("ddd/main/gui/rank/cl_traitorrank.lua")
-  AddCSLuaFile("ddd/main/gui/stats/cl_overview.lua")
-  AddCSLuaFile("ddd/main/gui/stats/cl_traitor.lua")
-  AddCSLuaFile("ddd/main/gui/stats/cl_innocent.lua")
-  AddCSLuaFile("ddd/main/gui/stats/cl_detective.lua")
-  AddCSLuaFile("ddd/main/gui/stats/cl_weapons.lua")
+  AddCSLuaFile("ddd/main/gui/playerstats/cl_overview.lua")
+  AddCSLuaFile("ddd/main/gui/playerstats/cl_traitor.lua")
+  AddCSLuaFile("ddd/main/gui/playerstats/cl_innocent.lua")
+  AddCSLuaFile("ddd/main/gui/playerstats/cl_detective.lua")
+  AddCSLuaFile("ddd/main/gui/weaponstats/cl_weapons.lua")
   AddCSLuaFile("ddd/main/gui/achievements/cl_achievements.lua")
 
   AddCSLuaFile("ddd/main/cl_command.lua")
@@ -66,7 +67,8 @@ if SERVER then
   include("ddd/main/misc/sv_enums.lua")
 
   include("ddd/main/hooks/sv_overridehooks.lua")
-  include("ddd/main/gui/stats/sv_getstats.lua")
+  include("ddd/main/gui/playerstats/sv_getstats.lua")
+  include("ddd/main/gui/weaponstats/sv_getweaponstats.lua")
   include("ddd/main/sv_active.lua")
 
   include("ddd/main/misc/sv_votedisableddd.lua")
@@ -84,11 +86,11 @@ if CLIENT then
 
   include("ddd/main/gui/cl_shared.lua")
   include("ddd/main/gui/cl_mainpanel.lua")
-  include("ddd/main/gui/stats/cl_overview.lua")
-  include("ddd/main/gui/stats/cl_traitor.lua")
-  include("ddd/main/gui/stats/cl_innocent.lua")
-  include("ddd/main/gui/stats/cl_detective.lua")
-  include("ddd/main/gui/stats/cl_weapons.lua")
+  include("ddd/main/gui/playerstats/cl_overview.lua")
+  include("ddd/main/gui/playerstats/cl_traitor.lua")
+  include("ddd/main/gui/playerstats/cl_innocent.lua")
+  include("ddd/main/gui/playerstats/cl_detective.lua")
+  include("ddd/main/gui/weaponstats/cl_weapons.lua")
   include("ddd/main/gui/rank/cl_overall.lua")
   include("ddd/main/gui/rank/cl_detectiverank.lua")
   include("ddd/main/gui/rank/cl_innocentrank.lua")

@@ -47,7 +47,7 @@ local function displayPurchases(list, table, itemNameList)
   end
 end
 
-local function populateListView(list, table, weaponNameList, itemNameList)
+local function populateListView(list, table, itemNameList)
   list:AddLine("Total T Rounds", table["traitor_rounds"])
   list:AddLine("T Rounds Won", table["traitor_rounds_won"])
   list:AddLine("T Rounds Lost", table["traitor_rounds_lost"])
@@ -68,15 +68,14 @@ local function populateListView(list, table, weaponNameList, itemNameList)
   --list:AddLine("Enemy Kill Assists", "Not Yet Implemented")
 
   displayPurchases(list, table, itemNameList)
-  DDD.Gui.displayWeaponStats(list, table, weaponNameList, ROLE_TRAITOR)
 end
 
-function DDD.Gui.createTraitorTab(mainPropertySheet, statsTable, weaponNameList, itemNameList)
+function DDD.Gui.PlayerStats.createTraitorTab(mainPropertySheet, statsTable, itemNameList)
   local traitorPanel = vgui.Create( "DPanel", mainPropertySheet )
   traitorPanel.Paint = function( self, w, h ) draw.RoundedBox( 4, 0, 0, w, h, Color( 255, 0, 0) ) end
   DDD.Gui.setSizeToParent(traitorPanel)
   createTraitorText(traitorPanel)
   local list = createListView(traitorPanel)
   mainPropertySheet:AddSheet( "Traitor", traitorPanel, "materials/ddd/icons/t.png")
-  populateListView(list, statsTable, weaponNameList, itemNameList)
+  populateListView(list, statsTable, itemNameList)
 end
