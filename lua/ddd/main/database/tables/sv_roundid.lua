@@ -21,16 +21,16 @@ end
 
 function roundIdTable:getCurrentRoundRow()
   local query = "SELECT * FROM " .. self.tableName .. " ORDER BY id DESC LIMIT 1"
-  local result = self:query("getCurrentRoundRow", query, 1)
+  local result = self:query(query, 1)
   return result
 end
 
 function roundIdTable:getCurrentRoundId()
   local query = "SELECT max(id) FROM " .. self.tableName
   local result = sql.Query(query)
-  if (result == nil || result == false) then 
+  if (result == nil || result == false) then
     return 0
-  else 
+  else
     return tonumber(result[1]['max(id)'])
   end
 end

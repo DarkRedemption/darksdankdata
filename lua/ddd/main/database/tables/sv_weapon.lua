@@ -14,7 +14,7 @@ end
 
 function weaponIdTable:getWeaponId(weaponClass)
   local query = "SELECT id FROM " .. self.tableName .. " WHERE weapon_class == '" .. weaponClass .. "'"
-  local result = self:query("getWeaponId", query, 1, "id")
+  local result = self:query(query, 1, "id")
   return tonumber(result)
 end
 

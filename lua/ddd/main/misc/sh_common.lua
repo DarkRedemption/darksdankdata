@@ -75,6 +75,16 @@ local function foreachValue(table, f)
   end
 end
 
+local function length(table)
+  local i = 0
+
+  foreach(table, function(x, y)
+    i = i + 1
+  end)
+
+  return i
+end
+
 DDD.roleIdToRole = roleIdToRole
 DDD.arrayContains = arrayContains
 DDD.filter = filter
@@ -82,3 +92,4 @@ DDD.filterValue = filterValue
 DDD.map = map
 DDD.foreach = foreach
 DDD.foreachValue = foreachValue
+DDD.length = length

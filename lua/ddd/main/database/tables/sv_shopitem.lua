@@ -18,7 +18,7 @@ end
 
 function shopItemTable:getItemId(equipment)
   local query = "SELECT id FROM " .. self.tableName .. " WHERE name == \"" .. equipment .. "\""
-  return tonumber(self:query("shopItemTable:getItemId", query, 1, "id"))
+  return tonumber(self:query(query, 1, "id"))
 end
 
 function shopItemTable:getOrAddItemId(equipment)

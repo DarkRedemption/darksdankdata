@@ -6,7 +6,6 @@ roleIdToRole[0] = "innocent"
 roleIdToRole[1] = "traitor"
 roleIdToRole[2] = "detective"
 
-
 local function filterContains(weaponClass)
   for key, value in pairs(DDD.Config.AggregateWeaponStatsFilter) do
     if (value == weaponClass) then
@@ -56,8 +55,8 @@ local function generateWeaponColumns()
 end
 
 local columns = generateWeaponColumns()
-
 local aggregateWeaponStatsTable = DDD.SqlTable:new("ddd_aggregate_weapon_stats", columns)
+aggregateWeaponStatsTable:addForeignConstraint("player_id", DDD.Database.Tables.PlayerId, "id")
 aggregateWeaponStatsTable.tables = DDD.Database.Tables
 
 local function countResult(result)
@@ -91,7 +90,7 @@ function aggregateWeaponStatsTable:getWeaponKillsFromRawData()
   GROUP BY kills.attacker_id, attacker_role, victim_role, weapon_class
   ]]
 
-  return self:query("aggregateWeaponStatsTable:getWeaponKillsFromRawData", query)
+  return self:query(query)
 end
 
 function aggregateWeaponStatsTable:getWeaponDeathsFromRawData()
@@ -113,7 +112,7 @@ function aggregateWeaponStatsTable:getWeaponDeathsFromRawData()
   GROUP BY kills.victim_id, attacker_role, victim_role, weapon_class
   ]]
 
-  return self:query("aggregateWeaponStatsTable:getWeaponDeathsFromRawData", query)
+  return self:query(query)
 end
 
 --Adds a player known to have no stats.
@@ -144,7 +143,7 @@ function aggregateWeaponStatsTable:incrementKillColumn(weaponClass, attackerTabl
   local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. columnName .. " + 1 " ..
                 "WHERE player_id == " .. attackerTableId
 
-  return self:query("aggregateWeaponStatsTable:incrementKillColumn", query)
+  return self:query(query)
 end
 
 function aggregateWeaponStatsTable:incrementDeathColumn(weaponClass, victimTableId, attackerRoleId, victimRoleId)
@@ -152,7 +151,7 @@ function aggregateWeaponStatsTable:incrementDeathColumn(weaponClass, victimTable
   local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. columnName .. " + 1 " ..
                 "WHERE player_id == " .. victimTableId
 
-  return self:query("aggregateWeaponStatsTable:incrementDeathColumn", query)
+  return self:query(query)
 end
 
 function aggregateWeaponStatsTable:recalculate()
@@ -194,7 +193,7 @@ end
 
 function aggregateWeaponStatsTable:getPlayerStats(playerId)
   local query = "SELECT * from " .. self.tableName .. " WHERE player_id == " .. playerId
-  return self:query("aggregateWeaponStatsTable:getPlayerStats", query, 1)
+  return self:query(query, 1)
 end
 
 DDD.Database.Tables.AggregateWeaponStats = aggregateWeaponStatsTable

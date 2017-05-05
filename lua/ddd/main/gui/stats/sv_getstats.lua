@@ -1,0 +1,12 @@
+util.AddNetworkString("DDDGetStats")
+
+net.Receive("DDDGetStats", function(len, ply)
+    local playerStats = DDD.Database.PlayerStats:new(ply)
+    playerStats:updateStats()
+    net.Start("DDDGetStats")
+    net.WriteTable(DDD.swepNames)
+    net.WriteTable(DDD.traitorItemNames)
+    net.WriteTable(DDD.detectiveItemNames)
+    net.WriteTable(playerStats.statsTable)
+    net.Send(ply)
+end)

@@ -1,10 +1,10 @@
 local playerIdTable = DDD.Database.Tables.PlayerId
 
-local columns = { id = "INTEGER PRIMARY KEY", 
+local columns = { id = "INTEGER PRIMARY KEY",
                   round_id = "INTEGER NOT NULL",
                   round_time = "REAL NOT NULL",
                   deployer_id = "INTEGER NOT NULL",
-                  user_id = "INTEGER NOT NULL",   
+                  user_id = "INTEGER NOT NULL",
                   heal_amount = "INTEGER NOT NULL",
                 }
 
@@ -37,11 +37,11 @@ Gets the total HP someone has healed themselves for.
 ]]
 function healingTable:getTotalHPYouHealed(userId)
   local checkIfPlayerExistsQuery = "SELECT * FROM " .. self.tableName .. " WHERE user_id == " .. userId
-  if self:query("healingTable:getTotalHPHealed", checkIfPlayerExistsQuery) == 0 then
+  if self:query(checkIfPlayerExistsQuery) == 0 then
     return 0
   else
     local query = "SELECT SUM(heal_amount) as total_hp_healed FROM " .. self.tableName .. " WHERE user_id == " .. userId
-    return self:query("healingTable:getTotalHPHealed", query, 1, "total_hp_healed")
+    return self:query(query, 1, "total_hp_healed")
   end
 end
 
@@ -50,7 +50,7 @@ Gets the total HP someone's health stations have healed others for.
 ]]
 function healingTable:getTotalHPOthersHealed(placerId)
   local query = "SELECT SUM(heal_amount) as total_hp_healed FROM " .. self.tableName .. " WHERE user_id != " .. placerId .. " AND deployer_id == " .. placerId
-  return self:query("healingTable:getTotalHPHealed", query, 1, "total_hp_healed")
+  return self:query(query, 1, "total_hp_healed")
 end
 
 DDD.Database.Tables.Healing = healingTable

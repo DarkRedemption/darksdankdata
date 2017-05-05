@@ -1,18 +1,13 @@
 local log = DDD.Logging
+local length = DDD.length
 
 local SqlTable = {}
 SqlTable.tableName = ""
 SqlTable.columns = {}
-SqlTable.foreignKeyTable = nil
-SqlTable.uniqueGroups = nil
 SqlTable.__index = SqlTable
 
 local function getTableSize(tableToCheck)
-  local numKeys = 0
-    for keyName, keyValue in pairs(tableToCheck) do
-      numKeys = numKeys + 1
-    end
-    return numKeys
+  return length(tableToCheck)
 end
 
 function SqlTable:getNumberOfColumns()
@@ -117,7 +112,7 @@ function SqlTable:createIndices()
     end
 
     local query = "CREATE INDEX IF NOT EXISTS " .. indexName .. " ON " .. self.tableName .. "(" .. columnString .. ")"
-    self:query("SqlTable:createIndices", query, 1)
+    self:query(query, 1)
   end
 end
 
@@ -140,14 +135,11 @@ end
 
 function SqlTable:selectById(id)
   local query = "SELECT * FROM " .. self.tableName .. " WHERE id == " .. tostring(id)
-  return self:query("SqlTable:selectById", query, 1)
+  return self:query(query, 1)
 end
 
 local function generateInsertQuery(sqlTable, luaTable)
-  local tableSize = 0
-  for k, v in pairs(luaTable) do
-    tableSize = tableSize + 1
-  end
+  local tableSize = length(luaTable)
 
   local baseQuery = "INSERT INTO " .. sqlTable.tableName .. " ("
   local values = " VALUES ("
@@ -183,7 +175,7 @@ function SqlTable:insertTable(luaTable)
   local result = sql.Query(query)
   if (result == nil) then --A successful INSERT returns nil.
     log.logDebug("Insert into table " .. self.tableName .. " was successful.")
-    local lastId = self:query("SqlTable:insertTable", "SELECT last_insert_rowid() AS id", 1, "id")
+    local lastId = self:query("SELECT last_insert_rowid() AS id", 1, "id")
     return tonumber(lastId)
   else
     log.logError("Could not insert into table " .. self.tableName .. "!\n\tError was:" .. sql.LastError())
@@ -197,12 +189,12 @@ end
 
 --[[
 For custom queries. Makes the return value safe (not nil).
-PARAM funcName:String - The name of the function that is calling the query for logging purposes.
 PARAM query:String - The SQL query.
 PARAM resultRow - The result row to select. If nil, all rows are returned.
 PARAM resultColumn - The result row to select. If nil, all columns are returned. If resultRow is nil, this is ignored.
 ]]
-function SqlTable:query(funcName, query, resultRow, resultColumn)
+function SqlTable:query(query, resultRow, resultColumn)
+  local funcName = debug.getinfo(2).name
   local result = sql.Query(query)
   if (result == nil) then --Nothing to select
     return 0
@@ -238,7 +230,7 @@ Should generally not be run unless you made a test table or don't have any real/
 ]]
 function SqlTable:delete()
   local query = "DROP TABLE " .. self.tableName
-  return self:query("SqlTable:delete", query)
+  return self:query(query)
 end
 
 function SqlTable:drop()
@@ -266,16 +258,14 @@ end
 Instantiates a new SqlTable class.
 PARAM tablename:String - The name of the table.
 PARAM columns:Table - A lua table of column name (string keys) and column settings (string values)
-PARAM foreignKeyTable:Nil Or ForeignKeyTable - A ForeignKeyTable filled with ForeignKeyRefs to the necessary constraints. Can be nil if unnecessary.
 PARAM uniqueGroups:Nil or Array[ Array[String] ] - An array of string arrays, detailing unique combinations.
 ]]
-function SqlTable:new(tableName, columns, foreignKeyTable, uniqueGroups)
+function SqlTable:new(tableName, columns, uniqueGroups)
   local newTable = {}
   setmetatable(newTable, self)
   newTable.tableName = tableName
   newTable.columns = columns
-
-  newTable.foreignKeyTable = foreignKeyTable or DDD.Database.ForeignKeyTable:new()
+  newTable.foreignKeyTable = DDD.Database.ForeignKeyTable:new()
 
   if (uniqueGroups) then
     newTable.uniqueGroups = uniqueGroups

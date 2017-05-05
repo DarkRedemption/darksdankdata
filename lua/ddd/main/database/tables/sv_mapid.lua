@@ -13,7 +13,7 @@ end
 
 function mapIdTable:getCurrentMapId()
   local query = "SELECT id FROM " .. self.tableName .. " WHERE map_name = '" .. game.GetMap() .. "'"
-  local result = self:query("getCurrentMapId", query, 1, "id")
+  local result = self:query(query, 1, "id")
   return tonumber(result)
 end
 

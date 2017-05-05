@@ -35,7 +35,7 @@ function playerIdTable:getPlayerIdBySteamId(steamId)
     return self.recentIds[steamId]
   else
     local query = "SELECT id FROM " .. self.tableName .. " WHERE steam_id = '" .. steamId .. "'"
-    local result = tonumber(self:query("getPlayerIdBySteamId", query, 1, "id"))
+    local result = tonumber(self:query(query, 1, "id"))
     self:addToRecentIds(steamId, result)
     return result
   end
@@ -51,7 +51,7 @@ Used in aggregation tables.
 ]]
 function playerIdTable:getPlayerIdList()
   local query = "SELECT id FROM " .. self.tableName
-  local result = self:query("getPlayerIdBySteamId", query)
+  local result = self:query(query)
 
   if (result != nil and result != false and type(result) != "number") then
     local list = {}
@@ -71,7 +71,7 @@ function playerIdTable:updatePlayerName(ply)
 
   if (id > 0) then
     local query = "UPDATE " .. self.tableName .. " SET 'last_known_name' = '" .. ply:GetName() .. "' WHERE id == " .. id
-    self:query("updatePlayerName", query)
+    self:query(query)
   end
 
   return id
@@ -79,7 +79,7 @@ end
 
 function playerIdTable:getPlayerRow(ply)
   local query = "SELECT * FROM " .. self.tableName .. " WHERE steam_id = '" .. ply:SteamID() .. "'"
-  local result = self:query("getPlayerRow", query, 1)
+  local result = self:query(query, 1)
   return result
 end
 

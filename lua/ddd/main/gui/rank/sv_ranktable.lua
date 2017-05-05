@@ -7,8 +7,8 @@ PARAM functionName:String - The name of the function that called rankQuery, for 
 PARAM query:String - The SQL query.
 RETURNS A table with the rankings or a table containing a message that there are no ranks yet for this category.
 ]]
-local function rankQuery(functionName, query, valueName)
-  local result = DDD.SqlTable:query("RankTable:getOverallEnemyKdRank", query)
+local function rankQuery(query, valueName)
+  local result = DDD.SqlTable:query(query)
 
   if (result == 0) then --SQL found no results but didn't error
     local defaultRank = {}
@@ -38,7 +38,7 @@ function rankTable:getOverallEnemyKdRank()
     ORDER BY value DESC
     LIMIT 25
     ]]
-  return rankQuery("RankTable:getOverallEnemyKdRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getTotalEnemyKillRank()
@@ -53,7 +53,7 @@ function rankTable:getTotalEnemyKillRank()
                 ORDER BY value DESC
                 LIMIT 25
                 ]]
-  return rankQuery("RankTable:getTotalEnemyKillRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getTotalRoundsPlayedRank()
@@ -66,7 +66,7 @@ function rankTable:getTotalRoundsPlayedRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return rankQuery("RankTable:getTotalRoundsPlayedRank", query)
+  return rankQuery(query)
 end
 
 
@@ -84,7 +84,7 @@ function rankTable:getOverallWinRateRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return rankQuery("RankTable:getInnocentWinRateRank", query)
+    return rankQuery(query)
 end
 
 function rankTable:getTraitorEnemyKdRank()
@@ -101,7 +101,7 @@ function rankTable:getTraitorEnemyKdRank()
                   ORDER BY value DESC
                   LIMIT 25
   ]]
-  return rankQuery("RankTable:getTraitorEnemyKdRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getTraitorEnemyKillRank()
@@ -112,7 +112,7 @@ function rankTable:getTraitorEnemyKillRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return rankQuery("RankTable:getTraitorEnemyKillRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getTraitorInnocentKillRank()
@@ -123,7 +123,7 @@ function rankTable:getTraitorInnocentKillRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return rankQuery("RankTable:getTraitorInnocentKillRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getTraitorDetectiveKillRank()
@@ -134,7 +134,7 @@ function rankTable:getTraitorDetectiveKillRank()
                   ORDER BY stats.traitor_innocent_kills DESC
                   LIMIT 25
                 ]]
-  return rankQuery("RankTable:getTraitorInnocentKillRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getTraitorRoundsPlayedRank()
@@ -147,7 +147,7 @@ function rankTable:getTraitorRoundsPlayedRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return rankQuery("RankTable:getTraitorRoundsPlayedRank", query)
+    return rankQuery(query)
 end
 
 function rankTable:getTraitorWinRateRank()
@@ -164,7 +164,7 @@ function rankTable:getTraitorWinRateRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return rankQuery("RankTable:getTraitorWinRateRank", query)
+    return rankQuery(query)
 end
 
 function rankTable:getInnocentTraitorKdRank()
@@ -181,7 +181,7 @@ function rankTable:getInnocentTraitorKdRank()
                   ORDER BY value DESC
                   LIMIT 25
   ]]
-  return rankQuery("RankTable:getInnocentTraitorKdRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getInnocentTraitorKillRank()
@@ -192,7 +192,7 @@ function rankTable:getInnocentTraitorKillRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return rankQuery("RankTable:getInnocentTraitorKillRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getInnocentRoundsPlayedRank()
@@ -205,7 +205,7 @@ function rankTable:getInnocentRoundsPlayedRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return rankQuery("RankTable:getInnocentRoundsPlayedRank", query)
+    return rankQuery(query)
 end
 
 function rankTable:getInnocentWinRateRank()
@@ -222,7 +222,7 @@ function rankTable:getInnocentWinRateRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return rankQuery("RankTable:getInnocentWinRateRank", query)
+    return rankQuery(query)
 end
 
 function rankTable:getDetectiveTraitorKdRank()
@@ -239,7 +239,7 @@ function rankTable:getDetectiveTraitorKdRank()
                   ORDER BY value DESC
                   LIMIT 25
   ]]
-  return rankQuery("RankTable:getDetectiveTraitorKdRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getDetectiveTraitorKillRank()
@@ -250,7 +250,7 @@ function rankTable:getDetectiveTraitorKillRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-  return rankQuery("RankTable:getDetectiveTraitorKillRank", query)
+  return rankQuery(query)
 end
 
 function rankTable:getDetectiveRoundsPlayedRank()
@@ -263,7 +263,7 @@ function rankTable:getDetectiveRoundsPlayedRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return rankQuery("RankTable:getDetectiveRoundsPlayedRank", query)
+    return rankQuery(query)
 end
 
 function rankTable:getDetectiveWinRateRank()
@@ -280,7 +280,7 @@ function rankTable:getDetectiveWinRateRank()
                   ORDER BY value DESC
                   LIMIT 25
                 ]]
-    return rankQuery("RankTable:getInnocentWinRateRank", query)
+    return rankQuery(query)
 end
 
 function rankTable:update()

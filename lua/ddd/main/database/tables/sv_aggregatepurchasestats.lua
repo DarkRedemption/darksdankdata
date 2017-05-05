@@ -46,10 +46,8 @@ end
 
 local columns = generateColumns()
 
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
-
-local aggregatePurchaseStatsTable = DDD.SqlTable:new("ddd_aggregate_purchase_stats", columns, foreignKeyTable)
+local aggregatePurchaseStatsTable = DDD.SqlTable:new("ddd_aggregate_purchase_stats", columns)
+aggregatePurchaseStatsTable:addForeignConstraint("player_id", tables.PlayerId, "id")
 aggregatePurchaseStatsTable.tables = tables --So they can be easily swapped out in test
 
 function aggregatePurchaseStatsTable:addPlayer(playerId)
@@ -61,13 +59,13 @@ end
 
 function aggregatePurchaseStatsTable:getPlayerStats(playerId)
   local query = "SELECT * from " .. self.tableName .. " WHERE player_id == " .. playerId
-  return self:query("aggregatePurchaseStatsTable:getPlayerStats", query, 1)
+  return self:query(query, 1)
 end
 
 function aggregatePurchaseStatsTable:getPurchases(playerId, playerRole, itemName)
   local columnName = DDD.roleIdToRole[playerRole] .. "_" .. itemName .. "_purchases"
   local query = "SELECT " .. columnName .. " FROM " .. self.tableName .. " WHERE player_id == " .. playerId
-  local currentValue = self:query("aggregatePurchaseStatsTable:selectColumn", query, 1, columnName)
+  local currentValue = self:query(query, 1, columnName)
   return tonumber(currentValue)
 end
 
@@ -76,7 +74,7 @@ function aggregatePurchaseStatsTable:incrementPurchases(playerId, roleId, itemNa
     local newPurchases = self:getPurchases(playerId, roleId, itemName) + 1
     local columnName = DDD.roleIdToRole[roleId] .. "_" .. itemName .. "_purchases"
     local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. newPurchases .. " WHERE player_id == " .. playerId
-    return self:query("aggregatePurchaseStatsTable:incrementPurchases", query)
+    return self:query(query)
 end
 
 function aggregatePurchaseStatsTable:recalculate()
@@ -90,7 +88,7 @@ function aggregatePurchaseStatsTable:recalculate()
                   GROUP BY purchases.player_id, shop_item_id, roundroles.role_id
                   ORDER BY purchases.player_id, roundroles.role_id]]
 
-  local result = self:query("aggregatePurchaseStatsTable:recalculate", query)
+  local result = self:query(query)
 
   if (result != nil and type(result) == "table") then
     local rowsToInsert = {}
@@ -127,7 +125,7 @@ function aggregatePurchaseStatsTable:recalculate()
       valueList = valueList .. ")"
 
       local insertQuery = "INSERT INTO " .. self.tableName .. columnList .. " VALUES " .. valueList
-      self:query("aggregatePurchaseStatsTable:recalculate insert step", insertQuery)
+      self:query(insertQuery)
     end
 
   end

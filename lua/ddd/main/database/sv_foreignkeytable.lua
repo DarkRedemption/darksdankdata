@@ -6,6 +6,15 @@ foreignKeyTable.foreignKeys = {}
 foreignKeyTable.compositeForeignKeys = {}
 foreignKeyTable.__index = foreignKeyTable
 
+local length = DDD.length
+
+function foreignKeyTable:getForeignKeySize()
+  return length(self.foreignKeys)
+end
+
+function foreignKeyTable:getCompositeKeySize()
+  return length(self.compositeForeignKeys)
+end
 --[[
 Adds a new foreign key constraint.
 PARAM columnName:String - The name of the column in the current table to constrain with a foreign key.
@@ -27,26 +36,6 @@ function foreignKeyTable:addCompositeConstraint(constraintName, columnNames, for
   self.compositeForeignKeys[constraintName] = DDD.Database.CompositeForeignKeyRef:new(columnNames, foreignSqlTable, foreignColumns)
 end
 
-function foreignKeyTable:getForeignKeySize()
-  local numOfForeignKeys = 0
-
-  for key, value in pairs(self.foreignKeys) do
-    numOfForeignKeys = numOfForeignKeys + 1
-  end
-
-  return numOfForeignKeys
-end
-
-function foreignKeyTable:getCompositeKeySize()
-  local numOfForeignKeys = 0
-
-  for key, value in pairs(self.compositeForeignKeys) do
-    numOfForeignKeys = numOfForeignKeys + 1
-  end
-
-  return numOfForeignKeys
-end
-
 --[[
 Generates the part of the Create Table query that adds the foreign key constraints.
 RETURNS A string that should be appended to the create table query.
@@ -54,8 +43,8 @@ RETURNS A string that should be appended to the create table query.
 function foreignKeyTable:generateConstraintQuery()
   local query = ""
   local keysConverted = 0
-  local numOfForeignKeys = self:getForeignKeySize()
-  local numOfCompositeKeys = self:getCompositeKeySize()
+  local numOfForeignKeys = length(self.foreignKeys)
+  local numOfCompositeKeys = length(self.compositeForeignKeys)
 
   for columnName, foreignKeyRef in pairs(self.foreignKeys) do
     local tableName = foreignKeyRef.sqlTable.tableName

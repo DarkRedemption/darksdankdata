@@ -20,16 +20,16 @@ end
 
 function radioCommandTable:getCommandId(command)
   local query = "SELECT id FROM " .. self.tableName .. " WHERE command_name = '" .. command .. "'"
-  local result = self:query("getCommandId", query, 1, "id")
+  local result = self:query(query, 1, "id")
   return tonumber(result)
 end
 
 function radioCommandTable:getOrAddCommand(command)
   local id = self:getCommandId(command)
-  
-  if (id > 0) then 
+
+  if (id > 0) then
     return id
-  else 
+  else
     return self:addCommand(command)
   end
 end

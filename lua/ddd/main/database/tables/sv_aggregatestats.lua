@@ -1,9 +1,8 @@
-local roleIdToRole = DDD.roleIdToRole
-local roleToRoleId = DDD.Database.Roles
-
 local lightBlue = Color(0, 255, 255, 255)
 local red = Color(255, 0, 0, 255)
 
+local roleIdToRole = DDD.roleIdToRole
+local roleToRoleId = DDD.Database.Roles
 local tables = DDD.Database.Tables
 
 --All kills/deaths are in the format of <thisplayerrole>_<opponentrole>_<kills/deaths>
@@ -37,10 +36,8 @@ createColumnsForSingleRole("rounds_lost")
 createColumnsForSingleRole("suicides")
 createColumnsForSingleRole("world_deaths")
 
-local foreignKeyTable = DDD.Database.ForeignKeyTable:new()
-foreignKeyTable:addConstraint("player_id", tables.PlayerId, "id")
-
-local aggregateStatsTable = DDD.SqlTable:new("ddd_aggregate_stats", columns, foreignKeyTable)
+local aggregateStatsTable = DDD.SqlTable:new("ddd_aggregate_stats", columns)
+aggregateStatsTable:addForeignConstraint("player_id", tables.PlayerId, "id")
 aggregateStatsTable.tables = tables --So they can be easily swapped out in test
 aggregateStatsTable.itemColumnSuffix = itemColumnSuffix
 --TODO: Override create() to check if it doesn't exist. If it doesn't, create AND recalculate.
@@ -359,7 +356,7 @@ function aggregateStatsTable:getAllWorldDeathCounts(newTables)
                   GROUP BY kill.victim_id, victim_roles.role_id
                   ORDER BY kill.victim_id, victim_roles.role_id]]
 
-  local result = self:query("aggregateStatsTable:getAllWorldDeathCounts", query)
+  local result = self:query(query)
 
   if (result != nil && result != 0) then
      for id, columns in pairs(result) do
@@ -376,7 +373,7 @@ end
 function aggregateStatsTable:getAllSelfHealing(newTables)
   local query = [[SELECT user_id, SUM(heal_amount) as total_hp_healed FROM ]] .. self.tables.Healing.tableName .. [[
                   GROUP BY user_id]]
-  local result = self:query("aggregateStatsTable:getAllSelfHealing", query)
+  local result = self:query(query)
 
   if (result != nil && result != 0) then
      for id, columns in pairs(result) do
@@ -393,7 +390,7 @@ function aggregateStatsTable:getAllOtherHealing(newTables)
   local query = [[SELECT deployer_id, SUM(heal_amount) as total_hp_healed FROM ]] .. self.tables.Healing.tableName .. [[
                   WHERE user_id != deployer_id
                   GROUP BY deployer_id]]
-  local result = self:query("aggregateStatsTable:getAllSelfHealing", query)
+  local result = self:query(query)
 
   if (result != nil && type(result) == "table") then
      for id, columns in pairs(result) do
@@ -448,13 +445,13 @@ end
 
 function aggregateStatsTable:selectColumn(playerId, columnName)
   local query = "SELECT " .. columnName .. " FROM " .. self.tableName .. " WHERE player_id == " .. playerId
-  local currentValue = self:query("aggregateCombatStatsTable:selectColumn", query, 1, columnName)
+  local currentValue = self:query(query, 1, columnName)
   return tonumber(currentValue)
 end
 
 function aggregateStatsTable:updateColumn(playerId, columnName, newValue)
   local query = "UPDATE " .. self.tableName .. " SET " .. columnName .. " = " .. newValue .. " WHERE player_id == " .. playerId
-  return self:query("aggregateStatsTable:updateColumn", query)
+  return self:query(query)
 end
 
 --
@@ -522,7 +519,7 @@ end
 
 function aggregateStatsTable:getPlayerStats(playerId)
   local query = "SELECT * from " .. self.tableName .. " WHERE player_id == " .. playerId
-  return self:query("aggregateStatsTable:getPlayerStats", query, 1)
+  return self:query(query, 1)
 end
 
 --

@@ -37,7 +37,6 @@ local function displayWeaponStats(list, aggregateWeaponStatsRow, weaponNameList,
         local columnName = itemName .. "_" .. roleName .. "_" .. opponentRoleName .. "_" .. infoColumnNameSegment
 
         if aggregateWeaponStatsRow[columnName] != nil then
-          print("setting value for roleid " .. opponentRoleId)
           values[opponentRoleId] = aggregateWeaponStatsRow[columnName]
         else
           columnNotFound = true
