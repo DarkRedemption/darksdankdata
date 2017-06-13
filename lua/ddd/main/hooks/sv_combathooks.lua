@@ -28,7 +28,7 @@ This means kills from the world, as well as pushing weapons
 (which do have an attacker we can derive)
 ]]
 local function handleNilAttackerKill(tables, victim, damageInfo)
-  if (victim.was_pushed && damageInfo:IsDamageType(DMG_FALL)) then
+  if (victim.was_pushed && damageInfo:IsDamageType(DMG_FALL) && IsValid(victim.was_pushed.att)) then
     return handlePushKill(tables, victim, damageInfo)
   else
     local victimId = tables.PlayerId:getPlayerId(victim)

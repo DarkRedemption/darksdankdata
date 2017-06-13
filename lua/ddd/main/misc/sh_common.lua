@@ -69,6 +69,16 @@ local function foreach(table, f)
   end
 end
 
+--[[
+Like map, only return nothing.
+This version uses ipairs instead of pairs.
+]]
+local function iforeach(table, f)
+  for key, value in ipairs(table) do
+    f(key, value)
+  end
+end
+
 local function foreachValue(table, f)
   for key, value in pairs(table) do
     f(value)
@@ -91,5 +101,6 @@ DDD.filter = filter
 DDD.filterValue = filterValue
 DDD.map = map
 DDD.foreach = foreach
+DDD.iforeach = iforeach
 DDD.foreachValue = foreachValue
 DDD.length = length

@@ -36,6 +36,7 @@ if SERVER then
   AddCSLuaFile("ddd/main/config/sh_config.lua")
   AddCSLuaFile("ddd/main/misc/sh_common.lua")
   AddCSLuaFile("ddd/main/misc/sh_option.lua")
+  AddCSLuaFile("ddd/main/misc/sh_functionaltable.lua")
 
   AddCSLuaFile("ddd/main/gui/cl_shared.lua")
   AddCSLuaFile("ddd/main/gui/cl_mainpanel.lua")
@@ -63,6 +64,7 @@ if SERVER then
   include("ddd/main/misc/sh_common.lua")
   include("ddd/main/misc/sv_common.lua")
   include('ddd/main/misc/sh_option.lua')
+  include("ddd/main/misc/sh_functionaltable.lua")
   include("ddd/main/misc/sv_enums.lua")
 
   include("ddd/main/hooks/sv_overridehooks.lua")
@@ -81,6 +83,7 @@ if CLIENT then
 
   include("ddd/main/misc/sh_common.lua")
   include("ddd/main/misc/sh_delayedtimer.lua")
+  include("ddd/main/misc/sh_functionaltable.lua")
 
   include("ddd/main/gui/cl_shared.lua")
   include("ddd/main/gui/cl_mainpanel.lua")

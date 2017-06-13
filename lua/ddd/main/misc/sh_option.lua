@@ -45,10 +45,22 @@ function Option:get()
 end
 
 function Option:getOrElse(f)
-  if (self:nonEmpty()) then
-    return self.value
-  else
+  if (self:isEmpty()) then
     return f()
+  else
+    return self.value
+  end
+end
+
+--[[
+Like getOrElse, but we don't care about getting the internal value;
+we just care that the option is empty and so we need to compensate.
+]]
+function Option:orElse(f)
+  if (self:isEmpty()) then
+    return f()
+  else
+    return self
   end
 end
 
