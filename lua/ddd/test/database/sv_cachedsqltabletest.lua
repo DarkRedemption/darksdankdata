@@ -32,6 +32,8 @@ local function insertQueueSpec()
   local idColumn = CachedColumn:new("id"):makeIntegerType():makePrimaryKey():makeAutoIncrement()
   local textColumn = CachedColumn:new("name"):makeTextType():makeNotNull()
   local sqlTable = CachedSqlTable:new(currentTableName)
+  sqlTable:addColumn(idColumn):addColumn(textColumn)
+  sqlTable:create()
 
   local newRow = {
     name = "testname"
@@ -43,6 +45,7 @@ local function insertQueueSpec()
   GUnit.assert(#sqlTable.rowsToInsert):shouldEqual(0)
 
   sqlTable:selectAll()
+  PrintTable(sqlTable.cache)
   local row = sqlTable.cache[{id = 1}]
   GUnit.assert(row):shouldEqual({id = 1, name = "testname"})
 end

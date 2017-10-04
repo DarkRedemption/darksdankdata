@@ -227,8 +227,6 @@ function CachedSqlTable:create()
             self.tableName ..
             self:generateColumnQuery()
 
-  print(query)
-
   if (self.foreignKeyTable:getForeignKeySize() > 0 or self.foreignKeyTable:getCompositeKeySize() > 0) then
      query = query .. ", " .. self.foreignKeyTable:generateConstraintQuery()
   end
@@ -278,7 +276,9 @@ end
 function CachedSqlTable:getInsertColumns()
   local count = 0
   local insertColumns = filter(self.columns, function(columnName, cachedColumn)
-    count = count + 1
+    if (!cachedColumn.autoIncrement) then
+      count = count + 1
+    end
     return !cachedColumn.autoIncrement
   end)
 
@@ -308,7 +308,7 @@ function CachedSqlTable:insertQueuedRows()
         error("No valid value found for " .. columnName .. " in " .. self.tableName)
       end)
 
-      if (cachedColumn:isStringType()) then
+      if (cachedColumn:isText()) then
         query = query .. "'" .. tostring(columnValue) .. "'"
       else
         query = query .. tostring(columnValue)
@@ -345,7 +345,8 @@ function CachedSqlTable:new(tableName, uniqueGroups)
   newTable.cache = DDD.Misc.FunctionalTable:new()
   newTable.rowsToInsert = {}
   newTable.rowsToUpdate = {}
-
+  newTable.primaryKeys = {}
+  
   if (uniqueGroups) then
     newTable.uniqueGroups = uniqueGroups
   end
